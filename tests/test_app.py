@@ -203,6 +203,25 @@ class AppTests(IsolatedApp):
         self.assertEqual(self.manager.jobs, [])
         self.assertTrue(audio.exists())
 
+    def test_clear_done_keeps_files_and_unfinished_history(self):
+        self.manager.enqueue([URL], "mp3", True)
+        completed = self.manager.jobs[-1]
+        media = Path(completed["folder"]) / "original.mp3"
+        media.write_bytes(b"saved-content")
+        completed.update(status="done", file=str(media))
+        self.manager.enqueue([URL], "m4a", True)
+        errored = self.manager.jobs[-1]
+        errored["status"] = "error"
+        self.manager.enqueue([URL], "mp4", True)
+        queued = self.manager.jobs[-1]
+        self.manager.clear_done()
+        self.assertEqual([j["id"] for j in self.manager.jobs], [errored["id"], queued["id"]])
+        self.assertEqual([j["status"] for j in self.manager.jobs], ["error", "queued"])
+        self.assertEqual(media.read_bytes(), b"saved-content")
+        restored = app.Manager(self.root / "data", start_worker=False)
+        self.assertEqual([j["id"] for j in restored.jobs], [errored["id"], queued["id"]])
+        restored.stop()
+
     def test_progress_parser_and_file_boundary(self):
         self.add()
         job = self.manager.jobs[0]
@@ -359,6 +378,21 @@ class HttpTests(IsolatedApp):
         self.assertEqual(self.request("/api/retry", {"id":job["id"]})[0], 200)
         self.assertNotIn("use_edge_session", job)
 
+
+    def test_api_clear_done_token_and_origin_protections(self):
+        self.manager.enqueue([URL], "mp3", True)
+        completed = self.manager.jobs[-1]
+        media = Path(completed["folder"]) / "retido.mp3"
+        media.write_bytes(b"kept")
+        completed.update(status="done", file=str(media))
+        self.manager.enqueue([URL], "m4a", True)
+        errored = self.manager.jobs[-1]
+        errored["status"] = "error"
+        self.assertEqual(self.request("/api/clear-done", {}, token=False)[0], 403)
+        self.assertEqual(self.request("/api/clear-done", {}, headers={"Origin":"https://attacker.org"})[0], 403)
+        self.assertEqual(self.request("/api/clear-done", {})[0], 200)
+        self.assertEqual([j["id"] for j in self.manager.jobs], [errored["id"]])
+        self.assertEqual(media.read_bytes(), b"kept")
 
     def test_file_delivery_and_escape_denied(self):
         self.add()
