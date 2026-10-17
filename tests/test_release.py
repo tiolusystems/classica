@@ -25,7 +25,7 @@ class ReleaseTests(unittest.TestCase):
                 self.assertIsNone(package.testzip())
                 self.assertIn("Classica/Iniciar discreto.bat", package.namelist())
                 self.assertIn(b"-Background", package.read("Classica/Iniciar discreto.bat"))
-                self.assertIn(b"-Background", package.read("Classica/iniciar.ps1"))
+                self.assertIn(b"[switch]$Background", package.read("Classica/iniciar.ps1"))
                 self.assertEqual(set(package.namelist()), {"Classica/"+name for name in package_release.FILES})
                 self.assertNotIn(b"Organizar_extracao_antiga", package.read("Classica/README.md"))
             self.assertIn(first.name, checksum.read_text())
