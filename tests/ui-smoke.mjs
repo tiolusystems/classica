@@ -61,6 +61,14 @@ try {
   await page.getByText('Conexão local',{exact:true}).waitFor();
   assert.equal(await page.locator('#use-edge-session').count(),0,'Controle de cookies continua ausente ao recarregar');
   assert.equal(await page.evaluate(()=>localStorage.getItem('classica-reading')),'200');
+  assert.equal(await page.getByRole('button',{name:'Limpar biblioteca',exact:true}).count(),1);
+  assert.equal(await page.getByRole('button',{name:'Limpar biblioteca',exact:true}).isEnabled(),true);
+  page.once('dialog',dialog=>dialog.dismiss());
+  await page.getByRole('button',{name:'Limpar biblioteca',exact:true}).click();
+  assert.equal(await page.getByText('Cancelado',{exact:true}).count(),1,'Canceling clear prompt must preserve history');
+  await page.getByRole('button',{name:'Entenda as responsabilidades',exact:true}).click();
+  assert.equal(await page.getByRole('dialog',{name:'Como usar a Clássica'}).isVisible(),true);
+  await page.keyboard.press('Escape');
   await page.getByRole('button',{name:'Ajuda',exact:true}).click();
   await page.getByRole('dialog',{name:'Como usar a Clássica'}).waitFor();
   await page.keyboard.press('Escape');
