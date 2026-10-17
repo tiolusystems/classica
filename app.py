@@ -25,7 +25,7 @@ import uuid
 import webbrowser
 
 ROOT = Path(__file__).resolve().parent
-VERSION = "2.0.0"
+VERSION = "2.1.0"
 FORMATS = {"mp3": "MP3 · 320 kbps", "m4a": "M4A · AAC", "aac": "AAC",
            "wav": "WAV", "flac": "FLAC", "ogg": "OGG · Vorbis", "opus": "OPUS",
            "original": "Áudio original"}
@@ -34,6 +34,7 @@ RESOLUTIONS = {"best", "2160", "1440", "1080", "720", "480"}
 ACTIVE = {"preparing", "downloading", "converting"}
 TERMINAL = {"done", "error", "cancelled", "interrupted"}
 VIDEO_ID = re.compile(r"^[A-Za-z0-9_-]{11}$")
+RATE_LIMIT_WAIT = 60
 
 
 def canonical_url(value: str) -> str:
@@ -67,6 +68,7 @@ def canonical_url(value: str) -> str:
 
 def dependencies() -> dict:
     return {"yt_dlp": importlib.util.find_spec("yt_dlp") is not None,
+            "yt_dlp_ejs": importlib.util.find_spec("yt_dlp_ejs") is not None,
             "ffmpeg": bool(shutil.which("ffmpeg")),
             "ffprobe": bool(shutil.which("ffprobe")),
             "deno": bool(shutil.which("deno"))}
@@ -81,8 +83,13 @@ def command_for(job: dict) -> list[str]:
     # A list of arguments avoids shell interpretation of titles, paths and URLs.
     cmd = [sys.executable, "-m", "yt_dlp", "--ignore-config", "--no-playlist",
            "--no-colors", "--no-quiet", "--newline", "--windows-filenames", "--no-overwrites",
-           "--socket-timeout", "30", "--retries", "3", "--fragment-retries", "3",
-           "--concurrent-fragments", "1"]
+           "--socket-timeout", "30", "--retries", "2", "--fragment-retries", "2",
+           "--extractor-retries", "0", "--sleep-requests", "1",
+           "--sleep-interval", "5", "--max-sleep-interval", "10",
+           "--retry-sleep", "http:exp=2:10", "--concurrent-fragments", "1"]
+    # Fixed browser only: never accept a profile path or arbitrary extractor args.
+    if job.get("use_edge_session") is True:
+        cmd += ["--cookies-from-browser", "edge:Default", "--no-cache-dir"]
     output = "%(title).140B [%(id)s].%(ext)s"
     if job["format"] in VIDEO_FORMATS:
         resolution = job.get("resolution", "best")
@@ -141,22 +148,49 @@ def terminate_process(process: subprocess.Popen) -> None:
 
 def friendly_error(log: str) -> str:
     text = log.lower()
+    if any(marker in text for marker in ("failed to decrypt", "dpapi", "cookie database", "cookies database", "could not find edge cookies", "failed to load cookies")):
+        return "Não foi possível ler a sessão do Edge. Se houver bloqueio do banco de cookies, feche todas as janelas do Edge e tente uma vez. Se houver falha de descriptografia/DPAPI, a proteção do Windows pode impedir a leitura. Não desative proteções, não execute como administrador nem instale extensões para contorná-la. Desmarque Usar minha sessão do Edge para continuar sem sessão."
     if "certificate_verify_failed" in text or "certificate verify failed" in text:
         return "A conexão segura com o YouTube falhou. Confira a data e a hora do Windows e os certificados da sua rede. Em uma rede administrada, solicite apoio de TI."
-    if "sign in" in text or "bot" in text:
-        return "O YouTube solicitou autenticação ou verificação. Este aplicativo não contorna esse bloqueio. Tente novamente mais tarde."
-    if "private video" in text or "unavailable" in text or "removed" in text:
+    if (rate_limited(log) or "sign in" in text or "not a bot" in text):
+        return "O YouTube limitou as requisições ou pediu uma verificação. Pare as tentativas e confira o vídeo no Edge. Se funcionar com sua conta, você pode autorizar Usar minha sessão do Edge e tentar uma vez mais tarde. Atualizar.bat pode corrigir incompatibilidades, mas não garante resolver HTTP 429, login ou PO Token. A aplicação não contorna CAPTCHA, DRM ou pagamento."
+    if "requested format is not available" in text:
+        return "O formato ou a resolução solicitada não está disponível nesta tentativa. Escolha Melhor disponível para vídeo. Isso também pode ocorrer quando o YouTube não libera os formatos ao extrator."
+    if "po token" in text or "po_token" in text or "visitor data" in text:
+        return "O YouTube não forneceu os dados de sessão ou o PO Token exigido nesta tentativa. Atualizar.bat pode corrigir incompatibilidades. Se persistir, aguarde e confira o vídeo no navegador; a sessão opcional do Edge não garante resolver essa exigência."
+    if "private video" in text or "video unavailable" in text or "video has been removed" in text:
         return "Vídeo indisponível, privado ou removido. Confira o link no YouTube."
     if "403" in text or "nsig" in text or "javascript" in text:
         return "O YouTube recusou a extração. Feche a aplicação, execute Atualizar.bat e tente novamente."
     if "disk" in text or "space" in text or "permission" in text:
         return "Não foi possível gravar o arquivo. Confira o espaço livre e a permissão da pasta."
-    if "requested format is not available" in text:
-        return "A resolução escolhida não está disponível para este vídeo. Escolha Melhor disponível e tente novamente."
     if "timed out" in text or "resolve" in text or "connection" in text:
         return "Falha de conexão. Confira sua internet e tente novamente."
     errors = [x.removeprefix("ERROR: ").strip() for x in log.splitlines() if "ERROR:" in x]
     return (errors[-1][:500] if errors else "O download não foi concluído. Veja os detalhes e tente novamente.")
+
+
+def rate_limited(log: str) -> bool:
+    return bool(re.search(r"\b429\b|too many requests", log, re.I))
+
+
+def verify_media(job: dict) -> None:
+    """Do not mistake an HTML error page, empty file or silent video for success."""
+    file = Path(job["file"]).resolve()
+    if not file.is_relative_to(Path(job["folder"]).resolve()) or not file.is_file() or file.stat().st_size == 0:
+        raise ValueError("O arquivo final não está disponível na pasta de destino.")
+    kwargs = dict(capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=20)
+    if os.name == "nt":
+        kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW
+    try:
+        result = subprocess.run([shutil.which("ffprobe") or "ffprobe", "-v", "error",
+                                 "-show_entries", "stream=codec_type,codec_name", "-of", "json", str(file)], **kwargs)
+        streams = json.loads(result.stdout).get("streams", []) if result.returncode == 0 else []
+        kinds = {stream.get("codec_type") for stream in streams if stream.get("codec_name") not in (None, "unknown")}
+    except (OSError, ValueError, TypeError, AttributeError, subprocess.TimeoutExpired) as exc:
+        raise ValueError("Não foi possível validar o arquivo recebido. Confira a conexão e os componentes da aplicação.") from exc
+    if "audio" not in kinds or (job["format"] in VIDEO_FORMATS and "video" not in kinds):
+        raise ValueError("O arquivo recebido não contém o áudio/vídeo esperado. Ele pode ser uma resposta de erro da rede. Não foi marcado como concluído; consulte os detalhes e tente novamente mais tarde.")
 
 
 class Manager:
@@ -171,6 +205,7 @@ class Manager:
         self.current_id = None
         self.folder = str(Path.home() / "Music" / "Classica")
         self.jobs = []
+        self.queue_pause = {"until": 0, "manual": False, "reason": ""}
         self.load()
         if start_worker:
             self.worker = threading.Thread(target=self.run, daemon=True)
@@ -181,7 +216,10 @@ class Manager:
             payload = json.loads(self.state_file.read_text(encoding="utf-8"))
             self.folder = payload["folder"]
             self.jobs = payload["jobs"][-500:]
+            self.queue_pause = payload.get("queue_pause", self.queue_pause)
             for job in self.jobs:
+                # Consent must be renewed after restarting, including for retries.
+                job["use_edge_session"] = False
                 if job["status"] in ACTIVE | {"queued"}:
                     job.update(status="interrupted", error="A sessão foi encerrada. Use Tentar novamente para continuar.")
         except FileNotFoundError:
@@ -194,12 +232,14 @@ class Manager:
     def save(self):
         # Caller holds self.lock. Atomic replacement prevents partial JSON on interruption.
         temp = self.state_file.with_suffix(".tmp")
-        temp.write_text(json.dumps({"folder": self.folder, "jobs": self.jobs}, ensure_ascii=False, indent=2), encoding="utf-8")
+        jobs = [{k: v for k, v in job.items() if k != "use_edge_session"} for job in self.jobs]
+        temp.write_text(json.dumps({"folder": self.folder, "jobs": jobs, "queue_pause": self.queue_pause}, ensure_ascii=False, indent=2), encoding="utf-8")
         os.replace(temp, self.state_file)
 
     def snapshot(self):
         with self.lock:
-            return {"version": VERSION, "folder": self.folder, "jobs": copy.deepcopy(self.jobs), "dependencies": dependencies()}
+            return {"version": VERSION, "folder": self.folder, "jobs": copy.deepcopy(self.jobs),
+                    "queue_pause": copy.deepcopy(self.queue_pause), "dependencies": dependencies()}
 
     def find(self, job_id):
         for job in self.jobs:
@@ -223,7 +263,9 @@ class Manager:
             self.folder = str(path.resolve())
             self.save()
 
-    def enqueue(self, urls, format_, authorized, resolution="best"):
+    def enqueue(self, urls, format_, authorized, resolution="best", use_edge_session=False):
+        if type(use_edge_session) is not bool:
+            raise ValueError("A autorização para usar a sessão do Edge deve ser verdadeira ou falsa.")
         if authorized is not True:
             raise ValueError("Confirme que possui autorização para baixar as gravações.")
         if format_ not in FORMATS and format_ not in VIDEO_FORMATS:
@@ -246,7 +288,8 @@ class Manager:
                     continue
                 job = dict(id=uuid.uuid4().hex, url=url, format=format_, folder=self.folder, resolution=resolution,
                            title="Aguardando informações do vídeo", status="queued", progress=0,
-                           speed="", eta="", error="", log="", file="", created=time.time(), authorized=True)
+                           speed="", eta="", error="", log="", file="", created=time.time(), authorized=True,
+                           use_edge_session=use_edge_session, auto_retry_count=0)
                 self.jobs.append(job)
                 added.append(job["id"])
             # Bound history without dropping active jobs.
@@ -273,14 +316,40 @@ class Manager:
                 terminate_process(self.process)
             self.save()
 
-    def retry(self, job_id):
+    def retry(self, job_id, use_edge_session=False):
+        if type(use_edge_session) is not bool:
+            raise ValueError("A autorização para usar a sessão do Edge deve ser verdadeira ou falsa.")
         with self.lock:
+            self.check_cooldown()
             job = self.find(job_id)
             if job["status"] not in {"error", "cancelled", "interrupted"}:
                 raise ValueError("Este item não precisa ser reiniciado.")
-            job.update(status="queued", progress=0, error="", log="", speed="", eta="")
+            job.update(status="queued", progress=0, error="", log="", speed="", eta="", file="", use_edge_session=use_edge_session, auto_retry_count=0)
+            self.queue_pause = {"until": 0, "manual": False, "reason": ""}
             self.save()
         self.wake.set()
+
+    def check_cooldown(self):
+        remaining = self.queue_pause["until"] - time.time()
+        if remaining > 0:
+            raise ValueError(f"O YouTube limitou as requisições. Aguarde mais {int(remaining) + 1} segundos antes de retomar.")
+
+    def resume(self):
+        with self.lock:
+            self.check_cooldown()
+            self.queue_pause = {"until": 0, "manual": False, "reason": ""}
+            self.save()
+        self.wake.set()
+
+    def record_failure(self, job):
+        job.update(status="error", error=friendly_error(job["log"]), speed="", eta="")
+        if rate_limited(job["log"]):
+            repeat = job.get("auto_retry_count", 0) == 0
+            self.queue_pause = {"until": time.time() + RATE_LIMIT_WAIT, "manual": not repeat,
+                                "reason": "O YouTube respondeu HTTP 429. A fila foi pausada para reduzir novas requisições."}
+            if repeat:
+                job.update(status="queued", auto_retry_count=1, file="", progress=0,
+                           error="HTTP 429: aguardando uma pausa de 60 segundos antes de uma única nova tentativa automática.")
 
     def clear(self):
         with self.lock:
@@ -313,10 +382,14 @@ class Manager:
             self.wake.wait(0.5)
             self.wake.clear()
             with self.lock:
+                if self.queue_pause["manual"] or time.time() < self.queue_pause["until"]:
+                    continue
+                if self.queue_pause["reason"]:
+                    self.queue_pause = {"until": 0, "manual": False, "reason": ""}
                 job = next((j for j in self.jobs if j["status"] == "queued"), None)
                 if not job:
                     continue
-                job["status"] = "preparing"
+                job.update(status="preparing", error="", log="", file="")
                 self.current_id = job["id"]
                 self.save()
             try:
@@ -343,6 +416,8 @@ class Manager:
                             job["log"] = (job["log"] + clean + "\n")[-10000:]
                             self.parse_line(job, clean)
                 code = process.wait()
+                if code == 0 and job["status"] != "cancelled" and not self.stopping.is_set() and job["file"]:
+                    verify_media(job)
                 with self.lock:
                     if job["status"] == "cancelled":
                         pass
@@ -351,7 +426,7 @@ class Manager:
                     elif code == 0 and job["file"] and Path(job["file"]).is_file():
                         job.update(status="done", progress=100, speed="", eta="")
                     else:
-                        job.update(status="error", error=friendly_error(job["log"]))
+                        self.record_failure(job)
             except Exception as exc:
                 with self.lock:
                     if job["status"] != "cancelled":
@@ -456,13 +531,15 @@ class Handler(BaseHTTPRequestHandler):
             manager = self.server.manager
             result = {"ok": True}
             if path == "/api/enqueue":
-                result = manager.enqueue(data.get("urls"), data.get("format"), data.get("authorized"), data.get("resolution", "best"))
+                result = manager.enqueue(data.get("urls"), data.get("format"), data.get("authorized"), data.get("resolution", "best"), data.get("use_edge_session", False))
             elif path == "/api/cancel":
                 manager.cancel(data.get("id"))
             elif path == "/api/retry":
-                manager.retry(data.get("id"))
+                manager.retry(data.get("id"), data.get("use_edge_session", False))
             elif path == "/api/clear":
                 manager.clear()
+            elif path == "/api/resume":
+                manager.resume()
             elif path == "/api/folder":
                 manager.set_folder(data.get("folder"))
             elif path == "/api/open-folder":

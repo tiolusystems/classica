@@ -1,5 +1,18 @@
 # Histórico de mudanças
 
+## 2.1.0 — 2026-10-17
+
+- Pausa global de 60 segundos ao receber HTTP 429, uma única tentativa automática e pausa manual se o limite persistir.
+- Espaçamento entre requisições e downloads; eliminação de novas tentativas internas de extração sobrepostas à política da fila.
+- FFprobe valida áudio/vídeo antes de declarar sucesso, incluindo o caso em que a rede devolve HTML no lugar da mídia.
+- Correção da classificação de formato indisponível, que podia ser confundido com vídeo removido.
+- Verificação da presença do pacote EJS necessário ao extrator.
+
+- Opção “Usar minha sessão do Edge”, desativada por padrão, com confirmação de acesso local aos cookies e aviso de risco à conta.
+- Novos downloads e novas tentativas usam a autorização atual; ela não é persistida no histórico.
+- Mensagens específicas para banco de cookies bloqueado e falhas DPAPI, sem sugerir desativação de proteções.
+- Ajuda distingue atualização do extrator de limites HTTP 429 e exigências de login/PO Token, sem prometer correção automática.
+
 ## 2.0.0 — 2026-10-17
 
 - Nova interface operacional, clara, responsiva e assinada **by ☧ SYSTEMS**.

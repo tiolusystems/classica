@@ -47,6 +47,29 @@ texto. Não existe telemetria própria, sincronização remota ou coleta de senh
 YouTube recebe as solicitações necessárias ao download. Fornecedores de
 componentes recebem conexões durante preparação e atualização.
 
+## Sessão opcional do Microsoft Edge
+
+Desativada por padrão e com confirmação explícita na interface. Novos itens e
+novas tentativas recebem apenas um booleano de autorização; o servidor aceita
+somente booleanos, não nomes de navegador, perfis, caminhos ou argumentos livres.
+A autorização não é gravada no histórico e volta a falsa ao reiniciar. A caixa
+também volta a desmarcada quando a página é recarregada. Desmarcá-la afeta novos
+itens e tentativas; cancele itens já enfileirados para revogar seu uso neles.
+
+O extrator recebe somente `--cookies-from-browser edge:Default --no-cache-dir`, nunca
+`--cookies` para exportação. O yt-dlp acessa o banco de cookies do perfil padrão;
+essa leitura não se restringe a uma única linha ou cookie. Cookies aplicáveis
+acompanham as solicitações ao YouTube. Não há upload próprio para GitHub ou
+telemetria. Não se solicita senha e não se cria um arquivo de exportação de
+cookies. O extrator pode criar cópias temporárias internas durante a leitura.
+Não compartilhe detalhes técnicos sem revisão.
+
+Restrições de criptografia ou permissões do Windows/Edge devem ser respeitadas.
+Não é usado privilégio de administrador, alteração de proteção ou desbloqueio
+de banco. Falhas de leitura/descriptografia geram orientação explícita. Usar
+uma conta com o extrator pode trazer restrições pelo YouTube, inclusive suspensão.
+Esta opção não garante resolver limites de requisições ou PO Tokens.
+
 ## Relatar um problema
 
 Use o canal privado de avisos de segurança do repositório quando estiver
