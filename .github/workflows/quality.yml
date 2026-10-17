@@ -70,9 +70,28 @@ jobs:
       - run: node --check web/app.js
       - run: npm run test:ui
 
+
+  clean-package:
+    name: Clean Windows ZIP installation
+    runs-on: windows-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.13'
+      - name: Verify and build production ZIP
+        run: |
+          python scripts/verify_release.py
+          python scripts/package_release.py
+      - name: Fresh ZIP extraction, dependency setup, localhost and media suite
+        shell: powershell
+        run: |
+          .\scripts\windows_clean_install.ps1 -Archive (Join-Path $PWD 'dist\Classica-2.1.0-Windows-x64.zip')
+
   release:
     name: Package and publish release
-    needs: [test, interface]
+    needs: [test, interface, clean-package]
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     permissions:
