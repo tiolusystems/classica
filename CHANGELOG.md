@@ -8,8 +8,7 @@
 - Correção da classificação de formato indisponível, que podia ser confundido com vídeo removido.
 - Verificação da presença do pacote EJS necessário ao extrator.
 
-- Opção “Usar minha sessão do Edge”, desativada por padrão, com confirmação de acesso local aos cookies e aviso de risco à conta.
-- Novos downloads e novas tentativas usam a autorização atual; ela não é persistida no histórico.
+- Revisão para publicação: removida da interface a opção experimental de sessão do Edge. Downloads e novas tentativas permanecem sem cookies por padrão; o mecanismo de download validado não foi alterado.
 - Mensagens específicas para banco de cookies bloqueado e falhas DPAPI, sem sugerir desativação de proteções.
 - Ajuda distingue atualização do extrator de limites HTTP 429 e exigências de login/PO Token, sem prometer correção automática.
 
