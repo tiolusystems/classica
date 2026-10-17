@@ -348,6 +348,12 @@ class Manager:
             self.jobs = [j for j in self.jobs if j["status"] not in TERMINAL]
             self.save()
 
+    def clear_done(self):
+        """Forget completed entries only; downloaded files and other jobs are untouched."""
+        with self.lock:
+            self.jobs = [j for j in self.jobs if j["status"] != "done"]
+            self.save()
+
     def parse_line(self, job, line):
         if line.startswith("CLASSICA_PROGRESS:"):
             try:
@@ -532,6 +538,8 @@ class Handler(BaseHTTPRequestHandler):
                 manager.retry(data.get("id"))
             elif path == "/api/clear":
                 manager.clear()
+            elif path == "/api/clear-done":
+                manager.clear_done()
             elif path == "/api/resume":
                 manager.resume()
             elif path == "/api/folder":
