@@ -1,0 +1,27 @@
+# Dados e componentes locais nunca fazem parte do código distribuído.
+.tools/
+.venv/
+__pycache__/
+*.py[cod]
+*.log
+.pytest_cache/
+.coverage
+htmlcov/
+build/
+dist/
+artifacts/
+node_modules/
+historico*.json
+sessao.lock
+*.part
+*.ytdl
+*.mp3
+*.mp4
+*.m4a
+*.mkv
+*.webm
+*.wav
+*.flac
+.env
+.env.*
+!.env.example

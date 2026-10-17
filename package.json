@@ -1,0 +1,8 @@
+{
+  "name": "classica-interface-tests",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Testes de interface da Clássica — by ☧ SYSTEMS",
+  "scripts": {"test:ui": "node tests/ui-smoke.mjs"},
+  "devDependencies": {"playwright": "1.62.1"}
+}

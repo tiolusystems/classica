@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "windows_x64": [
+    {
+      "repository": "astral-sh/uv",
+      "tag": "0.13.1",
+      "asset": "uv-x86_64-pc-windows-msvc.zip",
+      "sha256": "3b2661a463a5baea7f5076ea2b25ab71d77f36a6c0d809e5350651792f80a672",
+      "url": "https://github.com/astral-sh/uv/releases/download/0.13.1/uv-x86_64-pc-windows-msvc.zip"
+    },
+    {
+      "repository": "denoland/deno",
+      "tag": "v2.9.7",
+      "asset": "deno-x86_64-pc-windows-msvc.zip",
+      "sha256": "a0c3101b4158d1dfb7d6a78a7bf0f3de80c96bb423c152beec8beb22786f2238",
+      "url": "https://github.com/denoland/deno/releases/download/v2.9.7/deno-x86_64-pc-windows-msvc.zip"
+    },
+    {
+      "repository": "yt-dlp/FFmpeg-Builds",
+      "tag": "autobuild-2026-10-16-18-04",
+      "asset": "ffmpeg-N-127588-g0b19c65afe-win64-gpl.zip",
+      "sha256": "51aced1016570cbda6712bcf36aa05809dd195229416fc61e3865a359d3f43ca",
+      "url": "https://github.com/yt-dlp/FFmpeg-Builds/releases/download/autobuild-2026-10-16-18-04/ffmpeg-N-127588-g0b19c65afe-win64-gpl.zip"
+    }
+  ]
+}
