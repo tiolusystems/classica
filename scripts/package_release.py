@@ -21,7 +21,7 @@ FILES = (
 
 def build(destination: Path) -> tuple[Path, Path]:
     destination.mkdir(parents=True, exist_ok=True)
-    archive = destination / "Classica-2.0.0-Windows-x64.zip"
+    archive = destination / "Classica-2.1.0-Windows-x64.zip"
     with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as package:
         for name in FILES:
             data = (ROOT / name).read_bytes()

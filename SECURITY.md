@@ -47,6 +47,10 @@ texto. Não existe telemetria própria, sincronização remota ou coleta de senh
 YouTube recebe as solicitações necessárias ao download. Fornecedores de
 componentes recebem conexões durante preparação e atualização.
 
+## Interface sem autenticação por navegador
+
+A interface, a API local e o mecanismo de download não oferecem leitura de cookies de navegadores. Uma opção `use_edge_session` em pedidos à API é rejeitada; históricos antigos têm o campo removido ao carregar. O comando do extrator nunca recebe `--cookies-from-browser`. O aplicativo não garante acesso a conteúdos sujeitos a restrições do YouTube.
+
 ## Relatar um problema
 
 Use o canal privado de avisos de segurança do repositório quando estiver

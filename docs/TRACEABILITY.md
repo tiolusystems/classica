@@ -9,7 +9,7 @@
 | F05 | Progresso, cancelamento e falha | Manager | testes de processo e arquivo final |
 | F06 | Histórico persistente | save/load | teste de reinício e retomada explícita |
 | F07 | Limpar histórico preserva mídia | clear | teste de preservação de arquivo |
-| U01 | Leitura responsiva | CSS clamp, grid e media queries | contrato estático; teste visual automatizado preparado, pendente de execução |
+| U01 | Leitura responsiva | CSS clamp, grid e media queries | suíte de interface da prévia aprovada na CI; esta revisão exige repetição da CI |
 | U02 | Tamanho ajustável até 200% | setReading, Preferências | controle e persistência; suíte de navegador preparada |
 | U03 | Estados textuais, teclado e ajuda | HTML semântico e diálogos | revisão estrutural; avaliação humana/leitor de tela pendente |
 | U04 | Contraste dos tokens principais | variáveis CSS | cálculo de cinco pares >= 4,5:1; não cobre todas as combinações ou WCAG integral |

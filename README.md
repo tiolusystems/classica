@@ -2,7 +2,7 @@
 
 **Áudio e vídeo, no seu computador.**
 
-by **☧ SYSTEMS** · versão **2.0.0**
+by **☧ SYSTEMS** · versão **2.1.0**
 
 Aplicação local em português para salvar gravações autorizadas do YouTube.
 Cole o link, escolha áudio ou vídeo, selecione o formato e acompanhe a fila.
@@ -62,6 +62,26 @@ do extrator. É uma ação explícita: a versão resultante pode diferir da base
 testada registrada em `requirements.lock`. Os componentes externos do pacote
 base usam versões e hashes de `tools.lock.json`.
 
+### YouTube pede login ou retorna HTTP 429
+
+A fila é sequencial, com espaçamento entre requisições e antes de downloads.
+Ao receber HTTP 429, pausa toda a fila por 60 segundos e faz **uma única** nova
+tentativa automática. Se ocorrer novamente, mantém a fila pausada e aguarda
+uma ação explícita. O botão Retomar fila fica disponível após a pausa mínima;
+o item com falha pode ser reiniciado em Tentar novamente. A pausa é persistida
+ao reiniciar. Sessões autenticadas não são ativadas automaticamente.
+Esses 60 segundos são uma política conservadora da aplicação, não um prazo de
+desbloqueio informado ou garantido pelo YouTube.
+
+Antes de marcar um item como concluído, FFprobe deve identificar áudio e,
+quando solicitado, vídeo no arquivo final. Uma página HTML recebida da rede,
+um arquivo vazio ou um vídeo sem som gera erro em vez de sucesso.
+
+Atualizar o extrator **não garante** remover limites de requisições, exigências
+de login ou PO Token. Pare as tentativas e confira o vídeo diretamente no navegador.
+A interface de download não solicita cookies nem depende de um navegador específico.
+Quando uma gravação não estiver disponível, interrompa as tentativas e consulte o vídeo no navegador. Não existe garantia de acesso a todos os conteúdos do YouTube.
+
 Para instalar uma nova versão da Clássica, substitua os arquivos dentro da
 **mesma pasta**. Mantenha os componentes locais já instalados. Não mova o
 ambiente Python depois de criado; se precisar mudar de lugar, extraia a versão
@@ -114,7 +134,7 @@ npm run test:ui
 ```
 
 GitHub Actions inclui testes Linux, preparação e testes Windows, testes de
-interface e construção do ZIP. Um tag `v2.0.0` aciona a publicação de uma versão
+interface e construção do ZIP. Um tag `v2.1.0` aciona a publicação de uma versão
 com ZIP e SHA256 **apenas se os testes anteriores passarem**. Não confunda a
 existência do workflow com um resultado de CI já aprovado.
 

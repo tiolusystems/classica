@@ -23,6 +23,10 @@ function render() {
   const missing=Object.entries(snapshot.dependencies).filter(([,v])=>!v).map(([k])=>k);
   $('dependency-warning').hidden=!missing.length;
   if(missing.length)$('dependency-warning').textContent='Componentes ausentes: '+missing.join(', ')+'. Feche a aplicação e execute Iniciar.bat para preparar o ambiente.';
+  const pause=snapshot.queue_pause||{}, remaining=Math.max(0,Math.ceil(((pause.until||0)*1000-Date.now())/1000));
+  $('queue-warning').hidden=!pause.manual&&!remaining;
+  $('queue-warning-text').textContent=(pause.reason||'')+(remaining?' Aguarde '+remaining+' segundos.':'')+(pause.manual?' Retome quando desejar fazer uma nova tentativa.':' A fila retomará automaticamente após a pausa.');
+  $('resume-queue').hidden=!pause.manual;$('resume-queue').disabled=remaining>0;
   const filter=$('filter').value;
   const list=[...all].reverse().filter(j=>filter==='all'||(filter==='active'&&!terminal.has(j.status))||(filter==='done'&&j.status==='done')||(filter==='error'&&['error','interrupted','cancelled'].includes(j.status)));
   const sig=JSON.stringify([filter,list]);
@@ -68,6 +72,7 @@ function settings() {if(!snapshot)return;$('folder-input').value=snapshot.folder
 $('settings-button').addEventListener('click',settings);$('folder-button').addEventListener('click',settings);
 $('settings-form').addEventListener('submit',async event=>{event.preventDefault();const submit=event.submitter;submit.disabled=true;try{await api('folder',{folder:$('folder-input').value});$('settings-dialog').close();toast('Pasta de destino atualizada.');await refresh();}catch(error){toast(error.message,true);}finally{submit.disabled=false;}});
 $('open-folder-button').addEventListener('click',()=>action('open-folder'));
+$('resume-queue').addEventListener('click',()=>action('resume'));
 $('help-top-button').addEventListener('click',()=>$('help-dialog').showModal());
 for(const b of document.querySelectorAll('.close-dialog'))b.addEventListener('click',()=>b.closest('dialog').close());
 $('filter').addEventListener('change',()=>{signature='';render();});

@@ -1,4 +1,24 @@
-# Registro de verificação — 2.0.0
+# Registro de verificação
+
+## 2.1.0 — 17/10/2026 (candidata, ainda não publicada)
+
+### Evidências confirmadas em ordem cronológica
+
+- Prévia 2.1.0: CI [39049563209](https://github.com/tiolusystems/classica/actions/runs/39049563209), Linux, Windows e navegador aprovados **na revisão que ainda oferecia a opção experimental do Edge**.
+- Teste funcional de uso: o usuário confirmou no seu Windows downloads de MP3, áudio Original e vídeo, inclusive repetição do MP3 e reprodução completa. Esses testes ocorreram antes da remoção integral do Edge.
+- Revisão da interface, sem caixa de cookies: CI [39063052434](https://github.com/tiolusystems/classica/actions/runs/39063052434), Linux, Windows e Playwright aprovados.
+- Revisão de segurança que removeu o mecanismo de leitura de cookies da API e do extrator: CI [39064398541](https://github.com/tiolusystems/classica/actions/runs/39064398541), Linux, Windows e Playwright aprovados.
+- Nova validação do ZIP após as alterações de segurança: CI [39066425692](https://github.com/tiolusystems/classica/actions/runs/39066425692), Linux, Windows, Playwright e instalação limpa no Windows **aprovados**.
+- O teste de instalação limpa extraiu o pacote de distribuição em pasta temporária, preparou as dependências, iniciou o servidor local, verificou a API e o bloqueio de cookies e executou **33 testes dentro do ZIP extraído**, incluindo conversões de mídia sintética.
+
+### Limitações expressas
+
+- Os testes de mídia da CI usam arquivos sintéticos locais, não são prova de disponibilidade de qualquer vídeo do YouTube. Downloads reais da revisão após a remoção do Edge não foram comprovados neste ambiente.
+- Não se realizou auditoria de segurança independente, assinatura de código Windows, certificação ISO/WCAG nem varredura antimalware de toda instalação final.
+- Testar a instalação num runner Windows não garante compatibilidade em todas as versões, redes e computadores Windows 10/11.
+- A integração na `main` e a publicação de tag/ZIP oficial da versão 2.1.0 exigem validação do commit consolidado e etapas distintas. CI de uma PR não é a CI do release publicado.
+
+## Registro histórico — 2.0.0
 
 Data: 17/10/2026. Ambiente de trabalho: Linux.
 
