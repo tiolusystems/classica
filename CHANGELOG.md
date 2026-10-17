@@ -6,6 +6,7 @@
 - Aviso de responsabilidade pelo uso e acesso às condições sem aceitar licenças fictícias ou interromper o fluxo de download.
 - Botão **Limpar concluídos** remove apenas downloads finalizados do histórico, preservando erros, tarefas pendentes e todos os arquivos; a limpeza total anterior continua disponível.
 - Regressões Python/API e Playwright para limpeza, privacidade, responsividade e uso responsável.
+- **Iniciar discreto.bat** opcional: console se fecha após o início, sem trocar o mecanismo do servidor, e com encerramento pelo botão Sair.
 - Nenhuma mudança no mecanismo de download, yt-dlp, FFmpeg ou formatos disponíveis.
 
 
