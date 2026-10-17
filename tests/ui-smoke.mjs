@@ -52,6 +52,19 @@ try {
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1),true,`Horizontal overflow at ${width}px`);
   }
   await page.setViewportSize({width:1366,height:900});
+  const presentation=await page.evaluate(()=>{
+    const selectors=['.app-header','.panel','.brand-symbol','.toast','#settings-dialog'];
+    return {
+      shadows:selectors.map(selector=>getComputedStyle(document.querySelector(selector)).boxShadow),
+      emblemColor:getComputedStyle(document.querySelector('.brand-symbol')).color,
+      panelMarker:getComputedStyle(document.querySelector('.panel-heading')).borderTopColor,
+      pageBackground:getComputedStyle(document.body).backgroundColor
+    };
+  });
+  assert.deepEqual(presentation.shadows,Array(5).fill('none'),'Flat design without shadows');
+  assert.equal(presentation.emblemColor,'rgb(236, 213, 166)','Warm gold preserves Chi-Rho on dark tile');
+  assert.equal(presentation.panelMarker,'rgb(215, 196, 156)','Muted gold used only for ornamental separators');
+  assert.equal(presentation.pageBackground,'rgb(247, 248, 246)','Comfortable and light canvas');
   await page.getByRole('button',{name:'Preferências',exact:true}).click();
   await page.locator('#font-size').evaluate(input=>{input.value='200';input.dispatchEvent(new Event('input',{bubbles:true}));});
   assert.equal(await page.locator('#font-size-label').textContent(),'200%');
