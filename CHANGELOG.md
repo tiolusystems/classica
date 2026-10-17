@@ -1,5 +1,14 @@
 # Histórico de mudanças
 
+## 2.1.1 — candidata, ainda não publicada
+
+- Refinamento visual sóbrio: linhas técnicas discretas e detalhe metálico suave, com o monograma cristológico ☧ preservado.
+- Aviso de responsabilidade pelo uso e acesso às condições sem aceitar licenças fictícias ou interromper o fluxo de download.
+- Botão **Limpar concluídos** remove apenas downloads finalizados do histórico, preservando erros, tarefas pendentes e todos os arquivos; a limpeza total anterior continua disponível.
+- Regressões Python/API e Playwright para limpeza, privacidade, responsividade e uso responsável.
+- Nenhuma mudança no mecanismo de download, yt-dlp, FFmpeg ou formatos disponíveis.
+
+
 ## 2.1.0 — 2026-10-17
 
 - Pausa global de 60 segundos ao receber HTTP 429, uma única tentativa automática e pausa manual se o limite persistir.
