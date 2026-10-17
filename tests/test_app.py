@@ -93,42 +93,46 @@ class AppTests(IsolatedApp):
             app.verify_media(job)
         self.assertTrue(file.is_file(), "Invalid output must be preserved for inspection")
 
-    def test_edge_session_is_explicit_fixed_and_never_exports_cookies(self):
+    def test_extractor_never_reads_browser_cookies_even_with_legacy_job_flag(self):
         self.add()
-        self.assertNotIn("--cookies-from-browser", app.command_for(self.manager.jobs[0]))
-        self.manager.enqueue([URL], "m4a", True, use_edge_session=True)
-        command = app.command_for(self.manager.jobs[-1])
-        self.assertEqual(command[command.index("--cookies-from-browser") + 1], "edge:Default")
-        self.assertIn("--no-cache-dir", command)
-        self.assertNotIn("--cookies", command)
+        job = self.manager.jobs[0]
+        for flag in (False, True):
+            with self.subTest(legacy_flag=flag):
+                job["use_edge_session"] = flag
+                command = app.command_for(job)
+                self.assertNotIn("--cookies-from-browser", command)
+                self.assertNotIn("--cookies", command)
+                self.assertNotIn("--no-cache-dir", command)
+        self.manager.save()
         self.assertNotIn("use_edge_session", self.manager.state_file.read_text())
+        # Historical previews can contain the flag: it must never survive loading.
+        payload = json.loads(self.manager.state_file.read_text(encoding="utf-8"))
+        payload["jobs"][0]["use_edge_session"] = True
+        self.manager.state_file.write_text(json.dumps(payload), encoding="utf-8")
         restored = app.Manager(self.root / "data", start_worker=False)
-        self.assertFalse(restored.jobs[-1]["use_edge_session"])
+        self.assertNotIn("use_edge_session", restored.jobs[0])
+        self.assertNotIn("--cookies-from-browser", app.command_for(restored.jobs[0]))
         restored.stop()
-        for value in ["edge", "true", 1, None, {"profile": "secret"}]:
-            with self.subTest(value=value), self.assertRaises(ValueError):
-                self.manager.enqueue([URL], "mp3", True, use_edge_session=value)
 
-    def test_retry_uses_current_consent_not_previous_job_consent(self):
-        self.manager.enqueue([URL], "mp3", True, use_edge_session=True)
+
+    def test_retry_preserves_format_without_browser_auth(self):
+        self.add()
         job = self.manager.jobs[0]
         self.manager.cancel(job["id"])
         self.manager.retry(job["id"])
-        self.assertFalse(job["use_edge_session"])
-        self.manager.cancel(job["id"])
-        self.manager.retry(job["id"], use_edge_session=True)
-        self.assertTrue(job["use_edge_session"])
-        self.manager.cancel(job["id"])
-        with self.assertRaises(ValueError):
-            self.manager.retry(job["id"], use_edge_session="edge")
+        self.assertEqual(job["format"], "mp3")
+        self.assertEqual(job["status"], "queued")
+        self.assertNotIn("use_edge_session", job)
+        self.assertNotIn("--cookies-from-browser", app.command_for(job))
 
-    def test_edge_cookie_errors_have_safe_guidance_before_permission_fallback(self):
-        for log in ["ERROR: Could not copy Chrome cookie database: Permission denied", "ERROR: Failed to decrypt with DPAPI", "ERROR: could not find Edge cookies database"]:
+
+    def test_youtube_limits_do_not_suggest_browser_auth(self):
+        for log in ["HTTP Error 429: Too Many Requests", "Missing required Visitor Data"]:
             with self.subTest(log=log):
                 message = app.friendly_error(log)
-                self.assertIn("sessão do Edge", message)
-                self.assertIn("Não desative proteções", message)
-                self.assertNotIn("espaço livre", message)
+                self.assertNotIn("Edge", message)
+                self.assertNotIn("cookies", message.lower())
+
 
     def test_video_resolution_queue_and_file_names_are_distinct(self):
         first = self.manager.enqueue([URL], "mp4", True, "720")
@@ -341,17 +345,20 @@ class HttpTests(IsolatedApp):
         self.assertEqual(self.manager.jobs[-1]["resolution"], "720")
         self.assertEqual(self.request("/api/enqueue", {"urls":[URL],"format":"mp4","authorized":True,"resolution":"garbage"})[0], 400)
 
-    def test_api_edge_consent_and_retry_validation(self):
-        payload = {"urls": [URL], "format": "mp3", "authorized": True, "use_edge_session": "edge:arbitrary"}
-        self.assertEqual(self.request("/api/enqueue", payload)[0], 400)
-        payload["use_edge_session"] = True
+    def test_api_refuses_browser_cookies_on_enqueue_and_retry(self):
+        for flag in (True, False, "edge:arbitrary"):
+            payload = {"urls": [URL], "format": "mp3", "authorized": True, "use_edge_session": flag}
+            with self.subTest(flag=flag):
+                self.assertEqual(self.request("/api/enqueue", payload)[0], 400)
+        payload = {"urls": [URL], "format": "mp3", "authorized": True}
         self.assertEqual(self.request("/api/enqueue", payload)[0], 200)
         job = self.manager.jobs[0]
-        self.assertTrue(job["use_edge_session"])
+        self.assertNotIn("use_edge_session", job)
         self.manager.cancel(job["id"])
-        self.assertEqual(self.request("/api/retry", {"id":job["id"], "use_edge_session": "true"})[0], 400)
+        self.assertEqual(self.request("/api/retry", {"id":job["id"], "use_edge_session": True})[0], 400)
         self.assertEqual(self.request("/api/retry", {"id":job["id"]})[0], 200)
-        self.assertFalse(job["use_edge_session"])
+        self.assertNotIn("use_edge_session", job)
+
 
     def test_file_delivery_and_escape_denied(self):
         self.add()
