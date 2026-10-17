@@ -59,7 +59,7 @@ function render() {
     row.append(main);
     const actions=el('div','job-actions');
     if(!terminal.has(job.status))actions.append(button('Cancelar',()=>action('cancel',{id:job.id})));
-    if(['error','interrupted','cancelled'].includes(job.status))actions.append(button('Tentar novamente',()=>action('retry',{id:job.id,use_edge_session:$('use-edge-session').checked})));
+    if(['error','interrupted','cancelled'].includes(job.status))actions.append(button('Tentar novamente',()=>action('retry',{id:job.id})));
     if(job.status==='done') {const a=el('a','','Salvar cópia ↓');a.href='/file/'+job.id;a.download='';actions.append(a);}
     main.append(actions);$('jobs').append(row);
   }
@@ -67,11 +67,7 @@ function render() {
   $('clear-button').disabled=!all.some(j=>terminal.has(j.status));
 }
 async function refresh() { if(stopped)return; try{snapshot=await api('state');failures=0;$('connection-text').textContent='Conexão local';$('connection-text').parentElement.classList.remove('offline');render();}catch(error){failures++;if(failures>=3){$('connection-text').textContent='Sem conexão';$('connection-text').parentElement.classList.add('offline');}if(failures===3)toast('Conexão local perdida. Confira se a janela da Clássica está aberta.',true);} }
-$('use-edge-session').checked=false;
-$('use-edge-session').addEventListener('change',event=>{
-  if(event.target.checked&&!confirm('Autorizar o yt-dlp a ler o banco de cookies do seu perfil padrão do Microsoft Edge neste computador? Os cookies aplicáveis são usados nas conexões com o YouTube. A Clássica não exporta um arquivo de cookies nem os envia ao GitHub. O YouTube pode restringir ou suspender contas usadas por extratores. Use somente quando necessário. A autorização vale para downloads adicionados e novas tentativas enquanto esta opção estiver marcada.'))event.target.checked=false;
-});
-$('download-form').addEventListener('submit',async event=>{event.preventDefault();const urls=$('urls').value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);if(!urls.length){toast('Cole pelo menos um link de vídeo.',true);return;}const submit=$('submit-button');submit.disabled=true;try{const isVideo=document.querySelector('input[name="kind"]:checked').value==='video';const format=document.querySelector(isVideo?'input[name="video-format"]:checked':'input[name="format"]:checked').value;const r=await api('enqueue',{urls,format,authorized:true,resolution:isVideo?$('resolution').value:'best',use_edge_session:$('use-edge-session').checked});$('urls').value='';toast(`${r.added} ${r.added===1?'download adicionado':'downloads adicionados'} à fila.${r.skipped?' '+r.skipped+' já estavam na fila.':''}`);await refresh();}catch(error){toast(error.message,true);}finally{submit.disabled=false;}});
+$('download-form').addEventListener('submit',async event=>{event.preventDefault();const urls=$('urls').value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);if(!urls.length){toast('Cole pelo menos um link de vídeo.',true);return;}const submit=$('submit-button');submit.disabled=true;try{const isVideo=document.querySelector('input[name="kind"]:checked').value==='video';const format=document.querySelector(isVideo?'input[name="video-format"]:checked':'input[name="format"]:checked').value;const r=await api('enqueue',{urls,format,authorized:true,resolution:isVideo?$('resolution').value:'best'});$('urls').value='';toast(`${r.added} ${r.added===1?'download adicionado':'downloads adicionados'} à fila.${r.skipped?' '+r.skipped+' já estavam na fila.':''}`);await refresh();}catch(error){toast(error.message,true);}finally{submit.disabled=false;}});
 function settings() {if(!snapshot)return;$('folder-input').value=snapshot.folder;$('settings-dialog').showModal();}
 $('settings-button').addEventListener('click',settings);$('folder-button').addEventListener('click',settings);
 $('settings-form').addEventListener('submit',async event=>{event.preventDefault();const submit=event.submitter;submit.disabled=true;try{await api('folder',{folder:$('folder-input').value});$('settings-dialog').close();toast('Pasta de destino atualizada.');await refresh();}catch(error){toast(error.message,true);}finally{submit.disabled=false;}});
