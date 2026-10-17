@@ -65,6 +65,7 @@ function render() {
   }
   if(focusedJob){const row=[...$('jobs').children].find(r=>r.dataset.id===focusedJob);const next=row&&[...row.querySelectorAll('button,a,summary')].find(n=>n.textContent===focusedText);next?.focus({preventScroll:true});}
   $('clear-button').disabled=!all.some(j=>terminal.has(j.status));
+  $('clear-done-button').disabled=!all.some(j=>j.status==='done');
 }
 async function refresh() { if(stopped)return; try{snapshot=await api('state');failures=0;$('connection-text').textContent='Conexão local';$('connection-text').parentElement.classList.remove('offline');render();}catch(error){failures++;if(failures>=3){$('connection-text').textContent='Sem conexão';$('connection-text').parentElement.classList.add('offline');}if(failures===3)toast('Conexão local perdida. Confira se a janela da Clássica está aberta.',true);} }
 $('download-form').addEventListener('submit',async event=>{event.preventDefault();const urls=$('urls').value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);if(!urls.length){toast('Cole pelo menos um link de vídeo.',true);return;}const submit=$('submit-button');submit.disabled=true;try{const isVideo=document.querySelector('input[name="kind"]:checked').value==='video';const format=document.querySelector(isVideo?'input[name="video-format"]:checked':'input[name="format"]:checked').value;const r=await api('enqueue',{urls,format,authorized:true,resolution:isVideo?$('resolution').value:'best'});$('urls').value='';toast(`${r.added} ${r.added===1?'download adicionado':'downloads adicionados'} à fila.${r.skipped?' '+r.skipped+' já estavam na fila.':''}`);await refresh();}catch(error){toast(error.message,true);}finally{submit.disabled=false;}});
@@ -74,8 +75,10 @@ $('settings-form').addEventListener('submit',async event=>{event.preventDefault(
 $('open-folder-button').addEventListener('click',()=>action('open-folder'));
 $('resume-queue').addEventListener('click',()=>action('resume'));
 $('help-top-button').addEventListener('click',()=>$('help-dialog').showModal());
+$('rights-button').addEventListener('click',()=>$('rights-dialog').showModal());
 for(const b of document.querySelectorAll('.close-dialog'))b.addEventListener('click',()=>b.closest('dialog').close());
 $('filter').addEventListener('change',()=>{signature='';render();});
+$('clear-done-button').addEventListener('click',()=>{if(confirm('Remover apenas os downloads concluídos do histórico? Os arquivos permanecerão no computador.'))action('clear-done');});
 $('clear-button').addEventListener('click',()=>{if(confirm('Remover do histórico os itens concluídos, cancelados ou com falha? Os arquivos baixados serão preservados.'))action('clear');});
 $('exit-button').addEventListener('click',async()=>{if(snapshot?.jobs.some(j=>!terminal.has(j.status))&&!confirm('Existem downloads pendentes. Encerrar a aplicação e interromper a fila?'))return;try{await api('shutdown',{});stopped=true;$('connection-text').textContent='Encerrada';$('connection-text').parentElement.classList.add('offline');toast('Aplicação encerrada. Você já pode fechar esta aba.');$('submit-button').disabled=true;$('exit-button').disabled=true;}catch(error){toast(error.message,true);}});
 refresh();setInterval(refresh,1000);
