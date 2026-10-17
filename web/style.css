@@ -136,3 +136,22 @@ input[type=range]{width:100%;min-height:2.75rem;accent-color:var(--accent)}
 @media(max-width:40rem){.app-header{padding:1rem}.header-actions{width:100%;justify-content:space-between}.connection{margin-right:0}main{width:calc(100% - 2rem);padding-top:1.75rem}.page-intro{margin-bottom:1.5rem}.local-badge{display:none}.compose,.library{padding:1.1rem}.panel-heading{gap:.5rem}.step-label{font-size:.55rem}.kind-choice{grid-template-columns:minmax(0,1fr)}.format-choice{grid-template-columns:repeat(2,minmax(0,1fr))}.job-icon{display:none}.dialog-actions>.button{flex:1}.app-footer{align-items:start}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 @media(forced-colors:active){.choice-grid input:checked+span{outline:2px solid Highlight}.progress>span{background:Highlight}.primary{border:2px solid ButtonText}}
+
+/* 2.1.1 visual refinement: restrained technical geometry, canonical Chi-Rho retained */
+.app-header{border-bottom:1px solid #cad9df;box-shadow:0 2px 14px #132d3c08}
+.brand-symbol{border:1px solid #315363;box-shadow:inset 0 0 0 1px #ffffff25;letter-spacing:0}
+.brand-caption{letter-spacing:.19em}
+.page-intro{border-bottom:1px solid #dbe6e9;padding-bottom:1.35rem}
+.eyebrow{letter-spacing:.17em}
+.panel{border-color:#cddce1;box-shadow:0 8px 26px #16324008,0 1px 3px #16324005}
+.panel-heading{border-top:2px solid #bdd2ce;padding-top:.75rem}
+.step-label{font-variant-numeric:tabular-nums;letter-spacing:.14em}
+.local-badge{border-radius:.35rem}
+.library-control{display:flex;gap:.7rem;justify-content:space-between;align-items:center;flex-wrap:wrap;padding:.65rem 0 .5rem;border-bottom:1px solid var(--line)}
+.library-control .hint{margin:0;max-width:26rem}
+.library-control .button{flex:0 0 auto}
+.inline-link{display:inline;padding:0;font-size:inherit;color:var(--accent);text-decoration:underline;text-underline-offset:3px}
+.inline-link:hover{color:var(--accent-hover)}
+.inline-link:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+@media (max-width: 480px){.library-control .button{width:100%}.page-intro{margin-bottom:1.25rem}}
+@media (prefers-reduced-motion: reduce){.button{transition:none}}
