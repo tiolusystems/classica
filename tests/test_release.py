@@ -1,0 +1,32 @@
+import importlib.util
+from pathlib import Path
+import sys
+import tempfile
+import unittest
+import zipfile
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+import package_release
+import verify_release
+
+
+class ReleaseTests(unittest.TestCase):
+    def test_release_contract(self):
+        verify_release.verify()
+
+    def test_package_is_deterministic_and_contains_only_release_files(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            first, checksum = package_release.build(root / "first")
+            second, _ = package_release.build(root / "second")
+            self.assertEqual(first.read_bytes(), second.read_bytes())
+            with zipfile.ZipFile(first) as package:
+                self.assertIsNone(package.testzip())
+                self.assertEqual(set(package.namelist()), {"Classica/"+name for name in package_release.FILES})
+                self.assertNotIn(b"Organizar_extracao_antiga", package.read("Classica/README.md"))
+            self.assertIn(first.name, checksum.read_text())
+
+
+if __name__ == "__main__":
+    unittest.main()
