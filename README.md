@@ -79,22 +79,8 @@ um arquivo vazio ou um vídeo sem som gera erro em vez de sucesso.
 
 Atualizar o extrator **não garante** remover limites de requisições, exigências
 de login ou PO Token. Pare as tentativas e confira o vídeo diretamente no Edge.
-Se funcionar com sua conta e o download for autorizado, marque **Usar minha
-sessão do Edge** e leia a confirmação antes de adicionar o download ou usar
-**Tentar novamente**. Aguarde antes de uma nova tentativa; não repita em massa.
-
-A opção inicia desmarcada e não é salva ao reabrir a interface. Ela vale para
-os itens adicionados ou reiniciados enquanto estiver marcada; desmarcar não
-altera itens já enfileirados (cancele-os, desmarque e tente novamente).
-O yt-dlp lê o banco de cookies do perfil padrão do Edge localmente. A Clássica
-não exporta um arquivo de cookies, não pede sua senha nem envia cookies ao GitHub.
-Cookies aplicáveis são usados nas conexões com o YouTube. O uso da conta pode
-resultar em restrições ou suspensão pelo serviço; use somente quando necessário.
-
-Se o banco de cookies estiver ocupado, feche o Edge após confirmar sua sessão e
-tente uma vez. Se o Windows impedir a descriptografia (DPAPI), não desative
-proteções nem execute como administrador. A opção pode não funcionar em algumas
-instalações. Não há garantia de eliminar HTTP 429 ou exigências de PO Token.
+A interface de download não solicita cookies nem depende de um navegador específico.
+Quando uma gravação não estiver disponível, interrompa as tentativas e consulte o vídeo no navegador. Não existe garantia de acesso a todos os conteúdos do YouTube.
 
 Para instalar uma nova versão da Clássica, substitua os arquivos dentro da
 **mesma pasta**. Mantenha os componentes locais já instalados. Não mova o
