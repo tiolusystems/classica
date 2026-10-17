@@ -89,8 +89,10 @@ try {
     if (-not $url) { throw 'App did not start its localhost server within 30 seconds.' }
 
     $page = Invoke-WebRequest -UseBasicParsing -Uri $url -TimeoutSec 15
-    if ($page.StatusCode -ne 200 -or $page.Content -notmatch 'Clássica' -or
-        $page.Content -match 'use-edge-session') {
+    # Inspect ASCII identifiers: Windows PowerShell 5.1 may mis-decode UTF-8
+    # page text even though browsers honor the HTML charset meta tag.
+    if ($page.StatusCode -ne 200 -or $page.Content -notmatch 'name="classica-token"' -or
+        $page.Content -notmatch 'v2\.1\.0' -or $page.Content -match 'use-edge-session') {
         throw 'First-run UI invalid or contains browser cookie control.'
     }
     $tokenMatch = [regex]::Match($page.Content, 'name="classica-token"\s+content="([^"]+)"')
