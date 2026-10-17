@@ -26,3 +26,5 @@ modificação de terceiro foi desenvolvida ou aprovada por Luciano Machado.
 ## Refinamento proposto (não publicado)
 
 O Chi-Rho (☧) preserva seu caráter cristológico e deve ser tratado como elemento de identidade, não como ornamento intercambiável. O refinamento tecnológico utiliza geometria, hierarquia e bordas sutis sem modificar a forma canônica, a assinatura `by ☧ SYSTEMS`, o contraste ou os arquivos de marca. Não inserir efeitos neon ou descaracterizar a simbologia.
+
+Direção estética aceita: **simples, claro, plano e acolhedor**. Fundo levemente quente (`#F7F8F6`), superfícies brancas, sem sombras projetadas. Dourado discreto (`#8B6B35`, `#D7C49C`, `#ECD5A6`) apenas no símbolo e em marcadores decorativos; nunca utilizar dourado para indicar sucesso, erro, foco, seleção ou ação principal. Verde funcional e azul de foco permanecem inalterados.
