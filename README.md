@@ -78,7 +78,7 @@ quando solicitado, vídeo no arquivo final. Uma página HTML recebida da rede,
 um arquivo vazio ou um vídeo sem som gera erro em vez de sucesso.
 
 Atualizar o extrator **não garante** remover limites de requisições, exigências
-de login ou PO Token. Pare as tentativas e confira o vídeo diretamente no Edge.
+de login ou PO Token. Pare as tentativas e confira o vídeo diretamente no navegador.
 A interface de download não solicita cookies nem depende de um navegador específico.
 Quando uma gravação não estiver disponível, interrompa as tentativas e consulte o vídeo no navegador. Não existe garantia de acesso a todos os conteúdos do YouTube.
 
