@@ -77,7 +77,7 @@ try {
             throw "App exited before readiness. stderr: $(Get-Content -LiteralPath $stderr -Raw)"
         }
         if (Test-Path -LiteralPath $stdout) {
-            $output = Get-Content -LiteralPath $stdout -Raw
+            $output = [string](Get-Content -LiteralPath $stdout -Raw)
             $match = [regex]::Match($output, 'http://127\.0\.0\.1:\d+')
             if ($match.Success) { $url = $match.Value; break }
         }
