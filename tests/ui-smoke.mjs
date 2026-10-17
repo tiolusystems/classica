@@ -30,14 +30,7 @@ try {
   await page.getByText('Conexão local',{exact:true}).waitFor();
   await page.getByRole('button',{name:'Retomar fila',exact:true}).click();
   await page.locator('#queue-warning').waitFor({state:'hidden'});
-  const session=page.getByRole('checkbox',{name:'Usar minha sessão do Edge',exact:true});
-  assert.equal(await session.isChecked(),false);
-  page.once('dialog',dialog=>dialog.dismiss());
-  await session.click();
-  assert.equal(await session.isChecked(),false,'Dismissing consent must leave cookies disabled');
-  page.once('dialog',dialog=>dialog.accept());
-  await session.check();
-  assert.equal(await session.isChecked(),true);
+  assert.equal(await page.locator('#use-edge-session').count(),0,'Sem controle de cookies na interface');
   await page.locator('.kind-choice').getByText('Vídeo com áudio',{exact:true}).click();
   assert.equal(await page.locator('#video-options').isVisible(),true);
   assert.equal(await page.locator('#audio-options').isVisible(),false);
@@ -46,17 +39,14 @@ try {
   await page.getByRole('button',{name:'Baixar vídeo',exact:true}).click();
   await page.getByText('Vídeo · MP4',{exact:true}).waitFor();
   await page.getByText('Até 720p',{exact:true}).waitFor();
-  assert.equal(await page.evaluate(async()=>{const r=await fetch('/api/state',{headers:{'X-Classica-Token':document.querySelector('meta[name="classica-token"]').content}});return (await r.json()).jobs[0].use_edge_session;}),true);
+  assert.equal(await page.evaluate(async()=>{const r=await fetch('/api/state',{headers:{'X-Classica-Token':document.querySelector('meta[name="classica-token"]').content}});return (await r.json()).jobs[0].use_edge_session;}),false);
   await page.getByRole('button',{name:'Cancelar',exact:true}).click();
   await page.getByText('Cancelado',{exact:true}).waitFor();
-  await session.uncheck();
   await page.getByRole('button',{name:'Tentar novamente',exact:true}).click();
   await page.getByText('Na fila',{exact:true}).waitFor();
   assert.equal(await page.evaluate(async()=>{const r=await fetch('/api/state',{headers:{'X-Classica-Token':document.querySelector('meta[name="classica-token"]').content}});return (await r.json()).jobs[0].use_edge_session;}),false);
   await page.getByRole('button',{name:'Cancelar',exact:true}).click();
   await page.getByText('Cancelado',{exact:true}).waitFor();
-  page.once('dialog',dialog=>dialog.accept());
-  await session.check();
   for(const width of [320,768,1366,1920]){
     await page.setViewportSize({width,height:900});
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1),true,`Horizontal overflow at ${width}px`);
@@ -69,13 +59,13 @@ try {
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1),true,'Overflow with 200% text');
   await page.reload();
   await page.getByText('Conexão local',{exact:true}).waitFor();
-  assert.equal(await session.isChecked(),false,'Session consent must reset on reload');
+  assert.equal(await page.locator('#use-edge-session').count(),0,'Controle de cookies continua ausente ao recarregar');
   assert.equal(await page.evaluate(()=>localStorage.getItem('classica-reading')),'200');
   await page.getByRole('button',{name:'Ajuda',exact:true}).click();
   await page.getByRole('dialog',{name:'Como usar a Clássica'}).waitFor();
   await page.keyboard.press('Escape');
   assert.deepEqual(errors,[],'JavaScript runtime errors');
-  console.log('UI smoke OK: Edge consent accept/reject/reset, enqueue/retry consent, audio/video switch, real local API, cancellation, 4 widths, 200% reading, persistence and help. No browser cookies read.');
+  console.log('UI smoke OK: sem seletor Edge, fila e retry sem cookies, audio/video, API local, cancelamento, 4 larguras, leitura 200%, persistencia e ajuda.');
 } finally {
   if(browser)await browser.close();
   server.kill();
