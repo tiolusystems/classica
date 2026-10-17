@@ -57,8 +57,12 @@ try {
     if (-not (Test-Path -LiteralPath $ffprobe)) { throw 'FFprobe missing after fresh setup.' }
     $env:PATH = $binDir + ';' + $ffmpeg.DirectoryName + ';' + $env:PATH
 
-    & $pythonExe -c "import app; assert app.VERSION == '2.1.0'; assert all(app.dependencies().values()), app.dependencies(); print('Fresh runtime components: PASS')"
-    if ($LASTEXITCODE -ne 0) { throw 'Fresh runtime import/dependencies check failed.' }
+    Push-Location -LiteralPath $appDir
+    try {
+        & $pythonExe -c "import app,pathlib; assert pathlib.Path(app.__file__).resolve().parent == pathlib.Path.cwd(); assert app.VERSION == '2.1.0'; assert all(app.dependencies().values()), app.dependencies(); print('Fresh runtime components: PASS')"
+        if ($LASTEXITCODE -ne 0) { throw 'Fresh runtime import/dependencies check failed.' }
+    }
+    finally { Pop-Location }
 
     # Real process + loopback HTTP, using isolated history and no browser launch.
     $dataDir = Join-Path $workspace 'isolated-user-data'
