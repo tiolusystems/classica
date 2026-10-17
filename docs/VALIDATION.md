@@ -1,31 +1,22 @@
 # Registro de verificação
 
-## 2.1.0 — 17/10/2026
+## 2.1.0 — 17/10/2026 (candidata, ainda não publicada)
 
-- CI da prévia no commit e7345df354be99aa374b95a15783069fe7c3414f: run 39049563209, testes Linux, Windows e interface aprovados.
-- O usuário confirmou em seu Windows downloads de MP3, áudio original e vídeo, inclusive repetição de MP3 e reprodução completa.
-- A retirada da caixa Edge passou na CI 39063052434 (Windows, Linux e Playwright). Uma revisão isolada remove também a leitura de cookies do backend e exige **novo** resultado de CI, sem extrapolar a validação prática anterior.
+### Evidências confirmadas em ordem cronológica
 
-- Linux: 33 testes passaram, incluindo consentimento Edge ausente/presente,
-  rejeição de valores inválidos, novas tentativas e não persistência.
-- Nenhum cookie real foi lido nos testes. O fluxo HTTP usa um gerenciador sem
-  worker; comandos são inspecionados sem executar a leitura do Edge.
-- Sintaxe JavaScript e contrato de distribuição passaram. A suíte de interface
-  foi ampliada para aceitar/recusar o consentimento, envio na API e reset ao
-  recarregar, mas não executou: o Chromium não está instalado e o download
-  retornou um ZIP vazio/truncado. Não se afirma aprovação visual desta versão.
-- Não foi validada a descriptografia de cookies no Windows/Edge do usuário.
-  A proteção do navegador pode impedir o recurso; não há promessa de eliminar
-  HTTP 429, exigências de login ou PO Token.
-- Recuperação HTTP 429: testes de uma tentativa automática, pausa global,
-  recusa de retomada antecipada e persistência da pausa.
-- Respostas HTML não passam pela validação de mídia nem são marcadas como
-  concluídas mesmo quando o extrator encerra com código zero.
-- Teste remoto do vídeo r30D3SW4OVw: consulta retornou título; a tentativa de
-  mídia recebeu HTML de 195 bytes com “Site Unavailable”, rejeitado pelo FFprobe.
-  Isso é uma limitação desta conexão remota, não o diagnóstico do Windows do
-  usuário. Não houve download de mídia válido confirmado para esse vídeo.
-- O pacote local 2.1.0 não implica publicação no GitHub nem aprovação na CI.
+- Prévia 2.1.0: CI [39049563209](https://github.com/tiolusystems/classica/actions/runs/39049563209), Linux, Windows e navegador aprovados **na revisão que ainda oferecia a opção experimental do Edge**.
+- Teste funcional de uso: o usuário confirmou no seu Windows downloads de MP3, áudio Original e vídeo, inclusive repetição do MP3 e reprodução completa. Esses testes ocorreram antes da remoção integral do Edge.
+- Revisão da interface, sem caixa de cookies: CI [39063052434](https://github.com/tiolusystems/classica/actions/runs/39063052434), Linux, Windows e Playwright aprovados.
+- Revisão de segurança que removeu o mecanismo de leitura de cookies da API e do extrator: CI [39064398541](https://github.com/tiolusystems/classica/actions/runs/39064398541), Linux, Windows e Playwright aprovados.
+- Nova validação do ZIP após as alterações de segurança: CI [39066425692](https://github.com/tiolusystems/classica/actions/runs/39066425692), Linux, Windows, Playwright e instalação limpa no Windows **aprovados**.
+- O teste de instalação limpa extraiu o pacote de distribuição em pasta temporária, preparou as dependências, iniciou o servidor local, verificou a API e o bloqueio de cookies e executou **33 testes dentro do ZIP extraído**, incluindo conversões de mídia sintética.
+
+### Limitações expressas
+
+- Os testes de mídia da CI usam arquivos sintéticos locais, não são prova de disponibilidade de qualquer vídeo do YouTube. Downloads reais da revisão após a remoção do Edge não foram comprovados neste ambiente.
+- Não se realizou auditoria de segurança independente, assinatura de código Windows, certificação ISO/WCAG nem varredura antimalware de toda instalação final.
+- Testar a instalação num runner Windows não garante compatibilidade em todas as versões, redes e computadores Windows 10/11.
+- A integração na `main` e a publicação de tag/ZIP oficial da versão 2.1.0 exigem validação do commit consolidado e etapas distintas. CI de uma PR não é a CI do release publicado.
 
 ## Registro histórico — 2.0.0
 
