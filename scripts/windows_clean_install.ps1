@@ -134,6 +134,52 @@ try {
     }
     finally { Pop-Location }
     Write-Host 'Freshly installed ZIP: unit, format and integration tests PASS.'
+
+    # The optional self-closing launcher must keep the local app reachable
+    # after its PowerShell launcher exits, and Sair must terminate that server.
+    $previousLocalAppData = $env:LOCALAPPDATA
+    $env:LOCALAPPDATA = Join-Path $workspace 'isolated-background-profile'
+    New-Item -ItemType Directory -Force -Path $env:LOCALAPPDATA | Out-Null
+    $hiddenUrl = $null
+    $hiddenHeaders = $null
+    try {
+        Push-Location -LiteralPath $appDir
+        try {
+            & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File (Join-Path $appDir 'iniciar.ps1') -Background
+            if ($LASTEXITCODE -ne 0) { throw 'Optional background launcher returned failure.' }
+        }
+        finally { Pop-Location }
+        $hiddenLog = Join-Path $appDir 'ultimo-discreto.log'
+        if (-not (Test-Path -LiteralPath $hiddenLog)) { throw 'Background launcher produced no startup log.' }
+        $hiddenOutput = [string](Get-Content -LiteralPath $hiddenLog -Raw)
+        $hiddenMatch = [regex]::Match($hiddenOutput, 'http://127\.0\.0\.1:\d+')
+        if (-not $hiddenMatch.Success) { throw 'Background launcher did not start localhost server.' }
+        $hiddenUrl = $hiddenMatch.Value
+        $hiddenPage = Invoke-WebRequest -UseBasicParsing -Uri $hiddenUrl -TimeoutSec 15
+        if ($hiddenPage.StatusCode -ne 200) { throw 'Background application cannot serve its UI.' }
+        $hiddenToken = [regex]::Match($hiddenPage.Content, 'name="classica-token"\s+content="([^"]+)"')
+        if (-not $hiddenToken.Success) { throw 'Background application token was not served.' }
+        $hiddenHeaders = @{ 'X-Classica-Token' = $hiddenToken.Groups[1].Value }
+        $hiddenState = Invoke-RestMethod -Uri ($hiddenUrl + '/api/state') -Headers $hiddenHeaders -TimeoutSec 10
+        if ($hiddenState.version -ne '2.1.1') { throw 'Unexpected background application version.' }
+        Write-Host 'Optional detached console launch and live localhost HTTP: PASS'
+        Invoke-RestMethod -Method Post -Uri ($hiddenUrl + '/api/shutdown') -Headers $hiddenHeaders -Body '{}' -ContentType 'application/json' -TimeoutSec 10 | Out-Null
+        $hiddenStopped = $false
+        for ($i = 0; $i -lt 30; $i++) {
+            Start-Sleep -Milliseconds 250
+            try { Invoke-WebRequest -UseBasicParsing -Uri $hiddenUrl -TimeoutSec 2 | Out-Null }
+            catch { $hiddenStopped = $true; break }
+        }
+        if (-not $hiddenStopped) { throw 'Sair did not stop the detached local server.' }
+        Write-Host 'Background server shutdown from Sair action: PASS'
+    }
+    finally {
+        if ($hiddenUrl -and $hiddenHeaders) {
+            try { Invoke-RestMethod -Method Post -Uri ($hiddenUrl + '/api/shutdown') -Headers $hiddenHeaders -Body '{}' -ContentType 'application/json' -TimeoutSec 2 | Out-Null }
+            catch {}
+        }
+        $env:LOCALAPPDATA = $previousLocalAppData
+    }
 }
 finally {
     if ($serverProcess) {
