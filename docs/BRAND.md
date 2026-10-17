@@ -22,3 +22,7 @@ ou serif equivalente. Não há fontes externas, rastreadores ou CDN de interface
 
 A licença do código não autoriza usar a assinatura para afirmar que uma
 modificação de terceiro foi desenvolvida ou aprovada por Luciano Machado.
+
+## Refinamento incremental da interface 2.1.1
+
+A marca mantém o monograma ☧ (Chi-Rho) da tradição cristã, formado pelas letras gregas Χ e Ρ, associadas ao início de Χριστός (Cristo). O símbolo **não** é substituído por letras latinas PX. O ajuste visual adiciona apenas detalhes geométricos discretos e um acento ouro dessaturado nos painéis, conservando a tipografia, os estados de foco, o contraste dos textos e a paleta funcional. Sem CDN, animação de marca ou alteração da assinatura canônica.
