@@ -1,5 +1,12 @@
 # Histórico de mudanças
 
+## Em desenvolvimento — próxima versão (não publicada)
+
+- Refinamento visual discreto de painéis e hierarquia, preservando o símbolo canônico ☧, a paleta e a acessibilidade.
+- Botão “Limpar biblioteca” destacado; operação existente remove somente itens encerrados do histórico, sem apagar mídias ou downloads ativos.
+- Aviso de uso responsável junto ao download, com explicação complementar na ajuda; não representa exoneração geral de responsabilidade.
+- A opção de execução sem console será avaliada em branch separada após testes do comportamento atual.
+
 ## 2.1.0 — 2026-10-17
 
 - Pausa global de 60 segundos ao receber HTTP 429, uma única tentativa automática e pausa manual se o limite persistir.
