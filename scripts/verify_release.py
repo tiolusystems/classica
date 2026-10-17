@@ -29,6 +29,8 @@ def verify():
     assert not missing, f"Missing release files: {missing}"
     assert all(".." not in Path(name).parts for name in FILES)
     assert not any("organizar" in name.lower() or "versao_anterior" in name for name in FILES)
+    assert "Iniciar discreto.bat" in FILES, "Missing optional background launcher"
+    assert "-Background" in (ROOT / "iniciar.ps1").read_text(encoding="utf-8"), "Background mode not exposed by launcher"
     html = (ROOT / "web/index.html").read_text(encoding="utf-8")
     js = (ROOT / "web/app.js").read_text(encoding="utf-8")
     parser = Elements()
