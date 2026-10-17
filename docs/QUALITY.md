@@ -43,3 +43,12 @@ Uma versão deve ser descrita como “verificada” apenas nos ambientes que
 realmente foram executados. Resultados pendentes continuam pendentes na
 documentação de verificação. Testes de usabilidade com pessoas, leitores de
 tela e reprodução real em Windows continuam sendo avaliações distintas.
+
+## Aceitação da versão candidata 2.1.1
+
+- O aviso de uso responsável deve ser legível, acessível por teclado e não simular exoneração jurídica absoluta.
+- Limpar concluídos deve preservar gravações no disco, erros, cancelamentos e downloads pendentes, inclusive após reiniciar o aplicativo.
+- A opção de limpar todo o histórico continua removendo apenas registros de tarefas encerradas.
+- Layout com Chi-Rho preservado, sem conteúdo transbordando em 320/768/1366/1920 px nem com zoom tipográfico de 200%.
+- Os modos de áudio/vídeo, token local, cancelamento e nova tentativa continuam inalterados.
+- Executar CI Linux/Windows/UI, validação do ZIP e instalação Windows limpa antes de mesclar ou publicar.
