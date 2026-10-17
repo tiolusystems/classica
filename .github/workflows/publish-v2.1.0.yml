@@ -80,7 +80,7 @@ jobs:
           tag_status=0
           tag_info="$(git ls-remote --exit-code --tags origin refs/tags/v2.1.0)" || tag_status=$?
           if [ "$tag_status" -eq 0 ]; then
-              tag_sha="$(printf '%s\\n' "$tag_info" | cut -f1)"
+              tag_sha="$(printf '%s' "$tag_info" | cut -f1)"
               test -n "$tag_sha"
           elif [ "$tag_status" -eq 2 ]; then
               tag_sha=""
