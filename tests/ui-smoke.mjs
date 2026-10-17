@@ -11,6 +11,10 @@ m=app.Manager(pathlib.Path(sys.argv[1]),start_worker=False)
 m.set_folder(str(pathlib.Path(sys.argv[1])/'downloads'))
 app.dependencies=lambda: dict(yt_dlp=True,ffmpeg=True,ffprobe=True,deno=True)
 m.queue_pause=dict(until=0,manual=True,reason='Pausa de teste HTTP 429')
+m.enqueue(['https://www.youtube.com/watch?v=BaW_jenozKc'],'original',True)
+m.jobs[-1]['status']='done'
+m.jobs[-1]['title']='Faixa concluída de teste'
+m.save()
 s=app.create_server(m)
 print('READY:'+str(s.server_port),flush=True)
 s.serve_forever()
@@ -31,6 +35,13 @@ try {
   await page.getByRole('button',{name:'Retomar fila',exact:true}).click();
   await page.locator('#queue-warning').waitFor({state:'hidden'});
   assert.equal(await page.locator('#use-edge-session').count(),0,'Sem controle de cookies na interface');
+  await page.getByRole('button',{name:'Ler condições de uso'}).click();
+  const terms=page.getByRole('dialog',{name:'Uso responsável da Clássica'});
+  await terms.waitFor();
+  assert.equal(await terms.getByText('A ferramenta não verifica licenças ou permissões automaticamente.',{exact:false}).count(),1);
+  await page.getByRole('button',{name:'Entendi'}).click();
+  assert.equal(await terms.isVisible(),false);
+  assert.equal(await page.getByRole('button',{name:'Limpar concluídos'}).isEnabled(),true);
   await page.locator('.kind-choice').getByText('Vídeo com áudio',{exact:true}).click();
   assert.equal(await page.locator('#video-options').isVisible(),true);
   assert.equal(await page.locator('#audio-options').isVisible(),false);
@@ -47,6 +58,11 @@ try {
   assert.equal(await page.evaluate(async()=>{const r=await fetch('/api/state',{headers:{'X-Classica-Token':document.querySelector('meta[name="classica-token"]').content}});return Object.hasOwn((await r.json()).jobs[0],'use_edge_session');}),false);
   await page.getByRole('button',{name:'Cancelar',exact:true}).click();
   await page.getByText('Cancelado',{exact:true}).waitFor();
+  page.once('dialog',dialog=>dialog.accept());
+  await page.getByRole('button',{name:'Limpar concluídos',exact:true}).click();
+  await page.getByText('Faixa concluída de teste').waitFor({state:'detached'});
+  await page.getByText('Cancelado',{exact:true}).waitFor();
+  assert.equal(await page.getByRole('button',{name:'Limpar concluídos',exact:true}).isDisabled(),true);
   for(const width of [320,768,1366,1920]){
     await page.setViewportSize({width,height:900});
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1),true,`Horizontal overflow at ${width}px`);
