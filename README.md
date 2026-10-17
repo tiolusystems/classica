@@ -2,7 +2,7 @@
 
 **Áudio e vídeo, no seu computador.**
 
-by **☧ SYSTEMS** · versão **2.1.0**
+by **☧ SYSTEMS** · versão **2.1.1**
 
 Aplicação local em português para salvar gravações autorizadas do YouTube.
 Cole o link, escolha áudio ou vídeo, selecione o formato e acompanhe a fila.
@@ -49,7 +49,7 @@ codecs de origem também depende do reprodutor usado.
 
 O destino inicial é `Music\Classica` no seu perfil. O caminho exato aparece na
 interface e pode ser alterado em Preferências. Áudio e vídeo usam a mesma pasta
-configurada. Limpar histórico **preserva** os arquivos baixados.
+configurada. Limpar concluídos remove da lista somente downloads finalizados; Limpar todo o histórico remove também os registros de erros e cancelamentos. **Nenhuma dessas ações exclui arquivos baixados.**
 
 Histórico e configurações ficam em `%LOCALAPPDATA%\Classica`. A versão 2.0
 mantém compatibilidade com o histórico da versão anterior. Encerrar interrompe
@@ -86,6 +86,10 @@ Para instalar uma nova versão da Clássica, substitua os arquivos dentro da
 **mesma pasta**. Mantenha os componentes locais já instalados. Não mova o
 ambiente Python depois de criado; se precisar mudar de lugar, extraia a versão
 em outra pasta e deixe o inicializador preparar um ambiente novo.
+
+## Uso responsável
+
+A Clássica é uma ferramenta local de download e não verifica direitos autorais ou autorizações automaticamente. O usuário deve verificar a legalidade do download e respeitar a legislação e os termos das plataformas. O aviso na interface não elimina direitos ou deveres legais. Composições antigas e gravações podem ter regimes jurídicos distintos.
 
 ## Qualidade, marca e limites
 
@@ -134,7 +138,7 @@ npm run test:ui
 ```
 
 GitHub Actions inclui testes Linux, preparação e testes Windows, testes de
-interface e construção do ZIP. Um tag `v2.1.0` aciona a publicação de uma versão
+interface e construção do ZIP. Um tag `v2.1.1` aciona a publicação de uma versão
 com ZIP e SHA256 **apenas se os testes anteriores passarem**. Não confunda a
 existência do workflow com um resultado de CI já aprovado.
 
