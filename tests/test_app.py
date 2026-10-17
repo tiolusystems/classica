@@ -33,6 +33,103 @@ class IsolatedApp(unittest.TestCase):
 
 
 class AppTests(IsolatedApp):
+    def test_friendly_error_explains_youtube_rate_limit_recovery(self):
+        log = "HTTP Error 429: Too Many Requests\nERROR: Sign in to confirm you're not a bot\nMissing required Visitor Data"
+        message = app.friendly_error(log)
+        self.assertIn("limitou as requisições", message)
+        self.assertIn("Atualizar.bat", message)
+        self.assertIn("não contorna CAPTCHA", message)
+        self.assertIn("não garante", message)
+
+    def test_format_unavailable_is_not_misreported_as_removed_video(self):
+        self.assertIn("formato ou a resolução", app.friendly_error("ERROR: Requested format is not available"))
+        self.assertIn("PO Token", app.friendly_error("Missing required Visitor Data"))
+        self.assertFalse(app.rate_limited("video 14293456789 title"))
+
+    def test_rate_limit_retries_once_then_requires_manual_resume(self):
+        self.add()
+        job = self.manager.jobs[0]
+        with patch.object(app.time, "time", return_value=1000):
+            job["log"] = "WARNING: HTTP Error 429: Too Many Requests\nERROR: Sign in to confirm you are not a bot"
+            self.manager.record_failure(job)
+            self.assertEqual(job["status"], "queued")
+            self.assertEqual(job["auto_retry_count"], 1)
+            self.assertEqual(self.manager.queue_pause["until"], 1060)
+            with self.assertRaises(ValueError):
+                self.manager.resume()
+            self.manager.record_failure(job)
+            self.assertEqual(job["status"], "error")
+            self.assertTrue(self.manager.queue_pause["manual"])
+            self.manager.save()
+            restored = app.Manager(self.root / "data", start_worker=False)
+            self.assertTrue(restored.queue_pause["manual"])
+            restored.stop()
+            with self.assertRaises(ValueError):
+                self.manager.retry(job["id"])
+        with patch.object(app.time, "time", return_value=1061):
+            self.manager.retry(job["id"])
+            self.assertFalse(self.manager.queue_pause["manual"])
+            self.assertEqual(job["auto_retry_count"], 0)
+
+    def test_paused_worker_does_not_start_queued_downloads(self):
+        self.add()
+        self.manager.queue_pause = {"until": time.time() + 60, "manual": False, "reason": "HTTP 429"}
+        with patch.object(app.subprocess, "Popen") as launch:
+            self.manager.worker = threading.Thread(target=self.manager.run, daemon=True)
+            self.manager.worker.start()
+            self.manager.wake.set()
+            time.sleep(.15)
+            self.manager.stop()
+            launch.assert_not_called()
+
+    @unittest.skipUnless(shutil.which("ffprobe"), "FFprobe ausente")
+    def test_html_response_cannot_pass_media_validation(self):
+        self.add()
+        job = self.manager.jobs[0]
+        file = Path(job["folder"]) / "false-audio.webm"
+        file.write_text("<html><h1>Site Unavailable</h1></html>")
+        job["file"] = str(file)
+        with self.assertRaisesRegex(ValueError, "não contém"):
+            app.verify_media(job)
+        self.assertTrue(file.is_file(), "Invalid output must be preserved for inspection")
+
+    def test_edge_session_is_explicit_fixed_and_never_exports_cookies(self):
+        self.add()
+        self.assertNotIn("--cookies-from-browser", app.command_for(self.manager.jobs[0]))
+        self.manager.enqueue([URL], "m4a", True, use_edge_session=True)
+        command = app.command_for(self.manager.jobs[-1])
+        self.assertEqual(command[command.index("--cookies-from-browser") + 1], "edge:Default")
+        self.assertIn("--no-cache-dir", command)
+        self.assertNotIn("--cookies", command)
+        self.assertNotIn("use_edge_session", self.manager.state_file.read_text())
+        restored = app.Manager(self.root / "data", start_worker=False)
+        self.assertFalse(restored.jobs[-1]["use_edge_session"])
+        restored.stop()
+        for value in ["edge", "true", 1, None, {"profile": "secret"}]:
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                self.manager.enqueue([URL], "mp3", True, use_edge_session=value)
+
+    def test_retry_uses_current_consent_not_previous_job_consent(self):
+        self.manager.enqueue([URL], "mp3", True, use_edge_session=True)
+        job = self.manager.jobs[0]
+        self.manager.cancel(job["id"])
+        self.manager.retry(job["id"])
+        self.assertFalse(job["use_edge_session"])
+        self.manager.cancel(job["id"])
+        self.manager.retry(job["id"], use_edge_session=True)
+        self.assertTrue(job["use_edge_session"])
+        self.manager.cancel(job["id"])
+        with self.assertRaises(ValueError):
+            self.manager.retry(job["id"], use_edge_session="edge")
+
+    def test_edge_cookie_errors_have_safe_guidance_before_permission_fallback(self):
+        for log in ["ERROR: Could not copy Chrome cookie database: Permission denied", "ERROR: Failed to decrypt with DPAPI", "ERROR: could not find Edge cookies database"]:
+            with self.subTest(log=log):
+                message = app.friendly_error(log)
+                self.assertIn("sessão do Edge", message)
+                self.assertIn("Não desative proteções", message)
+                self.assertNotIn("espaço livre", message)
+
     def test_video_resolution_queue_and_file_names_are_distinct(self):
         first = self.manager.enqueue([URL], "mp4", True, "720")
         second = self.manager.enqueue([URL], "mp4", True, "1080")
@@ -138,7 +235,7 @@ class AppTests(IsolatedApp):
     def test_worker_completes_and_verifies_output_file(self):
         def fake_command(job):
             file = str(Path(job["folder"]) / "fixture.mp3")
-            code = "from pathlib import Path; import json; p=Path("+repr(file)+"); p.write_bytes(b'audio'); print('CLASSICA_TITLE:Fixture'); print('CLASSICA_PROGRESS:'+json.dumps(dict(status='finished',downloaded_bytes=5,total_bytes=5))); print('CLASSICA_FILE:'+str(p))"
+            code = "from pathlib import Path; import json,wave; p=Path("+repr(file)+"); w=wave.open(str(p),'wb'); w.setnchannels(1); w.setsampwidth(2); w.setframerate(8000); w.writeframes(b'\\0'*16000); w.close(); print('CLASSICA_TITLE:Fixture'); print('CLASSICA_PROGRESS:'+json.dumps(dict(status='finished',downloaded_bytes=16000,total_bytes=16000))); print('CLASSICA_FILE:'+str(p))"
             return [sys.executable, "-c", code]
         self.add()
         with patch.object(app, "dependencies", return_value=dict(yt_dlp=True, ffmpeg=True, ffprobe=True, deno=True)), patch.object(app, "command_for", side_effect=fake_command):
@@ -160,6 +257,20 @@ class AppTests(IsolatedApp):
             while self.manager.jobs[0]["status"] not in app.TERMINAL and time.monotonic()<deadline:
                 time.sleep(.03)
             self.assertEqual(self.manager.jobs[0]["status"], "error")
+            self.manager.stop()
+
+    def test_worker_rejects_success_exit_with_invalid_media(self):
+        self.add()
+        file = str(Path(self.manager.folder) / "error.webm")
+        code = "from pathlib import Path; p=Path("+repr(file)+"); p.write_text('<html>Site Unavailable</html>'); print('CLASSICA_FILE:'+str(p))"
+        with patch.object(app, "dependencies", return_value=dict(yt_dlp=True, ffmpeg=True, ffprobe=True, deno=True)), patch.object(app, "command_for", return_value=[sys.executable, "-c", code]):
+            self.manager.worker = threading.Thread(target=self.manager.run, daemon=True)
+            self.manager.worker.start()
+            deadline = time.monotonic()+5
+            while self.manager.jobs[0]["status"] not in app.TERMINAL and time.monotonic()<deadline:
+                time.sleep(.03)
+            self.assertEqual(self.manager.jobs[0]["status"], "error")
+            self.assertNotEqual(self.manager.jobs[0]["progress"], 100)
             self.manager.stop()
 
     def test_cancels_running_process(self):
@@ -229,6 +340,18 @@ class HttpTests(IsolatedApp):
         self.assertEqual(self.request("/api/enqueue", {"urls":[URL],"format":"mp4","authorized":True,"resolution":"720"})[0], 200)
         self.assertEqual(self.manager.jobs[-1]["resolution"], "720")
         self.assertEqual(self.request("/api/enqueue", {"urls":[URL],"format":"mp4","authorized":True,"resolution":"garbage"})[0], 400)
+
+    def test_api_edge_consent_and_retry_validation(self):
+        payload = {"urls": [URL], "format": "mp3", "authorized": True, "use_edge_session": "edge:arbitrary"}
+        self.assertEqual(self.request("/api/enqueue", payload)[0], 400)
+        payload["use_edge_session"] = True
+        self.assertEqual(self.request("/api/enqueue", payload)[0], 200)
+        job = self.manager.jobs[0]
+        self.assertTrue(job["use_edge_session"])
+        self.manager.cancel(job["id"])
+        self.assertEqual(self.request("/api/retry", {"id":job["id"], "use_edge_session": "true"})[0], 400)
+        self.assertEqual(self.request("/api/retry", {"id":job["id"]})[0], 200)
+        self.assertFalse(job["use_edge_session"])
 
     def test_file_delivery_and_escape_denied(self):
         self.add()
