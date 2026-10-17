@@ -22,3 +22,7 @@ ou serif equivalente. Não há fontes externas, rastreadores ou CDN de interface
 
 A licença do código não autoriza usar a assinatura para afirmar que uma
 modificação de terceiro foi desenvolvida ou aprovada por Luciano Machado.
+
+## Refinamento proposto (não publicado)
+
+O Chi-Rho (☧) preserva seu caráter cristológico e deve ser tratado como elemento de identidade, não como ornamento intercambiável. O refinamento tecnológico utiliza geometria, hierarquia e bordas sutis sem modificar a forma canônica, a assinatura `by ☧ SYSTEMS`, o contraste ou os arquivos de marca. Não inserir efeitos neon ou descaracterizar a simbologia.
