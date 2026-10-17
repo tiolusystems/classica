@@ -36,7 +36,7 @@
         <p id="video-hint" class="hint" hidden>O vídeo inclui o som. A resolução depende da fonte. A conversão para WebM pode levar mais tempo.</p>
         <div class="destination"><div><span class="caption">PASTA DE DESTINO</span><span id="folder-label" class="path">Carregando…</span></div><button id="folder-button" type="button" class="text-button">Alterar</button></div>
         <button id="submit-button" type="submit" class="button primary submit"><span id="download-button-text">Baixar áudio</span><span aria-hidden="true">↓</span></button>
-        <p class="rights-note">Use gravações em domínio público ou autorizadas para download.</p>
+        <div class="responsibility-note" aria-label="Aviso de uso responsável"><span class="responsibility-kicker">USO RESPONSÁVEL</span><p>Baixe apenas conteúdos permitidos por lei ou autorização. <button id="rights-button" class="text-button" type="button">Ler condições de uso</button></p></div>
       </form>
     </section>
     <section class="panel library" aria-labelledby="collection-title">
@@ -44,24 +44,32 @@
       <div class="library-toolbar"><label class="sr-only" for="filter">Filtrar downloads</label><select id="filter"><option value="all">Todos os downloads</option><option value="active">Em andamento</option><option value="done">Concluídos</option><option value="error">Precisam de atenção</option></select><button id="open-folder-button" class="button secondary" type="button">Abrir pasta <span aria-hidden="true">↗</span></button></div>
       <div id="jobs" aria-live="off"></div>
       <div id="empty" class="empty-state" hidden><span class="empty-icon" aria-hidden="true">↓</span><h3>Seu acervo começa com um link.</h3><p>Adicione um vídeo ao lado para salvar o áudio ou o vídeo completo.</p></div>
-      <div class="library-bottom"><span class="hint">Os arquivos permanecem no seu computador.</span><button id="clear-button" class="text-button" type="button" disabled>Limpar histórico</button></div>
+      <div class="library-bottom"><span class="hint">A limpeza retira itens da lista, nunca os arquivos do computador.</span><div class="library-actions"><button id="clear-done-button" class="button secondary" type="button" disabled>Limpar concluídos</button><button id="clear-button" class="text-button" type="button" disabled>Limpar todo o histórico</button></div></div>
     </section>
   </div>
   <footer class="app-footer"><span>Clássica <span class="version">v2.1.0</span></span><span class="developer-signature" aria-label="by ☧ SYSTEMS">by <span aria-hidden="true">☧</span> SYSTEMS</span></footer>
 </main>
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+<dialog id="rights-dialog" aria-labelledby="rights-title">
+  <div class="dialog-heading"><h2 id="rights-title">Uso responsável da Clássica</h2><button type="button" class="close-dialog icon-button" aria-label="Fechar condições de uso">×</button></div>
+  <p>A Clássica é uma ferramenta local para obter áudio e vídeo quando o download for permitido. O usuário deve verificar os direitos sobre a composição, a gravação e o uso pretendido, além da legislação aplicável e dos termos das plataformas.</p>
+  <p>A ferramenta não verifica licenças ou permissões automaticamente. Disponibilizar a Clássica não constitui autorização para baixar qualquer conteúdo, contornar proteções ou redistribuir gravações.</p>
+  <p>O usuário responde pelo uso da ferramenta, observadas as responsabilidades previstas em lei. Este aviso não elimina direitos ou deveres legais.</p>
+  <div class="dialog-actions"><button type="button" class="close-dialog button primary">Entendi</button></div>
+</dialog>
 <dialog id="settings-dialog" aria-labelledby="preferences-title"><form id="settings-form"><div class="dialog-heading"><h2 id="preferences-title">Preferências</h2><button type="button" class="close-dialog icon-button" aria-label="Fechar preferências">×</button></div><p class="hint">Os próximos downloads usam a pasta abaixo. Os arquivos já salvos permanecem em seus locais.</p><label for="folder-input" class="field-label">Pasta dos downloads</label><input id="folder-input" type="text" required spellcheck="false" aria-describedby="folder-hint"><p id="folder-hint" class="hint">Use o caminho completo. Exemplo: C:\Users\Luciano\Music\Classica</p><div class="reading-settings"><label for="font-size" class="field-label">Tamanho do texto <output id="font-size-label" for="font-size">100%</output></label><input id="font-size" type="range" min="100" max="200" step="10" value="100" aria-describedby="reading-hint"><p id="reading-hint" class="hint">A fonte acompanha a janela. Ajuste de 100% a 200% para uma leitura confortável. O ajuste de leitura é salvo automaticamente neste navegador.</p><button id="reset-reading" type="button" class="text-button">Restaurar leitura padrão</button></div><div class="dialog-actions"><button type="button" class="close-dialog button secondary">Fechar</button><button type="submit" class="button primary">Salvar pasta</button></div></form></dialog>
 <dialog id="help-dialog" aria-labelledby="help-title">
   <div class="dialog-heading"><h2 id="help-title">Como usar a Clássica</h2><button type="button" class="close-dialog icon-button" aria-label="Fechar ajuda">×</button></div>
   <ol class="help-steps"><li>Copie o link de um vídeo do YouTube e cole em <strong>Link do YouTube</strong>.</li><li>Escolha <strong>Somente áudio</strong> ou <strong>Vídeo com áudio</strong> e selecione o formato.</li><li>Clique no botão de download. Use <strong>Abrir pasta</strong> para encontrar os arquivos.</li></ol>
   <h3>Formatos e qualidade</h3><p>Áudio: MP3, M4A, AAC, WAV, FLAC, OGG, OPUS ou Original. Vídeo com som: MP4, MKV ou WebM. A qualidade depende da gravação de origem; não ampliamos artificialmente a resolução.</p>
-  <h3>Fila e arquivos</h3><p>Os itens são processados um de cada vez. Cancelar interrompe o item; Tentar novamente reinicia a tentativa e pode aproveitar partes já baixadas. Limpar histórico preserva seus arquivos. Salvar cópia usa o gerenciador de downloads do navegador.</p>
+  <h3>Fila e arquivos</h3><p>Os itens são processados um de cada vez. Cancelar interrompe o item; Tentar novamente reinicia a tentativa e pode aproveitar partes já baixadas. Limpar concluídos retira somente downloads finalizados. Limpar todo o histórico retira concluídos, cancelados e falhas, mas ambos preservam os arquivos. Salvar cópia usa o gerenciador de downloads do navegador.</p>
   <h3>Encerrar e atualizar</h3><p>Fechar a aba não encerra a aplicação. Use <strong>Sair</strong>. Se o YouTube mudar, feche a Clássica e use <strong>Atualizar.bat</strong> para atualizar o extrator. Isso não garante resolver limites de requisições, login ou PO Token.</p>
   <h3>Quando o YouTube bloquear</h3><p>Se aparecer <strong>HTTP 429</strong>, <strong>Too Many Requests</strong> ou verificação de usuário, respeite a pausa indicada, confira o vídeo no navegador e só tente novamente quando o serviço permitir. A atualização do extrator não garante remover restrições do YouTube.</p>
   <p>Quando ocorre HTTP 429, a fila pausa por 60 segundos e faz uma única nova tentativa automática do item. Se o limite persistir, a fila aguarda sua decisão; o botão <strong>Retomar fila</strong> é liberado depois da pausa mínima. O item que falhou exige <strong>Tentar novamente</strong>. Uma espera de 60 segundos é uma política da aplicação, não um prazo garantido pelo YouTube.</p>
   <p>Um arquivo só é marcado como concluído após a verificação de uma faixa de áudio e, nos formatos de vídeo, também de uma faixa de imagem. Respostas de erro da rede não são aceitas como mídia válida.</p>
 
   <h3>Privacidade e direitos</h3><p>A interface é local. O extrator se conecta ao YouTube para obter o conteúdo. Uma obra antiga pode ter gravações com direitos próprios. Não há verificação automática de licenças. Use somente downloads autorizados.</p>
+  <h3>O símbolo ☧</h3><p>O monograma Chi-Rho reúne as letras gregas Χ (chi) e Ρ (rho), presentes no início de Χριστός (Cristo). A assinatura by ☧ SYSTEMS preserva esse símbolo cristológico como parte de sua identidade.</p>
   <p class="hint">Windows 10/11 x64. Sem contorno de CAPTCHA, DRM ou pagamento. Os componentes externos mantêm suas próprias licenças. A documentação do projeto descreve os testes e seus limites.</p>
   <div class="help-brand developer-signature" aria-label="by ☧ SYSTEMS">by <span aria-hidden="true">☧</span> SYSTEMS</div>
 </dialog>
