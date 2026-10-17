@@ -39,12 +39,12 @@ try {
   await page.getByRole('button',{name:'Baixar vídeo',exact:true}).click();
   await page.getByText('Vídeo · MP4',{exact:true}).waitFor();
   await page.getByText('Até 720p',{exact:true}).waitFor();
-  assert.equal(await page.evaluate(async()=>{const r=await fetch('/api/state',{headers:{'X-Classica-Token':document.querySelector('meta[name="classica-token"]').content}});return (await r.json()).jobs[0].use_edge_session;}),false);
+  assert.equal(await page.evaluate(async()=>{const r=await fetch('/api/state',{headers:{'X-Classica-Token':document.querySelector('meta[name="classica-token"]').content}});return Object.hasOwn((await r.json()).jobs[0],'use_edge_session');}),false);
   await page.getByRole('button',{name:'Cancelar',exact:true}).click();
   await page.getByText('Cancelado',{exact:true}).waitFor();
   await page.getByRole('button',{name:'Tentar novamente',exact:true}).click();
   await page.getByText('Na fila',{exact:true}).waitFor();
-  assert.equal(await page.evaluate(async()=>{const r=await fetch('/api/state',{headers:{'X-Classica-Token':document.querySelector('meta[name="classica-token"]').content}});return (await r.json()).jobs[0].use_edge_session;}),false);
+  assert.equal(await page.evaluate(async()=>{const r=await fetch('/api/state',{headers:{'X-Classica-Token':document.querySelector('meta[name="classica-token"]').content}});return Object.hasOwn((await r.json()).jobs[0],'use_edge_session');}),false);
   await page.getByRole('button',{name:'Cancelar',exact:true}).click();
   await page.getByText('Cancelado',{exact:true}).waitFor();
   for(const width of [320,768,1366,1920]){
