@@ -23,6 +23,10 @@ function render() {
   const missing=Object.entries(snapshot.dependencies).filter(([,v])=>!v).map(([k])=>k);
   $('dependency-warning').hidden=!missing.length;
   if(missing.length)$('dependency-warning').textContent='Componentes ausentes: '+missing.join(', ')+'. Feche a aplicação e execute Iniciar.bat para preparar o ambiente.';
+  const pause=snapshot.queue_pause||{}, remaining=Math.max(0,Math.ceil(((pause.until||0)*1000-Date.now())/1000));
+  $('queue-warning').hidden=!pause.manual&&!remaining;
+  $('queue-warning-text').textContent=(pause.reason||'')+(remaining?' Aguarde '+remaining+' segundos.':'')+(pause.manual?' Retome quando desejar fazer uma nova tentativa.':' A fila retomará automaticamente após a pausa.');
+  $('resume-queue').hidden=!pause.manual;$('resume-queue').disabled=remaining>0;
   const filter=$('filter').value;
   const list=[...all].reverse().filter(j=>filter==='all'||(filter==='active'&&!terminal.has(j.status))||(filter==='done'&&j.status==='done')||(filter==='error'&&['error','interrupted','cancelled'].includes(j.status)));
   const sig=JSON.stringify([filter,list]);
@@ -55,7 +59,7 @@ function render() {
     row.append(main);
     const actions=el('div','job-actions');
     if(!terminal.has(job.status))actions.append(button('Cancelar',()=>action('cancel',{id:job.id})));
-    if(['error','interrupted','cancelled'].includes(job.status))actions.append(button('Tentar novamente',()=>action('retry',{id:job.id})));
+    if(['error','interrupted','cancelled'].includes(job.status))actions.append(button('Tentar novamente',()=>action('retry',{id:job.id,use_edge_session:$('use-edge-session').checked})));
     if(job.status==='done') {const a=el('a','','Salvar cópia ↓');a.href='/file/'+job.id;a.download='';actions.append(a);}
     main.append(actions);$('jobs').append(row);
   }
@@ -63,11 +67,16 @@ function render() {
   $('clear-button').disabled=!all.some(j=>terminal.has(j.status));
 }
 async function refresh() { if(stopped)return; try{snapshot=await api('state');failures=0;$('connection-text').textContent='Conexão local';$('connection-text').parentElement.classList.remove('offline');render();}catch(error){failures++;if(failures>=3){$('connection-text').textContent='Sem conexão';$('connection-text').parentElement.classList.add('offline');}if(failures===3)toast('Conexão local perdida. Confira se a janela da Clássica está aberta.',true);} }
-$('download-form').addEventListener('submit',async event=>{event.preventDefault();const urls=$('urls').value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);if(!urls.length){toast('Cole pelo menos um link de vídeo.',true);return;}const submit=$('submit-button');submit.disabled=true;try{const isVideo=document.querySelector('input[name="kind"]:checked').value==='video';const format=document.querySelector(isVideo?'input[name="video-format"]:checked':'input[name="format"]:checked').value;const r=await api('enqueue',{urls,format,authorized:true,resolution:isVideo?$('resolution').value:'best'});$('urls').value='';toast(`${r.added} ${r.added===1?'download adicionado':'downloads adicionados'} à fila.${r.skipped?' '+r.skipped+' já estavam na fila.':''}`);await refresh();}catch(error){toast(error.message,true);}finally{submit.disabled=false;}});
+$('use-edge-session').checked=false;
+$('use-edge-session').addEventListener('change',event=>{
+  if(event.target.checked&&!confirm('Autorizar o yt-dlp a ler o banco de cookies do seu perfil padrão do Microsoft Edge neste computador? Os cookies aplicáveis são usados nas conexões com o YouTube. A Clássica não exporta um arquivo de cookies nem os envia ao GitHub. O YouTube pode restringir ou suspender contas usadas por extratores. Use somente quando necessário. A autorização vale para downloads adicionados e novas tentativas enquanto esta opção estiver marcada.'))event.target.checked=false;
+});
+$('download-form').addEventListener('submit',async event=>{event.preventDefault();const urls=$('urls').value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);if(!urls.length){toast('Cole pelo menos um link de vídeo.',true);return;}const submit=$('submit-button');submit.disabled=true;try{const isVideo=document.querySelector('input[name="kind"]:checked').value==='video';const format=document.querySelector(isVideo?'input[name="video-format"]:checked':'input[name="format"]:checked').value;const r=await api('enqueue',{urls,format,authorized:true,resolution:isVideo?$('resolution').value:'best',use_edge_session:$('use-edge-session').checked});$('urls').value='';toast(`${r.added} ${r.added===1?'download adicionado':'downloads adicionados'} à fila.${r.skipped?' '+r.skipped+' já estavam na fila.':''}`);await refresh();}catch(error){toast(error.message,true);}finally{submit.disabled=false;}});
 function settings() {if(!snapshot)return;$('folder-input').value=snapshot.folder;$('settings-dialog').showModal();}
 $('settings-button').addEventListener('click',settings);$('folder-button').addEventListener('click',settings);
 $('settings-form').addEventListener('submit',async event=>{event.preventDefault();const submit=event.submitter;submit.disabled=true;try{await api('folder',{folder:$('folder-input').value});$('settings-dialog').close();toast('Pasta de destino atualizada.');await refresh();}catch(error){toast(error.message,true);}finally{submit.disabled=false;}});
 $('open-folder-button').addEventListener('click',()=>action('open-folder'));
+$('resume-queue').addEventListener('click',()=>action('resume'));
 $('help-top-button').addEventListener('click',()=>$('help-dialog').showModal());
 for(const b of document.querySelectorAll('.close-dialog'))b.addEventListener('click',()=>b.closest('dialog').close());
 $('filter').addEventListener('change',()=>{signature='';render();});

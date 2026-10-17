@@ -113,6 +113,10 @@ textarea::placeholder{color:#6d7e8c}
 .version{font-size:.65rem;margin-left:.35rem;color:var(--muted)}
 .developer-signature{white-space:nowrap;font-size:.7rem;letter-spacing:.035em;color:var(--muted)}
 .developer-signature>span{font-family:Georgia,'Times New Roman',serif;font-size:1.2em;margin:0 .15rem}
+.session-option{margin:1rem 0;padding:1rem;border:1px solid var(--line);border-radius:.5rem}
+.session-option label{display:flex;align-items:flex-start;gap:.65rem;font-size:.825rem;font-weight:600;cursor:pointer}
+.session-option input{width:1.1rem;height:1.1rem;flex:0 0 auto;accent-color:var(--accent)}
+.session-option .hint{margin:.6rem 0 0}
 .notice{border:1px solid #d7bb78;background:#fff8e8;color:#6f4810;border-radius:.5rem;padding:1rem;font-size:.8rem;margin-bottom:1.5rem}
 .toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);width:max-content;max-width:calc(100% - 2rem);padding:.85rem 1.1rem;box-shadow:0 6px 24px #13283a26;background:#173b34;color:white;font-size:.825rem;border-radius:.5rem;z-index:30;overflow-wrap:anywhere}
 .toast.error{background:#7e2d23}
