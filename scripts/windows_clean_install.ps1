@@ -64,6 +64,10 @@ try {
     }
     finally { Pop-Location }
 
+    # Match the UTF-8 environment set by iniciar.ps1 for real users.
+    # A plain redirected Python process can otherwise fail encoding the Chi Rho symbol
+    # in Windows' default console code page (observed in CI).
+    $env:PYTHONUTF8 = '1'
     # Real process + loopback HTTP, using isolated history and no browser launch.
     $dataDir = Join-Path $workspace 'isolated-user-data'
     $stdout = Join-Path $workspace 'app-stdout.log'
