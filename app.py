@@ -87,9 +87,7 @@ def command_for(job: dict) -> list[str]:
            "--extractor-retries", "0", "--sleep-requests", "1",
            "--sleep-interval", "5", "--max-sleep-interval", "10",
            "--retry-sleep", "http:exp=2:10", "--concurrent-fragments", "1"]
-    # Fixed browser only: never accept a profile path or arbitrary extractor args.
-    if job.get("use_edge_session") is True:
-        cmd += ["--cookies-from-browser", "edge:Default", "--no-cache-dir"]
+    # Browser cookies are never read or passed to the extractor.
     output = "%(title).140B [%(id)s].%(ext)s"
     if job["format"] in VIDEO_FORMATS:
         resolution = job.get("resolution", "best")
@@ -148,16 +146,14 @@ def terminate_process(process: subprocess.Popen) -> None:
 
 def friendly_error(log: str) -> str:
     text = log.lower()
-    if any(marker in text for marker in ("failed to decrypt", "dpapi", "cookie database", "cookies database", "could not find edge cookies", "failed to load cookies")):
-        return "Não foi possível ler a sessão do Edge. Se houver bloqueio do banco de cookies, feche todas as janelas do Edge e tente uma vez. Se houver falha de descriptografia/DPAPI, a proteção do Windows pode impedir a leitura. Não desative proteções, não execute como administrador nem instale extensões para contorná-la. Desmarque Usar minha sessão do Edge para continuar sem sessão."
     if "certificate_verify_failed" in text or "certificate verify failed" in text:
         return "A conexão segura com o YouTube falhou. Confira a data e a hora do Windows e os certificados da sua rede. Em uma rede administrada, solicite apoio de TI."
     if (rate_limited(log) or "sign in" in text or "not a bot" in text):
-        return "O YouTube limitou as requisições ou pediu uma verificação. Pare as tentativas e confira o vídeo no Edge. Se funcionar com sua conta, você pode autorizar Usar minha sessão do Edge e tentar uma vez mais tarde. Atualizar.bat pode corrigir incompatibilidades, mas não garante resolver HTTP 429, login ou PO Token. A aplicação não contorna CAPTCHA, DRM ou pagamento."
+        return "O YouTube limitou as requisições ou pediu uma verificação. Pare as tentativas e confira o vídeo no navegador. Aguarde antes de tentar novamente. Atualizar.bat pode corrigir incompatibilidades, mas não garante resolver HTTP 429, login ou PO Token. A aplicação não contorna CAPTCHA, DRM ou pagamento."
     if "requested format is not available" in text:
         return "O formato ou a resolução solicitada não está disponível nesta tentativa. Escolha Melhor disponível para vídeo. Isso também pode ocorrer quando o YouTube não libera os formatos ao extrator."
     if "po token" in text or "po_token" in text or "visitor data" in text:
-        return "O YouTube não forneceu os dados de sessão ou o PO Token exigido nesta tentativa. Atualizar.bat pode corrigir incompatibilidades. Se persistir, aguarde e confira o vídeo no navegador; a sessão opcional do Edge não garante resolver essa exigência."
+        return "O YouTube não forneceu os dados de sessão ou o PO Token exigido nesta tentativa. Atualizar.bat pode corrigir incompatibilidades. Se persistir, aguarde e confira o vídeo no navegador; uma nova tentativa também pode ser recusada pelo serviço."
     if "private video" in text or "video unavailable" in text or "video has been removed" in text:
         return "Vídeo indisponível, privado ou removido. Confira o link no YouTube."
     if "403" in text or "nsig" in text or "javascript" in text:
@@ -218,8 +214,8 @@ class Manager:
             self.jobs = payload["jobs"][-500:]
             self.queue_pause = payload.get("queue_pause", self.queue_pause)
             for job in self.jobs:
-                # Consent must be renewed after restarting, including for retries.
-                job["use_edge_session"] = False
+                # Remove obsolete cookie flags from histories created by previews.
+                job.pop("use_edge_session", None)
                 if job["status"] in ACTIVE | {"queued"}:
                     job.update(status="interrupted", error="A sessão foi encerrada. Use Tentar novamente para continuar.")
         except FileNotFoundError:
@@ -263,9 +259,7 @@ class Manager:
             self.folder = str(path.resolve())
             self.save()
 
-    def enqueue(self, urls, format_, authorized, resolution="best", use_edge_session=False):
-        if type(use_edge_session) is not bool:
-            raise ValueError("A autorização para usar a sessão do Edge deve ser verdadeira ou falsa.")
+    def enqueue(self, urls, format_, authorized, resolution="best"):
         if authorized is not True:
             raise ValueError("Confirme que possui autorização para baixar as gravações.")
         if format_ not in FORMATS and format_ not in VIDEO_FORMATS:
@@ -289,7 +283,7 @@ class Manager:
                 job = dict(id=uuid.uuid4().hex, url=url, format=format_, folder=self.folder, resolution=resolution,
                            title="Aguardando informações do vídeo", status="queued", progress=0,
                            speed="", eta="", error="", log="", file="", created=time.time(), authorized=True,
-                           use_edge_session=use_edge_session, auto_retry_count=0)
+                           auto_retry_count=0)
                 self.jobs.append(job)
                 added.append(job["id"])
             # Bound history without dropping active jobs.
@@ -316,15 +310,13 @@ class Manager:
                 terminate_process(self.process)
             self.save()
 
-    def retry(self, job_id, use_edge_session=False):
-        if type(use_edge_session) is not bool:
-            raise ValueError("A autorização para usar a sessão do Edge deve ser verdadeira ou falsa.")
+    def retry(self, job_id):
         with self.lock:
             self.check_cooldown()
             job = self.find(job_id)
             if job["status"] not in {"error", "cancelled", "interrupted"}:
                 raise ValueError("Este item não precisa ser reiniciado.")
-            job.update(status="queued", progress=0, error="", log="", speed="", eta="", file="", use_edge_session=use_edge_session, auto_retry_count=0)
+            job.update(status="queued", progress=0, error="", log="", speed="", eta="", file="", auto_retry_count=0)
             self.queue_pause = {"until": 0, "manual": False, "reason": ""}
             self.save()
         self.wake.set()
@@ -529,13 +521,15 @@ class Handler(BaseHTTPRequestHandler):
                 raise ValueError("Solicitação inválida.")
             path = urlsplit(self.path).path
             manager = self.server.manager
+            if path in ("/api/enqueue", "/api/retry") and "use_edge_session" in data:
+                raise ValueError("Autenticação por navegador não está disponível.")
             result = {"ok": True}
             if path == "/api/enqueue":
-                result = manager.enqueue(data.get("urls"), data.get("format"), data.get("authorized"), data.get("resolution", "best"), data.get("use_edge_session", False))
+                result = manager.enqueue(data.get("urls"), data.get("format"), data.get("authorized"), data.get("resolution", "best"))
             elif path == "/api/cancel":
                 manager.cancel(data.get("id"))
             elif path == "/api/retry":
-                manager.retry(data.get("id"), data.get("use_edge_session", False))
+                manager.retry(data.get("id"))
             elif path == "/api/clear":
                 manager.clear()
             elif path == "/api/resume":
