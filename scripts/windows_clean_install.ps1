@@ -59,7 +59,7 @@ try {
 
     Push-Location -LiteralPath $appDir
     try {
-        & $pythonExe -c "import app,pathlib; assert pathlib.Path(app.__file__).resolve().parent == pathlib.Path.cwd(); assert app.VERSION == '2.1.0'; assert all(app.dependencies().values()), app.dependencies(); print('Fresh runtime components: PASS')"
+        & $pythonExe -c "import app,pathlib; assert pathlib.Path(app.__file__).resolve().parent == pathlib.Path.cwd(); assert app.VERSION == '2.1.1'; assert all(app.dependencies().values()), app.dependencies(); print('Fresh runtime components: PASS')"
         if ($LASTEXITCODE -ne 0) { throw 'Fresh runtime import/dependencies check failed.' }
     }
     finally { Pop-Location }
@@ -99,7 +99,7 @@ try {
     if (-not $tokenMatch.Success) { throw 'Missing token in actual localhost UI.' }
     $headers = @{ 'X-Classica-Token' = $tokenMatch.Groups[1].Value }
     $state = Invoke-RestMethod -Uri ($url + '/api/state') -Headers $headers -TimeoutSec 15
-    if ($state.version -ne '2.1.0' -or $state.jobs.Count -ne 0) {
+    if ($state.version -ne '2.1.1' -or $state.jobs.Count -ne 0) {
         throw 'Version or initial queue state differs from expected fresh install.'
     }
     foreach ($component in @('yt_dlp','yt_dlp_ejs','ffmpeg','ffprobe','deno')) {
