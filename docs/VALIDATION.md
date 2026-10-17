@@ -2,6 +2,10 @@
 
 ## 2.1.0 — 17/10/2026
 
+- CI da prévia no commit e7345df354be99aa374b95a15783069fe7c3414f: run 39049563209, testes Linux, Windows e interface aprovados.
+- O usuário confirmou em seu Windows downloads de MP3, áudio original e vídeo, inclusive repetição de MP3 e reprodução completa.
+- A retirada posterior da caixa Edge é uma revisão candidata; os testes devem ser executados novamente após publicação da branch no GitHub.
+
 - Linux: 33 testes passaram, incluindo consentimento Edge ausente/presente,
   rejeição de valores inválidos, novas tentativas e não persistência.
 - Nenhum cookie real foi lido nos testes. O fluxo HTTP usa um gerenciador sem
