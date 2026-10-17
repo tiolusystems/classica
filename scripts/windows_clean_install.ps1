@@ -18,12 +18,22 @@ if ($expected -notmatch '^[0-9a-f]{64}$' -or $actual -ne $expected) {
     throw 'Windows ZIP checksum mismatch.'
 }
 
-$workspace = Join-Path $env:RUNNER_TEMP ('classica-zip-clean-' + [Guid]::NewGuid().ToString('N'))
+$workspace = Join-Path $env:RUNNER_TEMP ('Classica espa' + [char]0x00E7 + 'o & acento-classica-zip-clean-' + [Guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Force -Path $workspace | Out-Null
 $serverProcess = $null
 try {
     Expand-Archive -LiteralPath $archivePath -DestinationPath $workspace
     $appDir = Join-Path $workspace 'Classica'
+    $launcher = Join-Path $appDir ('Cl' + [char]0x00E1 + 'ssica.exe')
+    if (-not (Test-Path -LiteralPath $launcher)) { throw 'Branded launcher missing from ZIP.' }
+    $version = [Diagnostics.FileVersionInfo]::GetVersionInfo($launcher)
+    if ($version.FileVersion -ne '2.1.2.0') { throw 'Launcher version mismatch.' }
+    Add-Type -AssemblyName System.Drawing
+    $icon = [Drawing.Icon]::ExtractAssociatedIcon($launcher)
+    if (-not $icon) { throw 'Launcher icon missing.' }
+    $icon.Dispose()
+    $probe = Start-Process -FilePath $launcher -ArgumentList '--check' -WorkingDirectory $env:RUNNER_TEMP -PassThru -Wait
+    if ($probe.ExitCode -ne 0) { throw 'Launcher failed package check from unrelated working directory.' }
     if (-not (Test-Path -LiteralPath (Join-Path $appDir 'Iniciar.bat')) -or
         -not (Test-Path -LiteralPath (Join-Path $appDir 'iniciar.ps1'))) {
         throw 'Release ZIP does not contain the required Classica/ launcher.'
@@ -59,7 +69,7 @@ try {
 
     Push-Location -LiteralPath $appDir
     try {
-        & $pythonExe -c "import app,pathlib; assert pathlib.Path(app.__file__).resolve().parent == pathlib.Path.cwd(); assert app.VERSION == '2.1.1'; assert all(app.dependencies().values()), app.dependencies(); print('Fresh runtime components: PASS')"
+        & $pythonExe -c "import app,pathlib; assert pathlib.Path(app.__file__).resolve().parent == pathlib.Path.cwd(); assert app.VERSION == '2.1.2'; assert all(app.dependencies().values()), app.dependencies(); print('Fresh runtime components: PASS')"
         if ($LASTEXITCODE -ne 0) { throw 'Fresh runtime import/dependencies check failed.' }
     }
     finally { Pop-Location }
@@ -92,14 +102,14 @@ try {
     # Inspect ASCII identifiers: Windows PowerShell 5.1 may mis-decode UTF-8
     # page text even though browsers honor the HTML charset meta tag.
     if ($page.StatusCode -ne 200 -or $page.Content -notmatch 'name="classica-token"' -or
-        $page.Content -notmatch 'v2\.1\.1' -or $page.Content -match 'use-edge-session') {
+        $page.Content -notmatch 'v2\.1\.2' -or $page.Content -match 'use-edge-session') {
         throw 'First-run UI invalid or contains browser cookie control.'
     }
     $tokenMatch = [regex]::Match($page.Content, 'name="classica-token"\s+content="([^"]+)"')
     if (-not $tokenMatch.Success) { throw 'Missing token in actual localhost UI.' }
     $headers = @{ 'X-Classica-Token' = $tokenMatch.Groups[1].Value }
     $state = Invoke-RestMethod -Uri ($url + '/api/state') -Headers $headers -TimeoutSec 15
-    if ($state.version -ne '2.1.1' -or $state.jobs.Count -ne 0) {
+    if ($state.version -ne '2.1.2' -or $state.jobs.Count -ne 0) {
         throw 'Version or initial queue state differs from expected fresh install.'
     }
     foreach ($component in @('yt_dlp','yt_dlp_ejs','ffmpeg','ffprobe','deno')) {
@@ -145,8 +155,12 @@ try {
     try {
         Push-Location -LiteralPath $appDir
         try {
-            & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File (Join-Path $appDir 'iniciar.ps1') -Background
-            if ($LASTEXITCODE -ne 0) { throw 'Optional background launcher returned failure.' }
+            $native = Start-Process -FilePath $launcher -WorkingDirectory $env:RUNNER_TEMP -PassThru
+            if (-not $native.WaitForExit(120000)) {
+                Stop-Process -Id $native.Id -Force
+                throw 'Branded launcher did not close after opening the application.'
+            }
+            if ($native.ExitCode -ne 0) { throw 'Branded launcher returned failure.' }
         }
         finally { Pop-Location }
         $hiddenLog = Join-Path $appDir 'ultimo-discreto.log'
@@ -161,7 +175,7 @@ try {
         if (-not $hiddenToken.Success) { throw 'Background application token was not served.' }
         $hiddenHeaders = @{ 'X-Classica-Token' = $hiddenToken.Groups[1].Value }
         $hiddenState = Invoke-RestMethod -Uri ($hiddenUrl + '/api/state') -Headers $hiddenHeaders -TimeoutSec 10
-        if ($hiddenState.version -ne '2.1.1') { throw 'Unexpected background application version.' }
+        if ($hiddenState.version -ne '2.1.2') { throw 'Unexpected background application version.' }
         Write-Host 'Optional detached console launch and live localhost HTTP: PASS'
         Invoke-RestMethod -Method Post -Uri ($hiddenUrl + '/api/shutdown') -Headers $hiddenHeaders -Body '{}' -ContentType 'application/json' -TimeoutSec 10 | Out-Null
         $hiddenStopped = $false

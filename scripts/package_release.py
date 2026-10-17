@@ -5,6 +5,7 @@ import hashlib
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
+GENERATED = {"Clássica.exe": "build/Clássica.exe"}
 FILES = (
     "app.py", "Iniciar.bat", "Iniciar discreto.bat", "Atualizar.bat", "iniciar.ps1", "LICENSE.txt",
     "README.md", "CHANGELOG.md", "SECURITY.md", "THIRD_PARTY.md",
@@ -16,15 +17,27 @@ FILES = (
     "docs/ARCHITECTURE.md", "docs/BRAND.md", "docs/QUALITY.md",
     "docs/TRACEABILITY.md", "docs/VALIDATION.md",
     ".github/workflows/quality.yml",
+    "assets/classica.ico", "assets/classica.png",
+    "launcher/Classica.cs", "launcher/app.manifest", "scripts/build_launcher.ps1",
+    "Clássica.exe",
 )
 
 
+def source_path(name: str) -> Path:
+    generated = ROOT / GENERATED.get(name, name)
+    return generated if generated.is_file() else ROOT / name
+
+
 def build(destination: Path) -> tuple[Path, Path]:
+    for name, source in GENERATED.items():
+        binary = source_path(name)
+        if not binary.is_file() or binary.read_bytes()[:2] != b"MZ":
+            raise RuntimeError(f"Compile {name} on Windows with scripts/build_launcher.ps1 before packaging.")
     destination.mkdir(parents=True, exist_ok=True)
-    archive = destination / "Classica-2.1.1-Windows-x64.zip"
+    archive = destination / "Classica-2.1.2-Windows-x64.zip"
     with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as package:
         for name in FILES:
-            data = (ROOT / name).read_bytes()
+            data = source_path(name).read_bytes()
             if name.endswith((".bat", ".ps1")):
                 data = data.replace(b"\r\n", b"\n").replace(b"\n", b"\r\n")
             info = zipfile.ZipInfo("Classica/" + name, date_time=(2026, 10, 17, 0, 0, 0))

@@ -2,7 +2,7 @@
 
 **Áudio e vídeo, no seu computador.**
 
-by **☧ SYSTEMS** · versão **2.1.1**
+by **☧ SYSTEMS** · versão **2.1.2**
 
 Aplicação local em português para salvar gravações autorizadas do YouTube.
 Cole o link, escolha áudio ou vídeo, selecione o formato e acompanhe a fila.
@@ -10,12 +10,28 @@ Cole o link, escolha áudio ou vídeo, selecione o formato e acompanhe a fila.
 ## Começar no Windows
 
 1. Baixe o pacote da versão publicada e extraia o ZIP.
-2. Entre na pasta **Classica** e abra **Iniciar.bat**.
+2. Entre na pasta **Classica** e abra **Clássica.exe**, identificado pelo ícone ☧.
 3. Na primeira abertura, aguarde a preparação dos componentes. Reserve cerca
    de **2 GB livres**, além do espaço necessário para seus downloads.
 4. A interface abre no navegador do computador. No modo clássico, mantenha a janela de execução aberta; para encerrar use **Sair**.
 
-### Inicialização discreta (opcional)
+### Um único ponto de entrada
+
+O ZIP já inclui **Clássica.exe**, com nome e ícone próprios. Não é necessário criar
+atalhos, escolher um navegador ou instalar um lançador separado. Extraia a pasta
+inteira: o executável depende dos arquivos que o acompanham. Ele funciona a partir
+da própria pasta, mesmo se for aberto de outro diretório.
+
+Uma janela clara mostra a preparação e eventuais erros. Depois da abertura da
+interface, essa janela fecha; use **Sair** na aplicação para encerrar o servidor.
+Não exige administrador, não cria atalhos nem adiciona inicialização com o Windows.
+
+O executável é compilado do código `launcher/Classica.cs` pelo GitHub Actions,
+com o compilador .NET Framework do Windows. O ícone não é uma assinatura digital:
+esta distribuição ainda não tem certificado de assinatura de código e o Windows
+pode exibir um aviso de reputação.
+
+### Alternativas de suporte
 
 Além do **Iniciar.bat**, há **Iniciar discreto.bat**. No modo discreto, a janela preta aparece apenas durante a preparação inicial e se fecha automaticamente depois que o navegador abre. A Clássica continua executando em segundo plano, sem depender de um console aberto. Para encerrar de fato, clique em **Sair** dentro da interface; apenas fechar a aba não interrompe o servidor nem a fila.
 
@@ -126,6 +142,8 @@ python app.py
 python -m unittest discover -s tests -v
 node --check web/app.js
 python scripts/verify_release.py
+## No Windows, antes de empacotar:
+powershell -NoProfile -File scripts/build_launcher.ps1
 python scripts/package_release.py
 ```
 
@@ -139,7 +157,7 @@ npm run test:ui
 ```
 
 GitHub Actions inclui testes Linux, preparação e testes Windows, testes de
-interface e construção do ZIP. Uma tag `v2.1.1` aciona a publicação de uma versão
+interface e construção do ZIP. Uma tag `v2.1.2` aciona a publicação de uma versão
 com ZIP e SHA256 **apenas se os testes anteriores passarem**. Não confunda a
 existência do workflow com um resultado de CI já aprovado.
 

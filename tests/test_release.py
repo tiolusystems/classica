@@ -18,11 +18,13 @@ class ReleaseTests(unittest.TestCase):
     def test_versioned_artifact_and_ui_agree(self):
         import app
         from html.parser import HTMLParser
-        assert app.VERSION == '2.1.1'
+        assert app.VERSION == '2.1.2'
         assert f'Classica-{app.VERSION}-Windows-x64.zip' in (ROOT / 'scripts/package_release.py').read_text(encoding='utf-8')
         assert f'v{app.VERSION}' in (ROOT / 'web/index.html').read_text(encoding='utf-8')
 
     def test_package_is_deterministic_and_contains_only_release_files(self):
+        if not package_release.source_path('Clássica.exe').is_file():
+            self.skipTest('Native Windows launcher is compiled and packaged by Windows CI')
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
             first, checksum = package_release.build(root / "first")
@@ -30,6 +32,8 @@ class ReleaseTests(unittest.TestCase):
             self.assertEqual(first.read_bytes(), second.read_bytes())
             with zipfile.ZipFile(first) as package:
                 self.assertIsNone(package.testzip())
+                self.assertTrue(package.read('Classica/Clássica.exe').startswith(b'MZ'))
+                self.assertIn('Classica/assets/classica.ico', package.namelist())
                 self.assertIn("Classica/Iniciar discreto.bat", package.namelist())
                 self.assertIn(b"-Background", package.read("Classica/Iniciar discreto.bat"))
                 self.assertIn(b"[switch]$Background", package.read("Classica/iniciar.ps1"))

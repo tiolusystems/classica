@@ -1,5 +1,11 @@
 # Histórico de mudanças
 
+## 2.1.2 — candidata (ainda não publicada)
+
+- O ZIP inclui Clássica.exe com nome, ícone ☧ e metadados do produto; compilação do código-fonte no Windows, sem empacotador de terceiros.
+- Janela de preparação com progresso, detalhes e erros; abertura discreta da aplicação existente, sem instalação de atalhos ou privilégios administrativos.
+- Compilação integrada aos testes e ao release. Validação em Windows do executável extraído do ZIP, caminhos com espaços e acentos e encerramento pelo botão Sair.
+
 ## 2.1.1 — candidata (ainda não publicada)
 
 - Refinamento visual discreto de painéis e hierarquia, preservando o símbolo canônico ☧, cores funcionais e acessibilidade; dourado suave apenas em detalhes simbólicos e divisórias, com superfícies claras e sem sombras.

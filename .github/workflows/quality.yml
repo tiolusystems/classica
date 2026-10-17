@@ -37,6 +37,7 @@ jobs:
           $errors = $null
           [System.Management.Automation.Language.Parser]::ParseFile((Join-Path $PWD 'iniciar.ps1'), [ref]$tokens, [ref]$errors) | Out-Null
           if ($errors.Count -gt 0) { throw ($errors | Out-String) }
+          .\scripts\build_launcher.ps1
           .\iniciar.ps1 -SetupOnly
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Test Linux
@@ -80,6 +81,9 @@ jobs:
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: '3.13'
+      - name: Compile branded Windows launcher
+        shell: powershell
+        run: .\scripts\build_launcher.ps1
       - name: Verify and build production ZIP
         run: |
           python scripts/verify_release.py
@@ -87,7 +91,13 @@ jobs:
       - name: Fresh ZIP extraction, dependency setup, localhost and media suite
         shell: powershell
         run: |
-          .\scripts\windows_clean_install.ps1 -Archive (Join-Path $PWD 'dist\Classica-2.1.1-Windows-x64.zip')
+          .\scripts\windows_clean_install.ps1 -Archive (Join-Path $PWD 'dist\Classica-2.1.2-Windows-x64.zip')
+      - name: Store verified distribution
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: Classica-Windows-x64
+          path: dist/*
+          if-no-files-found: error
 
   release:
     name: Package and publish release
@@ -104,8 +114,16 @@ jobs:
       - name: Validate version tag
         run: python -c "import app,os; assert os.environ['GITHUB_REF_NAME'] == 'v'+app.VERSION, 'Version tag mismatch'"
       - run: python scripts/verify_release.py
-      - run: python scripts/package_release.py
+      - name: Download the exact ZIP tested on Windows
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          name: Classica-Windows-x64
+          path: dist
+      - name: Verify downloaded ZIP checksum
+        working-directory: dist
+        run: sha256sum -c *.sha256
       - name: Publish ZIP and SHA256
+        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh release create "$GITHUB_REF_NAME" dist/*.zip dist/*.sha256 --verify-tag --title "Clássica $GITHUB_REF_NAME" --notes-file CHANGELOG.md

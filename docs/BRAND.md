@@ -1,5 +1,16 @@
 # Identidade
 
+## Inicialização no Windows (2.1.2)
+
+O ponto de entrada visível do ZIP é `Clássica.exe`, com nome de produto Clássica
+e assinatura ☧ SYSTEMS nos metadados. O ícone `assets/classica.ico` contém
+16, 24, 32, 48, 64, 128 e 256 pixels, mantendo o símbolo U+2627 branco no fundo
+`#172B3A` do favicon. A imagem usa o glifo de DejaVu Sans rasterizado;
+nenhum arquivo de fonte é distribuído. A prévia é `assets/classica.png`.
+O favicon da interface permanece o existente.
+
+O executável não instala atalhos e não altera as associações de arquivos.
+
 **Assinatura visível canônica:** `by ☧ SYSTEMS`.
 
 Origem confirmada no arquivo público
