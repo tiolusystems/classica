@@ -49,7 +49,7 @@ componentes recebem conexões durante preparação e atualização.
 
 ## Interface sem autenticação por navegador
 
-A interface não oferece opção de leitura de cookies de navegadores. Downloads e novas tentativas iniciados pela interface usam `use_edge_session=false` por padrão. O mecanismo interno legado da prévia 2.1.0 ainda aceita autorização explícita via API local para compatibilidade; **não está exposto pela interface nem é acionado pela utilização normal**. Sua remoção integral exige uma revisão separada e testes dedicados. O aplicativo não garante acesso a conteúdos sujeitos a restrições do YouTube.
+A interface, a API local e o mecanismo de download não oferecem leitura de cookies de navegadores. Uma opção `use_edge_session` em pedidos à API é rejeitada; históricos antigos têm o campo removido ao carregar. O comando do extrator nunca recebe `--cookies-from-browser`. O aplicativo não garante acesso a conteúdos sujeitos a restrições do YouTube.
 
 ## Relatar um problema
 
