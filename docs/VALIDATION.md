@@ -1,4 +1,29 @@
-# Registro de verificação — 2.0.0
+# Registro de verificação
+
+## 2.1.0 — 17/10/2026
+
+- Linux: 33 testes passaram, incluindo consentimento Edge ausente/presente,
+  rejeição de valores inválidos, novas tentativas e não persistência.
+- Nenhum cookie real foi lido nos testes. O fluxo HTTP usa um gerenciador sem
+  worker; comandos são inspecionados sem executar a leitura do Edge.
+- Sintaxe JavaScript e contrato de distribuição passaram. A suíte de interface
+  foi ampliada para aceitar/recusar o consentimento, envio na API e reset ao
+  recarregar, mas não executou: o Chromium não está instalado e o download
+  retornou um ZIP vazio/truncado. Não se afirma aprovação visual desta versão.
+- Não foi validada a descriptografia de cookies no Windows/Edge do usuário.
+  A proteção do navegador pode impedir o recurso; não há promessa de eliminar
+  HTTP 429, exigências de login ou PO Token.
+- Recuperação HTTP 429: testes de uma tentativa automática, pausa global,
+  recusa de retomada antecipada e persistência da pausa.
+- Respostas HTML não passam pela validação de mídia nem são marcadas como
+  concluídas mesmo quando o extrator encerra com código zero.
+- Teste remoto do vídeo r30D3SW4OVw: consulta retornou título; a tentativa de
+  mídia recebeu HTML de 195 bytes com “Site Unavailable”, rejeitado pelo FFprobe.
+  Isso é uma limitação desta conexão remota, não o diagnóstico do Windows do
+  usuário. Não houve download de mídia válido confirmado para esse vídeo.
+- O pacote local 2.1.0 não implica publicação no GitHub nem aprovação na CI.
+
+## Registro histórico — 2.0.0
 
 Data: 17/10/2026. Ambiente de trabalho: Linux.
 
