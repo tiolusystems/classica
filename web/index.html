@@ -18,7 +18,7 @@
   <nav aria-label="Ações da aplicação" class="header-actions"><span class="connection"><span class="dot" aria-hidden="true"></span><span id="connection-text">Conectando</span></span><button id="help-top-button" class="button quiet" type="button">Ajuda</button><button id="settings-button" class="button secondary" type="button">Preferências</button><button id="exit-button" class="button quiet" type="button">Sair</button></nav>
 </header>
 <main id="main" tabindex="-1">
-  <section class="page-intro" aria-labelledby="page-title"><div><p class="eyebrow">SUA COLEÇÃO. NO SEU COMPUTADOR.</p><h1 id="page-title">Baixar áudio e vídeo</h1><p>Cole um link, escolha o formato e acompanhe o download.</p></div><span class="local-badge">Processamento local</span></section>
+  <section class="page-intro" aria-labelledby="page-title"><div><p class="eyebrow">TECNOLOGIA LOCAL · ACERVO COM RESPONSABILIDADE</p><h1 id="page-title">Baixar áudio e vídeo</h1><p>Cole um link, escolha o formato e acompanhe o download.</p></div><span class="local-badge">Processamento local</span></section>
   <div id="dependency-warning" class="notice" hidden role="alert"></div>
   <div id="queue-warning" class="notice" hidden role="status"><p id="queue-warning-text"></p><button id="resume-queue" class="button secondary" type="button" hidden>Retomar fila</button></div>
   <div class="content-grid">
@@ -36,18 +36,19 @@
         <p id="video-hint" class="hint" hidden>O vídeo inclui o som. A resolução depende da fonte. A conversão para WebM pode levar mais tempo.</p>
         <div class="destination"><div><span class="caption">PASTA DE DESTINO</span><span id="folder-label" class="path">Carregando…</span></div><button id="folder-button" type="button" class="text-button">Alterar</button></div>
         <button id="submit-button" type="submit" class="button primary submit"><span id="download-button-text">Baixar áudio</span><span aria-hidden="true">↓</span></button>
-        <p class="rights-note">Use gravações em domínio público ou autorizadas para download.</p>
+        <p class="rights-note"><strong>Uso responsável.</strong> Baixe somente conteúdos para os quais tenha permissão ou fundamento legal. O usuário deve observar direitos autorais, licenças e condições das plataformas. <button id="rights-details" class="inline-link" type="button">Entenda as responsabilidades</button>.</p>
       </form>
     </section>
     <section class="panel library" aria-labelledby="collection-title">
       <div class="panel-heading"><div><h2 id="collection-title">Seus downloads</h2><p id="summary" class="hint">Carregando histórico…</p></div><span class="step-label">02 — ACOMPANHAR</span></div>
       <div class="library-toolbar"><label class="sr-only" for="filter">Filtrar downloads</label><select id="filter"><option value="all">Todos os downloads</option><option value="active">Em andamento</option><option value="done">Concluídos</option><option value="error">Precisam de atenção</option></select><button id="open-folder-button" class="button secondary" type="button">Abrir pasta <span aria-hidden="true">↗</span></button></div>
+      <div class="library-control"><span class="hint">O histórico fica neste computador. Limpar não apaga os arquivos.</span><button id="clear-button" class="button secondary" type="button" disabled>Limpar biblioteca</button></div>
       <div id="jobs" aria-live="off"></div>
       <div id="empty" class="empty-state" hidden><span class="empty-icon" aria-hidden="true">↓</span><h3>Seu acervo começa com um link.</h3><p>Adicione um vídeo ao lado para salvar o áudio ou o vídeo completo.</p></div>
-      <div class="library-bottom"><span class="hint">Os arquivos permanecem no seu computador.</span><button id="clear-button" class="text-button" type="button" disabled>Limpar histórico</button></div>
+      <div class="library-bottom"><span class="hint">Os downloads salvos permanecem na pasta escolhida.</span></div>
     </section>
   </div>
-  <footer class="app-footer"><span>Clássica <span class="version">v2.1.0</span></span><span class="developer-signature" aria-label="by ☧ SYSTEMS">by <span aria-hidden="true">☧</span> SYSTEMS</span></footer>
+  <footer class="app-footer"><span>Clássica <span class="version">v2.1.1</span></span><span class="developer-signature" aria-label="by ☧ SYSTEMS">by <span aria-hidden="true">☧</span> SYSTEMS</span></footer>
 </main>
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 <dialog id="settings-dialog" aria-labelledby="preferences-title"><form id="settings-form"><div class="dialog-heading"><h2 id="preferences-title">Preferências</h2><button type="button" class="close-dialog icon-button" aria-label="Fechar preferências">×</button></div><p class="hint">Os próximos downloads usam a pasta abaixo. Os arquivos já salvos permanecem em seus locais.</p><label for="folder-input" class="field-label">Pasta dos downloads</label><input id="folder-input" type="text" required spellcheck="false" aria-describedby="folder-hint"><p id="folder-hint" class="hint">Use o caminho completo. Exemplo: C:\Users\Luciano\Music\Classica</p><div class="reading-settings"><label for="font-size" class="field-label">Tamanho do texto <output id="font-size-label" for="font-size">100%</output></label><input id="font-size" type="range" min="100" max="200" step="10" value="100" aria-describedby="reading-hint"><p id="reading-hint" class="hint">A fonte acompanha a janela. Ajuste de 100% a 200% para uma leitura confortável. O ajuste de leitura é salvo automaticamente neste navegador.</p><button id="reset-reading" type="button" class="text-button">Restaurar leitura padrão</button></div><div class="dialog-actions"><button type="button" class="close-dialog button secondary">Fechar</button><button type="submit" class="button primary">Salvar pasta</button></div></form></dialog>
@@ -61,7 +62,7 @@
   <p>Quando ocorre HTTP 429, a fila pausa por 60 segundos e faz uma única nova tentativa automática do item. Se o limite persistir, a fila aguarda sua decisão; o botão <strong>Retomar fila</strong> é liberado depois da pausa mínima. O item que falhou exige <strong>Tentar novamente</strong>. Uma espera de 60 segundos é uma política da aplicação, não um prazo garantido pelo YouTube.</p>
   <p>Um arquivo só é marcado como concluído após a verificação de uma faixa de áudio e, nos formatos de vídeo, também de uma faixa de imagem. Respostas de erro da rede não são aceitas como mídia válida.</p>
 
-  <h3>Privacidade e direitos</h3><p>A interface é local. O extrator se conecta ao YouTube para obter o conteúdo. Uma obra antiga pode ter gravações com direitos próprios. Não há verificação automática de licenças. Use somente downloads autorizados.</p>
+  <h3>Privacidade, direitos e responsabilidade</h3><p>A interface funciona localmente; o extrator se conecta ao YouTube para obter os conteúdos solicitados. A ferramenta não verifica automaticamente direitos autorais, licenças ou permissões. O usuário deve assegurar que possui autorização ou fundamento legal aplicável para cada download, respeitando os direitos dos titulares e as condições das plataformas. Obras antigas podem ter gravações, execuções e edições protegidas separadamente. Este aviso é informativo e não exclui obrigações legais nem substitui orientação jurídica.</p>
   <p class="hint">Windows 10/11 x64. Sem contorno de CAPTCHA, DRM ou pagamento. Os componentes externos mantêm suas próprias licenças. A documentação do projeto descreve os testes e seus limites.</p>
   <div class="help-brand developer-signature" aria-label="by ☧ SYSTEMS">by <span aria-hidden="true">☧</span> SYSTEMS</div>
 </dialog>

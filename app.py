@@ -25,7 +25,7 @@ import uuid
 import webbrowser
 
 ROOT = Path(__file__).resolve().parent
-VERSION = "2.1.0"
+VERSION = "2.1.1"
 FORMATS = {"mp3": "MP3 · 320 kbps", "m4a": "M4A · AAC", "aac": "AAC",
            "wav": "WAV", "flac": "FLAC", "ogg": "OGG · Vorbis", "opus": "OPUS",
            "original": "Áudio original"}

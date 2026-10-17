@@ -74,9 +74,10 @@ $('settings-form').addEventListener('submit',async event=>{event.preventDefault(
 $('open-folder-button').addEventListener('click',()=>action('open-folder'));
 $('resume-queue').addEventListener('click',()=>action('resume'));
 $('help-top-button').addEventListener('click',()=>$('help-dialog').showModal());
+$('rights-details').addEventListener('click',()=>$('help-dialog').showModal());
 for(const b of document.querySelectorAll('.close-dialog'))b.addEventListener('click',()=>b.closest('dialog').close());
 $('filter').addEventListener('change',()=>{signature='';render();});
-$('clear-button').addEventListener('click',()=>{if(confirm('Remover do histórico os itens concluídos, cancelados ou com falha? Os arquivos baixados serão preservados.'))action('clear');});
+$('clear-button').addEventListener('click',()=>{if(confirm('Limpar da biblioteca os downloads concluídos, cancelados ou com falha? Os arquivos no computador NÃO serão apagados; itens na fila e em andamento continuam visíveis.'))action('clear');});
 $('exit-button').addEventListener('click',async()=>{if(snapshot?.jobs.some(j=>!terminal.has(j.status))&&!confirm('Existem downloads pendentes. Encerrar a aplicação e interromper a fila?'))return;try{await api('shutdown',{});stopped=true;$('connection-text').textContent='Encerrada';$('connection-text').parentElement.classList.add('offline');toast('Aplicação encerrada. Você já pode fechar esta aba.');$('submit-button').disabled=true;$('exit-button').disabled=true;}catch(error){toast(error.message,true);}});
 refresh();setInterval(refresh,1000);
 

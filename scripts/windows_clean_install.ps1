@@ -59,7 +59,7 @@ try {
 
     Push-Location -LiteralPath $appDir
     try {
-        & $pythonExe -c "import app,pathlib; assert pathlib.Path(app.__file__).resolve().parent == pathlib.Path.cwd(); assert app.VERSION == '2.1.0'; assert all(app.dependencies().values()), app.dependencies(); print('Fresh runtime components: PASS')"
+        & $pythonExe -c "import app,pathlib; assert pathlib.Path(app.__file__).resolve().parent == pathlib.Path.cwd(); assert app.VERSION == '2.1.1'; assert all(app.dependencies().values()), app.dependencies(); print('Fresh runtime components: PASS')"
         if ($LASTEXITCODE -ne 0) { throw 'Fresh runtime import/dependencies check failed.' }
     }
     finally { Pop-Location }
@@ -92,14 +92,14 @@ try {
     # Inspect ASCII identifiers: Windows PowerShell 5.1 may mis-decode UTF-8
     # page text even though browsers honor the HTML charset meta tag.
     if ($page.StatusCode -ne 200 -or $page.Content -notmatch 'name="classica-token"' -or
-        $page.Content -notmatch 'v2\.1\.0' -or $page.Content -match 'use-edge-session') {
+        $page.Content -notmatch 'v2\.1\.1' -or $page.Content -match 'use-edge-session') {
         throw 'First-run UI invalid or contains browser cookie control.'
     }
     $tokenMatch = [regex]::Match($page.Content, 'name="classica-token"\s+content="([^"]+)"')
     if (-not $tokenMatch.Success) { throw 'Missing token in actual localhost UI.' }
     $headers = @{ 'X-Classica-Token' = $tokenMatch.Groups[1].Value }
     $state = Invoke-RestMethod -Uri ($url + '/api/state') -Headers $headers -TimeoutSec 15
-    if ($state.version -ne '2.1.0' -or $state.jobs.Count -ne 0) {
+    if ($state.version -ne '2.1.1' -or $state.jobs.Count -ne 0) {
         throw 'Version or initial queue state differs from expected fresh install.'
     }
     foreach ($component in @('yt_dlp','yt_dlp_ejs','ffmpeg','ffprobe','deno')) {

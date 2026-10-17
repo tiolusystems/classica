@@ -40,6 +40,14 @@ def verify():
     assert '>Chi Rho<' not in html and 'PX Systems' not in html
     assert 'name="viewport"' in html and 'user-scalable=no' not in html
     assert 'max="200"' in html
+    # The app identity, displayed version and distributed ZIP must always agree.
+    app_source = (ROOT / "app.py").read_text(encoding="utf-8")
+    version = re.search(r'^VERSION = "([0-9]+\.[0-9]+\.[0-9]+)"$', app_source, flags=re.MULTILINE)
+    assert version is not None, "Missing application version"
+    release_filename = "Classica-" + version.group(1) + "-Windows-x64.zip"
+    assert release_filename in (ROOT / "scripts/package_release.py").read_text(encoding="utf-8"), "Package version mismatch"
+    assert "v" + version.group(1) in html, "Interface version mismatch"
+    assert release_filename in (ROOT / ".github/workflows/quality.yml").read_text(encoding="utf-8"), "Clean install archive version mismatch"
     for foreground, background in [("#172b3a", "#ffffff"), ("#526676", "#ffffff"),
                                    ("#526676", "#f5f7f9"), ("#ffffff", "#0a655e"),
                                    ("#922f22", "#ffffff")]:

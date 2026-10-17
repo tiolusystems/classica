@@ -2,7 +2,7 @@
 
 **Áudio e vídeo, no seu computador.**
 
-by **☧ SYSTEMS** · versão **2.1.0**
+by **☧ SYSTEMS** · versão **2.1.1**
 
 Aplicação local em português para salvar gravações autorizadas do YouTube.
 Cole o link, escolha áudio ou vídeo, selecione o formato e acompanhe a fila.
@@ -49,7 +49,7 @@ codecs de origem também depende do reprodutor usado.
 
 O destino inicial é `Music\Classica` no seu perfil. O caminho exato aparece na
 interface e pode ser alterado em Preferências. Áudio e vídeo usam a mesma pasta
-configurada. Limpar histórico **preserva** os arquivos baixados.
+configurada. O comando **Limpar biblioteca** exige confirmação e **preserva** os arquivos baixados.
 
 Histórico e configurações ficam em `%LOCALAPPDATA%\Classica`. A versão 2.0
 mantém compatibilidade com o histórico da versão anterior. Encerrar interrompe
@@ -134,7 +134,7 @@ npm run test:ui
 ```
 
 GitHub Actions inclui testes Linux, preparação e testes Windows, testes de
-interface e construção do ZIP. Um tag `v2.1.0` aciona a publicação de uma versão
+interface e construção do ZIP. Uma tag `v2.1.1` aciona a publicação de uma versão
 com ZIP e SHA256 **apenas se os testes anteriores passarem**. Não confunda a
 existência do workflow com um resultado de CI já aprovado.
 

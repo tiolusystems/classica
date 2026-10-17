@@ -52,6 +52,19 @@ try {
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1),true,`Horizontal overflow at ${width}px`);
   }
   await page.setViewportSize({width:1366,height:900});
+  const presentation=await page.evaluate(()=>{
+    const selectors=['.app-header','.panel','.brand-symbol','.toast','#settings-dialog'];
+    return {
+      shadows:selectors.map(selector=>getComputedStyle(document.querySelector(selector)).boxShadow),
+      emblemColor:getComputedStyle(document.querySelector('.brand-symbol')).color,
+      panelMarker:getComputedStyle(document.querySelector('.panel-heading')).borderTopColor,
+      pageBackground:getComputedStyle(document.body).backgroundColor
+    };
+  });
+  assert.deepEqual(presentation.shadows,Array(5).fill('none'),'Flat design without shadows');
+  assert.equal(presentation.emblemColor,'rgb(236, 213, 166)','Warm gold preserves Chi-Rho on dark tile');
+  assert.equal(presentation.panelMarker,'rgb(215, 196, 156)','Muted gold used only for ornamental separators');
+  assert.equal(presentation.pageBackground,'rgb(247, 248, 246)','Comfortable and light canvas');
   await page.getByRole('button',{name:'Preferências',exact:true}).click();
   await page.locator('#font-size').evaluate(input=>{input.value='200';input.dispatchEvent(new Event('input',{bubbles:true}));});
   assert.equal(await page.locator('#font-size-label').textContent(),'200%');
@@ -61,6 +74,14 @@ try {
   await page.getByText('Conexão local',{exact:true}).waitFor();
   assert.equal(await page.locator('#use-edge-session').count(),0,'Controle de cookies continua ausente ao recarregar');
   assert.equal(await page.evaluate(()=>localStorage.getItem('classica-reading')),'200');
+  assert.equal(await page.getByRole('button',{name:'Limpar biblioteca',exact:true}).count(),1);
+  assert.equal(await page.getByRole('button',{name:'Limpar biblioteca',exact:true}).isEnabled(),true);
+  page.once('dialog',dialog=>dialog.dismiss());
+  await page.getByRole('button',{name:'Limpar biblioteca',exact:true}).click();
+  assert.equal(await page.getByText('Cancelado',{exact:true}).count(),1,'Canceling clear prompt must preserve history');
+  await page.getByRole('button',{name:'Entenda as responsabilidades',exact:true}).click();
+  assert.equal(await page.getByRole('dialog',{name:'Como usar a Clássica'}).isVisible(),true);
+  await page.keyboard.press('Escape');
   await page.getByRole('button',{name:'Ajuda',exact:true}).click();
   await page.getByRole('dialog',{name:'Como usar a Clássica'}).waitFor();
   await page.keyboard.press('Escape');
