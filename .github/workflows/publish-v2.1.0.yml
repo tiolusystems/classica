@@ -1,0 +1,90 @@
+# Single-purpose release gate for the already approved Clássica 2.1.0.
+# Activated only by SUCCESS of main's required CI immediately after this file
+# is merged; fail closed unless the parent is the exact audited baseline.
+name: Publish Clássica 2.1.0 once
+
+on:
+  workflow_run:
+    workflows: ["Quality and release"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: classica-publish-v2.1.0
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish verified Clássica v2.1.0
+    if: >-
+      ${{ github.event.workflow_run.conclusion == 'success' &&
+          github.event.workflow_run.event == 'push' &&
+          github.event.workflow_run.head_branch == 'main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - name: Check out the precise commit validated by required CI
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 2
+      - name: Verify release is one isolated automation change
+        env:
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          EXPECTED_PARENT: aafd6269f517a1144dce01e9aa6e8dbbeded5099
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+          test "$(git rev-parse HEAD^)" = "$EXPECTED_PARENT"
+          test "$(git diff --name-only HEAD^ HEAD)" = ".github/workflows/publish-v2.1.0.yml"
+          main_remote="$(git ls-remote origin refs/heads/main | cut -f1)"
+          test "$main_remote" = "$HEAD_SHA"
+          echo "Release candidate is the audited main + only this publication workflow."
+      - name: Install pinned Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.13'
+      - name: Verify source, build reproducible ZIP and validate SHA-256
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -c "import app; assert app.VERSION == '2.1.0'"
+          python scripts/verify_release.py
+          python scripts/package_release.py
+          test -s dist/Classica-2.1.0-Windows-x64.zip
+          test -s dist/Classica-2.1.0-Windows-x64.zip.sha256
+          (cd dist && sha256sum --check Classica-2.1.0-Windows-x64.zip.sha256)
+          python - <<'PY'
+          import zipfile
+          with zipfile.ZipFile("dist/Classica-2.1.0-Windows-x64.zip") as archive:
+              assert archive.testzip() is None
+              assert "Classica/Iniciar.bat" in archive.namelist()
+              assert "Classica/app.py" in archive.namelist()
+          print("Release ZIP contents and SHA-256: PASS")
+          PY
+      - name: Create immutable version tag and publish both release assets
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          tag_sha="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/v2.1.0" --jq '.object.sha' 2>/dev/null || true)"
+          if [ -n "$tag_sha" ] && [ "$tag_sha" != "$HEAD_SHA" ]; then
+              echo "Refusing to overwrite an existing v2.1.0 tag pointing elsewhere." >&2
+              exit 1
+          fi
+          if gh release view v2.1.0 >/dev/null 2>&1; then
+              echo "v2.1.0 already published; will not overwrite."
+              exit 0
+          fi
+          if [ -z "$tag_sha" ]; then
+              gh api -X POST "repos/$GITHUB_REPOSITORY/git/refs" -f ref=refs/tags/v2.1.0 -f sha="$HEAD_SHA" >/dev/null
+          fi
+          gh release create v2.1.0             dist/Classica-2.1.0-Windows-x64.zip             dist/Classica-2.1.0-Windows-x64.zip.sha256             --verify-tag             --title "Clássica v2.1.0"             --notes-file CHANGELOG.md
+          gh release view v2.1.0 --json tagName,isDraft,assets --jq '.tagName, .isDraft, (.assets | map({name: .name, size: .size}))'
