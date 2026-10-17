@@ -5,7 +5,7 @@
 - Refinamento visual discreto de painéis e hierarquia, preservando o símbolo canônico ☧, cores funcionais e acessibilidade; dourado suave apenas em detalhes simbólicos e divisórias, com superfícies claras e sem sombras.
 - Botão “Limpar biblioteca” destacado; operação existente remove somente itens encerrados do histórico, sem apagar mídias ou downloads ativos.
 - Aviso de uso responsável junto ao download, com explicação complementar na ajuda; não representa exoneração geral de responsabilidade.
-- A opção de execução sem console será avaliada em branch separada após testes do comportamento atual.
+- Inicialização discreta **opcional** em `Iniciar discreto.bat`: mantém o serviço local após fechar a janela de preparação; o modo clássico permanece disponível para diagnóstico. O ciclo de vida e a saída pelo botão Sair são testados num Windows limpo.
 
 ## 2.1.0 — 2026-10-17
 

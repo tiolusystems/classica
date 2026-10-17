@@ -13,8 +13,13 @@ Cole o link, escolha áudio ou vídeo, selecione o formato e acompanhe a fila.
 2. Entre na pasta **Classica** e abra **Iniciar.bat**.
 3. Na primeira abertura, aguarde a preparação dos componentes. Reserve cerca
    de **2 GB livres**, além do espaço necessário para seus downloads.
-4. A interface abre no navegador do computador. Mantenha a janela de execução
-   aberta enquanto usa a aplicação. Para encerrar, use **Sair**.
+4. A interface abre no navegador do computador. No modo clássico, mantenha a janela de execução aberta; para encerrar use **Sair**.
+
+### Inicialização discreta (opcional)
+
+Além do **Iniciar.bat**, há **Iniciar discreto.bat**. No modo discreto, a janela preta aparece apenas durante a preparação inicial e se fecha automaticamente depois que o navegador abre. A Clássica continua executando em segundo plano, sem depender de um console aberto. Para encerrar de fato, clique em **Sair** dentro da interface; apenas fechar a aba não interrompe o servidor nem a fila.
+
+O modo clássico **Iniciar.bat** permanece como alternativa recomendada para diagnóstico. Se o início discreto falhar, consulte `ultimo-inicio.log` e `ultimo-discreto-erros.log` na pasta da Clássica e volte a usar o modo clássico. Não há serviço permanente instalado nem inicialização automática junto com o Windows.
 
 **Windows 10/11 x64 (Intel/AMD).** Não é um APK. A interface local não é uma
 página hospedada no GitHub Pages: o processamento exige Python, yt-dlp e FFmpeg

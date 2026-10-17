@@ -6,7 +6,7 @@ import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
 FILES = (
-    "app.py", "Iniciar.bat", "Atualizar.bat", "iniciar.ps1", "LICENSE.txt",
+    "app.py", "Iniciar.bat", "Iniciar discreto.bat", "Atualizar.bat", "iniciar.ps1", "LICENSE.txt",
     "README.md", "CHANGELOG.md", "SECURITY.md", "THIRD_PARTY.md",
     "requirements.in", "requirements.txt", "requirements.lock", "tools.lock.json",
     "package.json", "package-lock.json", ".gitignore", ".gitattributes",
