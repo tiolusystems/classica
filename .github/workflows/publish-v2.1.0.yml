@@ -35,7 +35,7 @@ jobs:
       - name: Verify release is one isolated automation change
         env:
           HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
-          EXPECTED_PARENT: aafd6269f517a1144dce01e9aa6e8dbbeded5099
+          EXPECTED_PARENT: b1c882a3eaddd008c8f928df8d5fa8effd4a85f6
         shell: bash
         run: |
           set -euo pipefail
@@ -74,7 +74,21 @@ jobs:
           HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
           set -euo pipefail
-          tag_sha="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/v2.1.0" --jq '.object.sha' 2>/dev/null || true)"
+          # Avoid GitHub API's ambiguous null / empty matching-ref responses.
+          # git ls-remote --exit-code returns 2 for a tag that does not exist,
+          # 0 for an actual matching tag, and other codes for transport errors.
+          tag_status=0
+          tag_info="$(git ls-remote --exit-code --tags origin refs/tags/v2.1.0)" || tag_status=$?
+          if [ "$tag_status" -eq 0 ]; then
+              tag_sha="$(printf '%s\\n' "$tag_info" | cut -f1)"
+              test -n "$tag_sha"
+          elif [ "$tag_status" -eq 2 ]; then
+              tag_sha=""
+          else
+              echo "Refusing to publish: could not check the remote tag." >&2
+              exit 1
+          fi
+          echo "Tag lookup completed (exists=$([ -n "$tag_sha" ] && echo yes || echo no))."
           if [ -n "$tag_sha" ] && [ "$tag_sha" != "$HEAD_SHA" ]; then
               echo "Refusing to overwrite an existing v2.1.0 tag pointing elsewhere." >&2
               exit 1
