@@ -43,3 +43,12 @@ Uma versão deve ser descrita como “verificada” apenas nos ambientes que
 realmente foram executados. Resultados pendentes continuam pendentes na
 documentação de verificação. Testes de usabilidade com pessoas, leitores de
 tela e reprodução real em Windows continuam sendo avaliações distintas.
+
+## Aceitação da inicialização discreta opcional
+
+- `Iniciar.bat` mantém o comportamento clássico sem modificações; o modo discreto é um arquivo alternativo.
+- A janela de preparação aparece somente durante a inicialização; depois ela se fecha e o processo continua com o console oculto.
+- O processo não se torna um serviço do Windows, não inicia com o sistema e permanece acessível exclusivamente em `127.0.0.1`.
+- O botão `Sair` deve encerrar o processo em segundo plano. Fechar só a aba não interrompe a fila, como no modo clássico.
+- Erros devem ser registrados para diagnóstico; o `Iniciar.bat` original segue disponível.
+- O runner Windows deve validar a abertura real do servidor em segundo plano e seu encerramento via API.
