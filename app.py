@@ -28,7 +28,7 @@ from features import PreviewService, diagnosis, support_report
 from maintenance import MaintenanceService
 
 ROOT = Path(__file__).resolve().parent
-VERSION = "2.2.0"
+VERSION = "2.2.1"
 FORMATS = {"mp3": "MP3 · 320 kbps", "m4a": "M4A · AAC", "aac": "AAC",
            "wav": "WAV", "flac": "FLAC", "ogg": "OGG · Vorbis", "opus": "OPUS",
            "original": "Áudio original"}

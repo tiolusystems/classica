@@ -106,7 +106,7 @@ try {
   await page.getByRole('button',{name:'Copiar relatório de diagnóstico',exact:true}).click();
   await page.locator('#support-report').waitFor();
   const report=await page.locator('#support-report').inputValue();
-  assert.match(report,/Clássica 2.2.0/);
+  assert.match(report,/Clássica 2.2.1/);
   assert.ok(!report.includes('BaW_jenozKc')&&!report.includes(directory));
   await page.screenshot({path:'output/ui/classica-help-200.png',fullPage:true});
   await page.keyboard.press('Escape');

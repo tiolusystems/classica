@@ -1,4 +1,4 @@
-CLÁSSICA 2.2.0
+CLÁSSICA 2.2.1
 Áudio e vídeo no seu computador.
 by ☧ SYSTEMS
 
@@ -27,7 +27,7 @@ Windows 10 ou 11 de 64 bits, processador Intel ou AMD.
 
 INSTALAÇÃO E AJUDA
 O ícone ☧ perto do relógio permite Abrir ou Encerrar Clássica.
-Na Ajuda, Instalar neste computador cria atalhos no seu perfil, sem administrador.
+Na Ajuda, Instalar e criar atalhos instala a Clássica no seu perfil e cria atalhos na Área de Trabalho e no menu Iniciar, sem administrador.
 Verificar atualizações prepara a nova versão preservando seu histórico e arquivos.
 Copiar relatório de diagnóstico ajuda no suporte sem incluir seus links ou pastas.
 O executável não possui assinatura digital.

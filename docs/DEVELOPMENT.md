@@ -5,7 +5,7 @@ Este documento reúne os detalhes de execução, componentes, suporte e constru�
 
 **Áudio e vídeo, no seu computador.**
 
-by **☧ SYSTEMS** · versão **2.2.0**
+by **☧ SYSTEMS** · versão **2.2.1**
 
 Aplicação local em português para salvar gravações autorizadas do YouTube.
 Cole o link, escolha áudio ou vídeo, selecione o formato e acompanhe a fila.
@@ -13,7 +13,7 @@ Cole o link, escolha áudio ou vídeo, selecione o formato e acompanhe a fila.
 ## Começar no Windows
 
 1. Baixe o pacote da versão publicada e extraia o ZIP.
-2. Entre na pasta **Classica-2.2.0** e abra **Clássica.exe**, identificado pelo ícone ☧.
+2. Entre na pasta **Classica-2.2.1** e abra **Clássica.exe**, identificado pelo ícone ☧.
 3. Na primeira abertura, aguarde a preparação dos componentes. Reserve cerca
    de **2 GB livres**, além do espaço necessário para seus downloads.
 4. A interface abre no navegador do computador e a janela de preparação fecha. Para encerrar a aplicação, use **Sair**.
@@ -53,7 +53,7 @@ O modo clássico **Iniciar.bat** permanece como alternativa recomendada para dia
 página hospedada no GitHub Pages: o processamento exige Python, yt-dlp e FFmpeg
 no computador. Não é necessário fornecer senha, conta ou chave de API.
 
-O ZIP contém uma única pasta `Classica-2.2.0/`, identificada pela versão.
+O ZIP contém uma única pasta `Classica-2.2.1/`, identificada pela versão.
 Extraia como uma pasta nova; não mescle arquivos com outra versão. O histórico e
 as preferências continuam no perfil do usuário. Se fechar apenas a aba, abrir
 Clássica de novo recupera a mesma sessão. Use **Sair** para encerrar de fato.
@@ -95,7 +95,7 @@ os itens pendentes; ao reabrir, use Tentar novamente para retomá-los.
 
 ## Instalar e atualizar pela Ajuda
 
-Na **Ajuda**, use **Instalar neste computador** para copiar a aplicação para
+Na **Ajuda**, use **Instalar e criar atalhos** para copiar a aplicação para
 `%LOCALAPPDATA%\Programs\Classica` e criar atalhos na Área de Trabalho e no menu
 Iniciar. É opcional; a versão portátil continua funcionando. Não precisa de
 administrador e não inclui removedor.

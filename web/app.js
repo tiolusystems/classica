@@ -126,7 +126,7 @@ function renderMaintenance(pending){
   $('apply-update').disabled=!desktop||busy||pending>0||previewBusy;
   $('rollback-app').hidden=!m.can_rollback;
   $('rollback-app').disabled=!desktop||busy||pending>0||previewBusy;
-  $('maintenance-status').textContent=m.message||(m.latest_version?(m.update_available?'Nova versão disponível: '+m.latest_version+'.':'Você está na versão mais recente disponível.'):(m.installed?'Instalada neste computador.':'Versão portátil. A instalação é opcional.'));
+  $('maintenance-status').textContent=m.message||(m.latest_version?(m.update_available?'Nova versão disponível: '+m.latest_version+'.':'Você está na versão mais recente disponível.'):(m.installed?'Instalada neste computador.':'Versão portátil. Instalar e criar atalhos é opcional.'));
   if(!busy&&!desktop)$('maintenance-status').textContent+=' Para instalar ou atualizar, abra pelo executável Clássica.';
   else if(!busy&&pending)$('maintenance-status').textContent+=' Conclua ou cancele os downloads pendentes antes de continuar.';
 }
@@ -135,7 +135,7 @@ $('check-update').addEventListener('click',async()=>{
   try{await api('update/check',{});await refresh();}catch(error){$('maintenance-status').textContent=error.message;toast(error.message,true);}
   finally{checkingUpdate=false;$('check-update').disabled=!!snapshot?.maintenance?.busy;}
 });
-for(const [id,kind,label] of [['install-app','install','Instalar no seu perfil e criar atalhos'],['apply-update','update','Preparar e abrir a nova versão'],['rollback-app','rollback','Preparar e abrir a versão anterior']]){
+for(const [id,kind,label] of [['install-app','install','Instalar e criar atalhos'],['apply-update','update','Preparar e abrir a nova versão'],['rollback-app','rollback','Preparar e abrir a versão anterior']]){
   $(id).addEventListener('click',async()=>{
     if(!confirm(label+'? A preparação usa internet e espaço em disco. Ao concluir, a aplicação será reaberta. Histórico, preferências e arquivos baixados serão preservados.'))return;
     try{await api('update/prepare',{kind});await refresh();}catch(error){toast(error.message,true);}

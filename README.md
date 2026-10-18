@@ -4,31 +4,31 @@
 
 **Sua música e seus vídeos, no seu computador.**
 
-by **☧ SYSTEMS** · versão **2.2.0**
+by **☧ SYSTEMS** · versão **2.2.1**
 
 Cole o link de uma gravação autorizada do YouTube, escolha áudio ou vídeo
 e acompanhe o download em uma interface em português.
 
 ## Baixar
 
-[![Baixar Clássica para Windows](assets/download-windows.svg)](https://github.com/tiolusystems/classica/releases/download/v2.2.0/Classica-2.2.0-Windows-x64.zip)
+[![Baixar Clássica para Windows](assets/download-windows.svg)](https://github.com/tiolusystems/classica/releases/download/v2.2.1/Classica-2.2.1-Windows-x64.zip)
 
 **Windows 10 e 11 · 64 bits · Intel/AMD**
 
-O botão baixa o pacote pronto, **Classica-2.2.0-Windows-x64.zip**, com o
+O botão baixa o pacote pronto, **Classica-2.2.1-Windows-x64.zip**, com o
 executável **Clássica.exe**. Não é necessário conhecer programação.
 
 ## Começar em três passos
 
 1. **Baixe** pelo botão acima. Se já houver uma versão aberta, encerre-a pelo botão **Sair**.
 2. **Extraia** o ZIP: clique com o botão direito no arquivo e escolha **Extrair Tudo**. Mantenha a pasta completa.
-3. **Abra Clássica.exe**, dentro de **Classica-2.2.0**. Na primeira abertura, aguarde a preparação dos componentes.
+3. **Abra Clássica.exe**, dentro de **Classica-2.2.1**. Na primeira abertura, aguarde a preparação dos componentes.
 
 A primeira preparação usa internet e requer cerca de **2 GB livres**, além
 do espaço para suas músicas e vídeos. Depois, a interface abre no navegador.
 
-Para ter um ícone na Área de Trabalho e no menu Iniciar, abra
-**Ajuda → Instalar neste computador**. A instalação é opcional e feita no seu perfil.
+Para instalar a Clássica no seu perfil e criar um ícone na Área de Trabalho e no menu Iniciar, abra
+**Ajuda → Instalar e criar atalhos**. A ação é opcional e não exige administrador.
 
 <details>
 <summary>Baixou um ZIP com outra organização de pastas?</summary>
