@@ -171,9 +171,11 @@ npm run test:ui
 ```
 
 GitHub Actions inclui testes Linux, preparação e testes Windows, testes de
-interface e construção do ZIP. Uma tag `v2.1.2` aciona a publicação de uma versão
-com ZIP e SHA256 **apenas se os testes anteriores passarem**. Não confunda a
-existência do workflow com um resultado de CI já aprovado.
+interface e construção do ZIP. Integrar na `main` uma versão com número novo
+publica o ZIP e o SHA256 **apenas se todos os testes anteriores passarem**.
+O arquivo publicado é o mesmo testado na instalação limpa do Windows.
+Versões já publicadas permanecem imutáveis; alterações posteriores exigem outro
+número de versão. Uma tag também pode acionar esse fluxo, com validação do commit.
 
 ## Componentes e licenças
 
