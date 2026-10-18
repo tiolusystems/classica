@@ -119,7 +119,7 @@ try {
     # Inspect ASCII identifiers: Windows PowerShell 5.1 may mis-decode UTF-8
     # page text even though browsers honor the HTML charset meta tag.
     if ($page.StatusCode -ne 200 -or $page.Content -notmatch 'name="classica-token"' -or
-        $page.Content -notmatch 'v2\.2\.0' -or $page.Content -match 'use-edge-session') {
+        $page.Content -notmatch 'v2\.2\.1' -or $page.Content -match 'use-edge-session') {
         throw 'First-run UI invalid or contains browser cookie control.'
     }
     $tokenMatch = [regex]::Match($page.Content, 'name="classica-token"\s+content="([^"]+)"')
