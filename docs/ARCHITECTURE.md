@@ -24,7 +24,7 @@ FFmpeg reais com conteúdo sintético.
 Limites: o servidor não foi projetado para exposição pública, clientes remotos,
 multiusuário, banco de dados remoto ou execução como serviço do Windows.
 
-## Desktop e manutenção (2.2.0)
+## Desktop e manutenção (2.2.1)
 
 O controlador C# mantém o NotifyIcon enquanto o servidor Python está ativo. Um
 mutex por pasta/perfil evita controladores duplicados; eventos locais sinalizam

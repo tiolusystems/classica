@@ -1,5 +1,9 @@
 # Histórico de mudanças
 
+## 2.2.1
+
+- Clareza na instalação: a ação da Ajuda passou a se chamar **Instalar e criar atalhos**, explicando que ela prepara a cópia gerenciada e cria atalhos na Área de Trabalho e no menu Iniciar.
+
 ## 2.2.0
 
 - Identidade visual própria: serifas clássicas, marfim, filetes e arabescos vetoriais discretos; marca ☧ preservada.

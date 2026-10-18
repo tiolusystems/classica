@@ -76,7 +76,7 @@ class LifecycleTests(unittest.TestCase):
                 for module in ('features.py', 'maintenance.py'):
                     shutil.copyfile(app.ROOT/module, other/module)
                 source = (app.ROOT/'app.py').read_text(encoding='utf-8')
-                (other/'app.py').write_text(source.replace('VERSION = "2.2.0"', 'VERSION = "9.9.9"'), encoding='utf-8')
+                (other/'app.py').write_text(source.replace('VERSION = "2.2.1"', 'VERSION = "9.9.9"'), encoding='utf-8')
                 attempt = subprocess.run([sys.executable, str(other/'app.py'), '--no-browser', '--data-dir', str(data)], cwd=root, env=env, capture_output=True, text=True, encoding='utf-8', timeout=12)
                 self.assertEqual(attempt.returncode, 1)
                 self.assertIn('Outra instalação', attempt.stdout)
