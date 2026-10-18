@@ -91,6 +91,7 @@ try {
   await page.getByText('Conexão local',{exact:true}).waitFor();
   assert.equal(await page.locator('#use-edge-session').count(),0,'Controle de cookies continua ausente ao recarregar');
   assert.equal(await page.evaluate(()=>localStorage.getItem('classica-reading')),'200');
+  assert.equal(await page.locator('.format-choice').evaluate(node=>[...node.querySelectorAll('label>span')].every(span=>{const range=document.createRange();range.selectNodeContents(span);return range.getClientRects().length===1;})),true,'Format names stay on one line at 200% reading');
   assert.equal(await page.getByRole('button',{name:'Limpar biblioteca',exact:true}).count(),1);
   assert.equal(await page.getByRole('button',{name:'Limpar biblioteca',exact:true}).isEnabled(),true);
   page.once('dialog',dialog=>dialog.dismiss());

@@ -198,3 +198,7 @@ dialog::backdrop{background:#202c2866}
 #support-report{margin-top:.8rem;font-size:.7rem;max-height:15rem}
 @media(max-width:40rem){h1{font-size:2rem}.page-intro{padding-bottom:1.7rem}.brand strong{font-size:1.55rem}.maintenance-actions>.button{width:100%}}
 @media(forced-colors:active){.page-intro::after{display:none}.panel-heading::after{color:CanvasText}.panel,.app-header{border-color:CanvasText}}
+
+/* At large reading sizes, give controls a full column before words become cramped. */
+html[data-reading=large] .content-grid{grid-template-columns:minmax(0,1fr)}
+html[data-reading=large] .library{min-height:20rem}

@@ -89,6 +89,7 @@ updateKind();
 function setReading(value) {
   const n=Math.max(100,Math.min(200,Number(value)||100));
   document.documentElement.style.setProperty('--font-scale',String(n/100));
+  document.documentElement.dataset.reading=n>=160?'large':'normal';
   $('font-size').value=String(n);$('font-size-label').value=n+'%';
   try{localStorage.setItem('classica-reading',String(n));}catch{}
 }
