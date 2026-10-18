@@ -365,6 +365,7 @@ class HttpTests(IsolatedApp):
         self.assertEqual(self.request('/api/shutdown', {})[0], 400)
         self.assertEqual(self.request('/api/preview', {'url':URL})[0], 400)
         self.assertEqual(self.request('/api/desktop/transition', {'id':'f'*32})[0], 400)
+        self.assertEqual(self.request('/api/desktop/completed', {'id':'f'*32})[0], 400)
         self.assertEqual(self.request('/ornament.svg')[0], 200)
 
     def test_api_refuses_browser_cookies_on_enqueue_and_retry(self):

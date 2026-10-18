@@ -1,6 +1,6 @@
 # Identidade
 
-## Inicialização no Windows (2.2.1)
+## Inicialização no Windows (2.2.2)
 
 O ponto de entrada visível do ZIP é `Clássica.exe`, com nome de produto Clássica
 e assinatura ☧ SYSTEMS nos metadados. O ícone `assets/classica.ico` contém
@@ -40,7 +40,7 @@ O Chi-Rho (☧) preserva seu caráter cristológico e deve ser tratado como elem
 
 Direção estética aceita: **simples, claro, plano e acolhedor**. Fundo levemente quente (`#F7F8F6`), superfícies brancas, sem sombras projetadas. Dourado discreto (`#8B6B35`, `#D7C49C`, `#ECD5A6`) apenas no símbolo e em marcadores decorativos; nunca utilizar dourado para indicar sucesso, erro, foco, seleção ou ação principal. Verde funcional e azul de foco permanecem inalterados.
 
-## Manuscrito e partitura — 2.2.1
+## Manuscrito e partitura — 2.2.2
 
 Títulos em Georgia, corpo Segoe UI/sistema; sem fontes externas. Marfim e branco
 quente, tinta verde escura, filetes de ouro envelhecido. Arabesco vetorial local

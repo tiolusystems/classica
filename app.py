@@ -28,7 +28,7 @@ from features import PreviewService, diagnosis, support_report
 from maintenance import MaintenanceService
 
 ROOT = Path(__file__).resolve().parent
-VERSION = "2.2.1"
+VERSION = "2.2.2"
 FORMATS = {"mp3": "MP3 · 320 kbps", "m4a": "M4A · AAC", "aac": "AAC",
            "wav": "WAV", "flac": "FLAC", "ogg": "OGG · Vorbis", "opus": "OPUS",
            "original": "Áudio original"}
@@ -598,12 +598,14 @@ class Handler(BaseHTTPRequestHandler):
                 result = manager.maintenance.check()
             elif path == '/api/update/prepare':
                 result = manager.begin_maintenance(data.get('kind'))
-            elif path in ('/api/desktop/preparing', '/api/desktop/transition', '/api/desktop/failed'):
+            elif path in ('/api/desktop/preparing', '/api/desktop/transition', '/api/desktop/completed', '/api/desktop/failed'):
                 action_id = data.get('id')
                 if not isinstance(action_id, str) or not re.fullmatch(r'[a-f0-9]{32}', action_id):
                     raise ValueError('Preparação não reconhecida.')
                 if path.endswith('/preparing'):
                     manager.maintenance.preparing(action_id)
+                elif path.endswith('/completed'):
+                    manager.maintenance.completed(action_id)
                 elif path.endswith('/failed'):
                     manager.maintenance.failed(action_id)
                 else:

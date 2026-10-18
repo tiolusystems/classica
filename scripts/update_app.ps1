@@ -71,7 +71,7 @@ try {
     $oldSession = Read-Session $components $oldVersion
     $desktop = Invoke-RestMethod -Uri ($oldSession.url + '/api/desktop') -Headers @{'X-Classica-Token'=$oldSession.token} -TimeoutSec 4 -MaximumRedirection 0
     $action = $desktop.action
-    if (-not $action -or $action.id -ne $ActionId -or $action.version -notmatch '^\d+\.\d+\.\d+$' -or $desktop.pending -ne 0) { throw 'Preparacao nao reconhecida.' }
+    if (-not $action -or $action.id -ne $ActionId -or $action.kind -notin @('install','update','rollback','shortcuts') -or $action.version -notmatch '^\d+\.\d+\.\d+$' -or $desktop.pending -ne 0) { throw 'Preparacao nao reconhecida.' }
     $target = Join-Path $managed ('versoes\Classica-' + $action.version)
     if ([IO.Path]::GetFullPath($action.target).TrimEnd('\') -ne [IO.Path]::GetFullPath($target).TrimEnd('\')) { throw 'Destino de instalacao invalido.' }
     # Refuse junctions/symlinks, including parents, before executing any file.
@@ -87,6 +87,15 @@ try {
         $full = [IO.Path]::GetFullPath((Join-Path $target $file.Name))
         if (-not $full.StartsWith($target + '\', [StringComparison]::OrdinalIgnoreCase) -or $file.Value -notmatch '^[a-f0-9]{64}$' -or
             (Get-FileHash -LiteralPath $full -Algorithm SHA256).Hash.ToLowerInvariant() -ne $file.Value) { throw 'A verificacao dos arquivos falhou.' }
+    }
+    if ($action.kind -eq 'shortcuts') {
+        if ([IO.Path]::GetFullPath($oldPackage).TrimEnd('\') -ne [IO.Path]::GetFullPath($target).TrimEnd('\') -or $oldVersion -ne $action.version) { throw 'A instalação ativa não corresponde aos atalhos solicitados.' }
+        $stable = Join-Path $managed $exeName
+        if (-not (Test-Path -LiteralPath $stable)) { Copy-Item -LiteralPath (Join-Path $oldPackage $exeName) -Destination $stable }
+        Set-Shortcut ([Environment]::GetFolderPath('DesktopDirectory')) $stable
+        Set-Shortcut ([Environment]::GetFolderPath('Programs')) $stable
+        Write-Host 'Atalhos criados ou atualizados.'
+        exit 0
     }
     $targetComponents = Join-Path $target 'Componentes'
     $targetExe = Join-Path $target $exeName

@@ -7,7 +7,7 @@ $toolsDir = Join-Path $PSScriptRoot '.tools'
 $binDir = Join-Path $toolsDir 'bin'
 $pythonExe = Join-Path $PSScriptRoot '.venv\Scripts\python.exe'
 $uvExe = Join-Path $binDir 'uv.exe'
-$headers = @{ 'User-Agent' = 'Classica/2.2.1'; 'Accept' = 'application/vnd.github+json' }
+$headers = @{ 'User-Agent' = 'Classica/2.2.2'; 'Accept' = 'application/vnd.github+json' }
 $toolsLock = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'tools.lock.json') -Raw | ConvertFrom-Json
 
 function Install-ReleaseZip([string]$Repository, [string]$Destination, [string]$Executable) {
@@ -51,7 +51,7 @@ try {
     }
     Start-Transcript -Path (Join-Path $PSScriptRoot 'ultimo-inicio.log') -Force | Out-Null
     Write-Host ''
-    Write-Host ('CLASSICA 2.2.1 - Audio e video | by ' + [char]0x2627 + ' SYSTEMS') -ForegroundColor DarkGreen
+    Write-Host ('CLASSICA 2.2.2 - Audio e video | by ' + [char]0x2627 + ' SYSTEMS') -ForegroundColor DarkGreen
     Write-Host 'Na primeira abertura, os componentes gratuitos serao baixados automaticamente.'
     Write-Host 'Reserve cerca de 2 GB livres. A preparacao pode levar alguns minutos.'
     Write-Host 'Nenhuma senha, conta ou chave de API e necessaria.'

@@ -163,11 +163,21 @@ internal sealed class DesktopContext : ApplicationContext
             if (action != null) {
                 string id = (string)action["id"];
                 if (!Regex.IsMatch(id, @"\A[a-f0-9]{32}\z")) throw new IOException("Preparação inválida.");
+                string actionKind = action.ContainsKey("kind") ? Convert.ToString(action["kind"]) : "";
+                bool shortcutOnly = String.Equals(actionKind, "shortcuts", StringComparison.Ordinal);
                 busy = true;
                 await Task.Run(() => session.Request("desktop/preparing", "{\"id\":\"" + id + "\"}"));
                 var window = new StartupWindow(@"scripts\update_app.ps1", "-ActionId " + id);
                 window.Completed += delegate(int code) {
-                    if (code == 0) { ExitThread(); return; }
+                    if (code == 0) {
+                        if (shortcutOnly) {
+                            try {
+                                session.Request("desktop/completed", "{\"id\":\"" + id + "\"}");
+                                busy = false; missed = 0; return;
+                            } catch (Exception e) { MessageBox.Show(e.Message, "Clássica"); }
+                        }
+                        ExitThread(); return;
+                    }
                     busy = false; missed = 0;
                     try { session = LocalSession.Load(); session.Request("desktop/failed", "{\"id\":\"" + id + "\"}"); } catch (Exception) { }
                 };
