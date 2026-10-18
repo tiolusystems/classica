@@ -64,7 +64,10 @@ class LifecycleTests(unittest.TestCase):
                 second = subprocess.run(command, cwd=root, env=env, capture_output=True, text=True, encoding='utf-8', timeout=12)
                 self.assertEqual(second.returncode, 0, second.stdout+second.stderr)
                 self.assertIn(current['url'], second.stdout)
-                self.assertEqual(app.active_instance(data)['pid'], process.pid)
+                # Windows venv python.exe can be a redirector: its Popen PID
+                # differs from the interpreter hosting the authenticated server.
+                self.assertEqual(app.active_instance(data)['pid'], current['pid'])
+                self.assertIsNone(process.poll())
                 # Another extracted copy/version must explain the conflict,
                 # never silently route the user to the older installation.
                 other = root / 'other-version'
