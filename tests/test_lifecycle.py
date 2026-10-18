@@ -1,5 +1,6 @@
 """Real application processes: reopen, exit and restart without a browser."""
 import json
+import shutil
 import os
 from pathlib import Path
 import subprocess
@@ -72,8 +73,10 @@ class LifecycleTests(unittest.TestCase):
                 # never silently route the user to the older installation.
                 other = root / 'other-version'
                 other.mkdir()
+                for module in ('features.py', 'maintenance.py'):
+                    shutil.copyfile(app.ROOT/module, other/module)
                 source = (app.ROOT/'app.py').read_text(encoding='utf-8')
-                (other/'app.py').write_text(source.replace('VERSION = "2.1.2"', 'VERSION = "9.9.9"'), encoding='utf-8')
+                (other/'app.py').write_text(source.replace('VERSION = "2.2.0"', 'VERSION = "9.9.9"'), encoding='utf-8')
                 attempt = subprocess.run([sys.executable, str(other/'app.py'), '--no-browser', '--data-dir', str(data)], cwd=root, env=env, capture_output=True, text=True, encoding='utf-8', timeout=12)
                 self.assertEqual(attempt.returncode, 1)
                 self.assertIn('Outra instalação', attempt.stdout)

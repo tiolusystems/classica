@@ -1,5 +1,15 @@
 # Histórico de mudanças
 
+## 2.2.0
+
+- Identidade visual própria: serifas clássicas, marfim, filetes e arabescos vetoriais discretos; marca ☧ preservada.
+- Ícone na área de notificação com Abrir e Encerrar; uma única instância por pasta e perfil.
+- Instalação opcional no perfil, com atalhos na Área de Trabalho e menu Iniciar, sem administrador ou inicialização automática.
+- Atualização guiada pelo repositório oficial, ZIP verificado por tamanho e SHA256, extração protegida e preparação antes da troca; retorno à versão anterior após atualizar.
+- Prévia explícita de título, duração e qualidades do link, respeitando pausas do YouTube.
+- Diagnóstico com orientação de falhas e relatório copiável sem links, títulos, caminhos ou credenciais.
+- Sem removedor e sem assinatura digital. Mantidas as limitações de disponibilidade do YouTube.
+
 ## 2.1.2
 
 - Pasta principal limpa: somente Clássica.exe, Leia-me.txt e Componentes. Scripts e arquivos técnicos ficam agrupados, com um único ponto de entrada visível.

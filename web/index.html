@@ -18,16 +18,19 @@
   <nav aria-label="Ações da aplicação" class="header-actions"><span class="connection"><span class="dot" aria-hidden="true"></span><span id="connection-text">Conectando</span></span><button id="help-top-button" class="button quiet" type="button">Ajuda</button><button id="settings-button" class="button secondary" type="button">Preferências</button><button id="exit-button" class="button quiet" type="button">Sair</button></nav>
 </header>
 <main id="main" tabindex="-1">
-  <section class="page-intro" aria-labelledby="page-title"><div><p class="eyebrow">TECNOLOGIA LOCAL · ACERVO COM RESPONSABILIDADE</p><h1 id="page-title">Baixar áudio e vídeo</h1><p>Cole um link, escolha o formato e acompanhe o download.</p></div><span class="local-badge">Processamento local</span></section>
+  <section class="page-intro" aria-labelledby="page-title"><div><p class="eyebrow">☧ SYSTEMS · ACERVO MUSICAL</p><h1 id="page-title">Baixar áudio e vídeo</h1><p>Cole um link, escolha o formato e acompanhe o download.</p></div><span class="local-badge">Processamento local</span></section>
   <div id="dependency-warning" class="notice" hidden role="alert"></div>
   <div id="queue-warning" class="notice" hidden role="status"><p id="queue-warning-text"></p><button id="resume-queue" class="button secondary" type="button" hidden>Retomar fila</button></div>
   <div class="content-grid">
     <section class="panel compose" aria-labelledby="new-title">
-      <div class="panel-heading"><h2 id="new-title">Novo download</h2><span class="step-label">01 — CONFIGURAR</span></div>
+      <div class="panel-heading"><h2 id="new-title">Novo download</h2><span class="step-label">I · ESCOLHER</span></div>
       <form id="download-form">
         <label for="urls" class="field-label">Link do YouTube</label>
         <textarea id="urls" name="urls" rows="3" placeholder="https://www.youtube.com/watch?v=…" required spellcheck="false" autocomplete="off" aria-describedby="url-hint"></textarea>
         <p id="url-hint" class="hint">Um vídeo por linha. Até 50 links por vez.</p>
+
+        <button id="preview-button" class="text-button" type="button">Ver detalhes do link</button>
+        <section id="link-preview" class="link-preview" aria-label="Detalhes do link" aria-live="polite" hidden><h3 id="preview-title"></h3><p id="preview-meta" class="hint"></p><p id="preview-formats" class="hint"></p></section>
 
         <fieldset class="field-group"><legend>O que deseja baixar?</legend><div class="choice-grid kind-choice"><label><input type="radio" name="kind" value="audio" checked><span><strong>Somente áudio</strong><small>Música e gravações</small></span></label><label><input type="radio" name="kind" value="video"><span><strong>Vídeo com áudio</strong><small>Imagem e som juntos</small></span></label></div></fieldset>
         <div id="audio-options" class="field-group"><fieldset><legend>Formato do áudio</legend><div class="choice-grid format-choice"><label><input type="radio" name="format" value="mp3" checked><span>MP3</span></label><label><input type="radio" name="format" value="m4a"><span>M4A</span></label><label><input type="radio" name="format" value="aac"><span>AAC</span></label><label><input type="radio" name="format" value="wav"><span>WAV</span></label><label><input type="radio" name="format" value="flac"><span>FLAC</span></label><label><input type="radio" name="format" value="ogg"><span>OGG</span></label><label><input type="radio" name="format" value="opus"><span>OPUS</span></label><label><input type="radio" name="format" value="original"><span>Original</span></label></div></fieldset></div>
@@ -40,7 +43,7 @@
       </form>
     </section>
     <section class="panel library" aria-labelledby="collection-title">
-      <div class="panel-heading"><div><h2 id="collection-title">Seus downloads</h2><p id="summary" class="hint">Carregando histórico…</p></div><span class="step-label">02 — ACOMPANHAR</span></div>
+      <div class="panel-heading"><div><h2 id="collection-title">Seus downloads</h2><p id="summary" class="hint">Carregando histórico…</p></div><span class="step-label">II · GUARDAR</span></div>
       <div class="library-toolbar"><label class="sr-only" for="filter">Filtrar downloads</label><select id="filter"><option value="all">Todos os downloads</option><option value="active">Em andamento</option><option value="done">Concluídos</option><option value="error">Precisam de atenção</option></select><button id="open-folder-button" class="button secondary" type="button">Abrir pasta <span aria-hidden="true">↗</span></button></div>
       <div class="library-control"><span class="hint">O histórico fica neste computador. Limpar não apaga os arquivos.</span><button id="clear-button" class="button secondary" type="button" disabled>Limpar biblioteca</button></div>
       <div id="jobs" aria-live="off"></div>
@@ -48,7 +51,7 @@
       <div class="library-bottom"><span class="hint">Os downloads salvos permanecem na pasta escolhida.</span></div>
     </section>
   </div>
-  <footer class="app-footer"><span>Clássica <span class="version">v2.1.2</span></span><span class="developer-signature" aria-label="by ☧ SYSTEMS">by <span aria-hidden="true">☧</span> SYSTEMS</span></footer>
+  <footer class="app-footer"><span>Clássica <span class="version">v2.2.0</span></span><span class="developer-signature" aria-label="by ☧ SYSTEMS">by <span aria-hidden="true">☧</span> SYSTEMS</span></footer>
 </main>
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 <dialog id="settings-dialog" aria-labelledby="preferences-title"><form id="settings-form"><div class="dialog-heading"><h2 id="preferences-title">Preferências</h2><button type="button" class="close-dialog icon-button" aria-label="Fechar preferências">×</button></div><p class="hint">Os próximos downloads usam a pasta abaixo. Os arquivos já salvos permanecem em seus locais.</p><label for="folder-input" class="field-label">Pasta dos downloads</label><input id="folder-input" type="text" required spellcheck="false" aria-describedby="folder-hint"><p id="folder-hint" class="hint">Use o caminho completo. Exemplo: C:\Users\Luciano\Music\Classica</p><div class="reading-settings"><label for="font-size" class="field-label">Tamanho do texto <output id="font-size-label" for="font-size">100%</output></label><input id="font-size" type="range" min="100" max="200" step="10" value="100" aria-describedby="reading-hint"><p id="reading-hint" class="hint">A fonte acompanha a janela. Ajuste de 100% a 200% para uma leitura confortável. O ajuste de leitura é salvo automaticamente neste navegador.</p><button id="reset-reading" type="button" class="text-button">Restaurar leitura padrão</button></div><div class="dialog-actions"><button type="button" class="close-dialog button secondary">Fechar</button><button type="submit" class="button primary">Salvar pasta</button></div></form></dialog>
@@ -57,7 +60,15 @@
   <ol class="help-steps"><li>Copie o link de um vídeo do YouTube e cole em <strong>Link do YouTube</strong>.</li><li>Escolha <strong>Somente áudio</strong> ou <strong>Vídeo com áudio</strong> e selecione o formato.</li><li>Clique no botão de download. Use <strong>Abrir pasta</strong> para encontrar os arquivos.</li></ol>
   <h3>Formatos e qualidade</h3><p>Áudio: MP3, M4A, AAC, WAV, FLAC, OGG, OPUS ou Original. Vídeo com som: MP4, MKV ou WebM. A qualidade depende da gravação de origem; não ampliamos artificialmente a resolução.</p>
   <h3>Fila e arquivos</h3><p>Os itens são processados um de cada vez. Cancelar interrompe o item; Tentar novamente reinicia a tentativa e pode aproveitar partes já baixadas. Limpar histórico preserva seus arquivos. Salvar cópia usa o gerenciador de downloads do navegador.</p>
-  <h3>Encerrar e atualizar</h3><p>Fechar a aba não encerra a aplicação. Use <strong>Sair</strong>. Se o YouTube mudar, feche a Clássica e use <strong>Atualizar.bat</strong> para atualizar o extrator. Isso não garante resolver limites de requisições, login ou PO Token.</p>
+  <h3>Encerrar e reabrir</h3><p>Fechar a aba mantém a aplicação no ícone ☧ perto do relógio do Windows. Nesse ícone, use <strong>Abrir Clássica</strong> ou <strong>Encerrar Clássica</strong>. Também pode usar <strong>Sair</strong> aqui. Se o YouTube mudar, feche a Clássica e use <strong>Atualizar.bat</strong> para atualizar o extrator. Isso não garante resolver limites de requisições, login ou PO Token.</p>
+  <section class="maintenance-section" aria-labelledby="maintenance-title">
+    <h3 id="maintenance-title">Aplicação e atualizações</h3>
+    <p>Instale no seu perfil para criar atalhos na Área de Trabalho e no menu Iniciar, sem exigir administrador. A atualização prepara a nova versão em outra pasta e preserva histórico, preferências e arquivos baixados. Você pode voltar à versão anterior depois de uma atualização.</p>
+    <p id="maintenance-status" role="status">Consultando a aplicação…</p>
+    <div class="maintenance-actions"><button id="check-update" class="button secondary" type="button">Verificar atualizações</button><button id="install-app" class="button secondary" type="button">Instalar neste computador</button><button id="apply-update" class="button primary" type="button" hidden>Atualizar aplicação</button><button id="rollback-app" class="text-button" type="button" hidden>Voltar à versão anterior</button></div>
+    <p class="hint">A preparação pode levar alguns minutos e usar cerca de 2 GB por versão. Ao concluir, a Clássica será reaberta. As pastas antigas são mantidas para recuperação. O executável ainda não tem assinatura digital.</p>
+  </section>
+  <section class="support-section" aria-labelledby="support-title"><h3 id="support-title">Diagnóstico e suporte</h3><p>O relatório inclui versões, componentes e categorias de falha. Links, títulos, pastas e dados da conta ficam fora dele.</p><button id="copy-report" class="button secondary" type="button">Copiar relatório de diagnóstico</button><textarea id="support-report" rows="8" readonly aria-label="Relatório de diagnóstico" hidden></textarea><p id="report-status" class="hint" role="status"></p></section>
   <h3>Quando o YouTube bloquear</h3><p>Se aparecer <strong>HTTP 429</strong>, <strong>Too Many Requests</strong> ou verificação de usuário, respeite a pausa indicada, confira o vídeo no navegador e só tente novamente quando o serviço permitir. A atualização do extrator não garante remover restrições do YouTube.</p>
   <p>Quando ocorre HTTP 429, a fila pausa por 60 segundos e faz uma única nova tentativa automática do item. Se o limite persistir, a fila aguarda sua decisão; o botão <strong>Retomar fila</strong> é liberado depois da pausa mínima. O item que falhou exige <strong>Tentar novamente</strong>. Uma espera de 60 segundos é uma política da aplicação, não um prazo garantido pelo YouTube.</p>
   <p>Um arquivo só é marcado como concluído após a verificação de uma faixa de áudio e, nos formatos de vídeo, também de uma faixa de imagem. Respostas de erro da rede não são aceitas como mídia válida.</p>

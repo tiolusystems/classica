@@ -24,9 +24,11 @@ from urllib.parse import parse_qs, urlsplit, quote
 import uuid
 import webbrowser
 from urllib.request import Request, build_opener, ProxyHandler, HTTPRedirectHandler
+from features import PreviewService, diagnosis, support_report
+from maintenance import MaintenanceService
 
 ROOT = Path(__file__).resolve().parent
-VERSION = "2.1.2"
+VERSION = "2.2.0"
 FORMATS = {"mp3": "MP3 · 320 kbps", "m4a": "M4A · AAC", "aac": "AAC",
            "wav": "WAV", "flac": "FLAC", "ogg": "OGG · Vorbis", "opus": "OPUS",
            "original": "Áudio original"}
@@ -203,6 +205,10 @@ class Manager:
         self.folder = str(Path.home() / "Music" / "Classica")
         self.jobs = []
         self.queue_pause = {"until": 0, "manual": False, "reason": ""}
+        self.preview = PreviewService(terminate_process)
+        self.maintenance = MaintenanceService(ROOT, VERSION, self.data_dir)
+        self.desktop_seen = 0
+        self.preview_active = 0
         self.load()
         if start_worker:
             self.worker = threading.Thread(target=self.run, daemon=True)
@@ -235,8 +241,27 @@ class Manager:
 
     def snapshot(self):
         with self.lock:
-            return {"version": VERSION, "folder": self.folder, "jobs": copy.deepcopy(self.jobs),
-                    "queue_pause": copy.deepcopy(self.queue_pause), "dependencies": dependencies()}
+            jobs = copy.deepcopy(self.jobs)
+            for job in jobs:
+                if job.get('error'):
+                    job['diagnosis'] = diagnosis(job['error'])
+            maintenance = self.maintenance.snapshot()
+            maintenance.pop('action', None)
+            return {"version": VERSION, "folder": self.folder, "jobs": jobs,
+                    "queue_pause": copy.deepcopy(self.queue_pause), "dependencies": dependencies(),
+                    "maintenance": maintenance, "desktop_available": time.monotonic() - self.desktop_seen < 8}
+
+    def require_idle_maintenance(self):
+        if self.maintenance.snapshot()['busy']:
+            raise ValueError('A manutenção está em andamento. Aguarde a conclusão antes de iniciar outra operação.')
+
+    def begin_maintenance(self, kind):
+        with self.lock:
+            if time.monotonic() - self.desktop_seen >= 8:
+                raise ValueError('Abra a aplicação pelo ícone Clássica para instalar ou atualizar.')
+            if any(job['status'] not in TERMINAL for job in self.jobs) or self.preview_active or self.preview.lock.locked():
+                raise ValueError('Conclua ou cancele os downloads e aguarde a consulta de detalhes antes de instalar ou atualizar.')
+            return self.maintenance.begin(kind)
 
     def find(self, job_id):
         for job in self.jobs:
@@ -272,6 +297,7 @@ class Manager:
             raise ValueError("Adicione de 1 a 50 links por vez.")
         canonical = list(dict.fromkeys(canonical_url(url) for url in urls))
         with self.lock:
+            self.require_idle_maintenance()
             pending = sum(j["status"] not in TERMINAL for j in self.jobs)
             if pending + len(canonical) > 100:
                 raise ValueError("A fila comporta até 100 downloads pendentes.")
@@ -313,6 +339,7 @@ class Manager:
 
     def retry(self, job_id):
         with self.lock:
+            self.require_idle_maintenance()
             self.check_cooldown()
             job = self.find(job_id)
             if job["status"] not in {"error", "cancelled", "interrupted"}:
@@ -329,6 +356,7 @@ class Manager:
 
     def resume(self):
         with self.lock:
+            self.require_idle_maintenance()
             self.check_cooldown()
             self.queue_pause = {"until": 0, "manual": False, "reason": ""}
             self.save()
@@ -375,6 +403,8 @@ class Manager:
             self.wake.wait(0.5)
             self.wake.clear()
             with self.lock:
+                if self.maintenance.snapshot()['busy']:
+                    continue
                 if self.queue_pause["manual"] or time.time() < self.queue_pause["until"]:
                     continue
                 if self.queue_pause["reason"]:
@@ -433,6 +463,7 @@ class Manager:
     def stop(self):
         self.stopping.set()
         self.wake.set()
+        self.preview.stop()
         with self.lock:
             if self.process:
                 terminate_process(self.process)
@@ -476,8 +507,8 @@ class Handler(BaseHTTPRequestHandler):
         path = urlsplit(self.path).path
         if path == "/":
             self.respond(200, (ROOT / "web" / "index.html").read_bytes().replace(b"__TOKEN__", self.server.token.encode()), "text/html; charset=utf-8")
-        elif path in {"/app.js", "/style.css", "/favicon.svg"}:
-            mime = {"/app.js": "application/javascript; charset=utf-8", "/style.css": "text/css; charset=utf-8", "/favicon.svg": "image/svg+xml"}[path]
+        elif path in {"/app.js", "/style.css", "/favicon.svg", "/ornament.svg"}:
+            mime = {"/app.js": "application/javascript; charset=utf-8", "/style.css": "text/css; charset=utf-8", "/favicon.svg": "image/svg+xml", "/ornament.svg": "image/svg+xml"}[path]
             self.respond(200, (ROOT / "web" / path[1:]).read_bytes(), mime)
         elif path == "/api/instance":
             if self.headers.get("X-Classica-Token") != self.server.token:
@@ -489,6 +520,17 @@ class Handler(BaseHTTPRequestHandler):
                 self.respond(403, {"error": "Sessão inválida. Reabra a aplicação."})
             else:
                 self.respond(200, self.server.manager.snapshot())
+        elif path in ('/api/diagnostics', '/api/desktop'):
+            if self.headers.get('X-Classica-Token') != self.server.token:
+                self.respond(403, {'error': 'Sessão inválida.'})
+            elif path == '/api/diagnostics':
+                self.respond(200, {'report': support_report(self.server.manager, VERSION, dependencies())})
+            else:
+                manager = self.server.manager
+                with manager.lock:
+                    manager.desktop_seen = time.monotonic()
+                    pending = sum(j['status'] not in TERMINAL for j in manager.jobs)
+                self.respond(200, {'pending': pending, 'action': manager.maintenance.desktop_action()})
         elif path.startswith("/file/"):
             try:
                 with self.server.manager.lock:
@@ -527,10 +569,50 @@ class Handler(BaseHTTPRequestHandler):
                 raise ValueError("Solicitação inválida.")
             path = urlsplit(self.path).path
             manager = self.server.manager
+            if path in ('/api/enqueue', '/api/retry', '/api/resume', '/api/shutdown', '/api/preview'):
+                with manager.lock:
+                    manager.require_idle_maintenance()
             if path in ("/api/enqueue", "/api/retry") and "use_edge_session" in data:
                 raise ValueError("Autenticação por navegador não está disponível.")
             result = {"ok": True}
-            if path == "/api/enqueue":
+            if path == '/api/preview':
+                url = canonical_url(data.get('url'))
+                with manager.lock:
+                    manager.require_idle_maintenance()
+                    if manager.queue_pause['manual'] or time.time() < manager.queue_pause['until']:
+                        raise ValueError('A consulta de detalhes respeita a pausa da fila. Aguarde antes de consultar o YouTube novamente.')
+                    manager.preview_active += 1
+                try:
+                    result = manager.preview.inspect(url)
+                except ValueError as error:
+                    advice = diagnosis(str(error))
+                    if advice['code'] == 'RATE_LIMIT':
+                        with manager.lock:
+                            manager.queue_pause = {'until': time.time()+RATE_LIMIT_WAIT, 'manual': True, 'reason': advice['summary']}
+                            manager.save()
+                    raise ValueError(advice['summary']+' '+advice['action']) from None
+                finally:
+                    with manager.lock:
+                        manager.preview_active -= 1
+            elif path == '/api/update/check':
+                result = manager.maintenance.check()
+            elif path == '/api/update/prepare':
+                result = manager.begin_maintenance(data.get('kind'))
+            elif path in ('/api/desktop/preparing', '/api/desktop/transition', '/api/desktop/failed'):
+                action_id = data.get('id')
+                if not isinstance(action_id, str) or not re.fullmatch(r'[a-f0-9]{32}', action_id):
+                    raise ValueError('Preparação não reconhecida.')
+                if path.endswith('/preparing'):
+                    manager.maintenance.preparing(action_id)
+                elif path.endswith('/failed'):
+                    manager.maintenance.failed(action_id)
+                else:
+                    manager.maintenance.switching(action_id)
+                    self.server.closing = True
+                    self.respond(200, {'ok': True})
+                    threading.Thread(target=self.server.shutdown, daemon=True).start()
+                    return
+            elif path == "/api/enqueue":
                 result = manager.enqueue(data.get("urls"), data.get("format"), data.get("authorized"), data.get("resolution", "best"))
             elif path == "/api/cancel":
                 manager.cancel(data.get("id"))
