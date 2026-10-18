@@ -31,14 +31,17 @@ class ReleaseTests(unittest.TestCase):
             second, _ = package_release.build(root / "second")
             self.assertEqual(first.read_bytes(), second.read_bytes())
             with zipfile.ZipFile(first) as package:
-                prefix = package_release.PACKAGE_ROOT + '/'
+                prefix = package_release.PACKAGE_ROOT + '/Componentes/'
+                entry = package_release.PACKAGE_ROOT + '/'
                 self.assertIsNone(package.testzip())
-                self.assertTrue(package.read(prefix+'Clássica.exe').startswith(b'MZ'))
+                self.assertTrue(package.read(entry+'Clássica.exe').startswith(b'MZ'))
+                top = {name[len(entry):].split('/')[0] for name in package.namelist()}
+                self.assertEqual(top, {'Clássica.exe', 'Leia-me.txt', 'Componentes'})
                 self.assertIn(prefix+'assets/classica.ico', package.namelist())
                 self.assertIn(prefix+"Iniciar discreto.bat", package.namelist())
                 self.assertIn(b"-Background", package.read(prefix+"Iniciar discreto.bat"))
                 self.assertIn(b"[switch]$Background", package.read(prefix+"iniciar.ps1"))
-                self.assertEqual(set(package.namelist()), {prefix+name for name in package_release.FILES})
+                self.assertEqual(set(package.namelist()), {package_release.archive_path(name) for name in package_release.FILES})
                 self.assertNotIn(b"Organizar_extracao_antiga", package.read(prefix+"README.md"))
             self.assertIn(first.name, checksum.read_text())
 

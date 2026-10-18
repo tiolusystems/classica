@@ -23,8 +23,14 @@ New-Item -ItemType Directory -Force -Path $workspace | Out-Null
 $serverProcess = $null
 try {
     Expand-Archive -LiteralPath $archivePath -DestinationPath $workspace
-    $appDir = Join-Path $workspace 'Classica-2.1.2'
-    $launcher = Join-Path $appDir ('Cl' + [char]0x00E1 + 'ssica.exe')
+    $packageDir = Join-Path $workspace 'Classica-2.1.2'
+    $appDir = Join-Path $packageDir 'Componentes'
+    $launcherName = 'Cl' + [char]0x00E1 + 'ssica.exe'
+    $launcher = Join-Path $packageDir $launcherName
+    $publicItems = @(Get-ChildItem -LiteralPath $packageDir -Force | Select-Object -ExpandProperty Name)
+    if (@(Compare-Object $publicItems @($launcherName, 'Leia-me.txt', 'Componentes')).Count -ne 0) {
+        throw 'Distribution root must have one branded launcher, user guide and components folder only.'
+    }
     if (-not (Test-Path -LiteralPath $launcher)) { throw 'Branded launcher missing from ZIP.' }
     $version = [Diagnostics.FileVersionInfo]::GetVersionInfo($launcher)
     if ($version.FileVersion -ne '2.1.2.0') { throw 'Launcher version mismatch.' }
@@ -35,12 +41,13 @@ try {
     $probe = Start-Process -FilePath $launcher -ArgumentList '--check' -WorkingDirectory $env:RUNNER_TEMP -PassThru -Wait
     if ($probe.ExitCode -ne 0) { throw 'Launcher failed package check from unrelated working directory.' }
     $mixed = Join-Path $workspace 'mixed-files'
-    New-Item -ItemType Directory -Force -Path (Join-Path $mixed 'web') | Out-Null
+    $mixedComponents = Join-Path $mixed 'Componentes'
+    New-Item -ItemType Directory -Force -Path (Join-Path $mixedComponents 'web') | Out-Null
     Copy-Item -LiteralPath $launcher -Destination $mixed
     foreach ($required in @('iniciar.ps1', 'tools.lock.json', 'requirements.lock', 'web/index.html')) {
-        Copy-Item -LiteralPath (Join-Path $appDir $required) -Destination (Join-Path $mixed $required)
+        Copy-Item -LiteralPath (Join-Path $appDir $required) -Destination (Join-Path $mixedComponents $required)
     }
-    Set-Content -LiteralPath (Join-Path $mixed 'app.py') -Value 'VERSION = "0.0.0"' -Encoding UTF8
+    Set-Content -LiteralPath (Join-Path $mixedComponents 'app.py') -Value 'VERSION = "0.0.0"' -Encoding UTF8
     $mixedCheck = Start-Process -FilePath (Join-Path $mixed ([IO.Path]::GetFileName($launcher))) -ArgumentList '--check' -PassThru -Wait
     if ($mixedCheck.ExitCode -ne 1) { throw 'Launcher accepted mixed release files.' }
     Write-Host 'Branded launcher rejects mixed release files: PASS'

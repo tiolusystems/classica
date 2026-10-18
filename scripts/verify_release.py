@@ -6,7 +6,7 @@ import re
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from package_release import FILES, GENERATED, ROOT
+from package_release import FILES, GENERATED, ROOT, source_path
 
 
 class Elements(HTMLParser):
@@ -25,7 +25,7 @@ def luminance(hex_color):
 
 
 def verify():
-    missing = [name for name in FILES if name not in GENERATED and not (ROOT / name).is_file()]
+    missing = [name for name in FILES if name not in GENERATED and not source_path(name).is_file()]
     assert not missing, f"Missing release files: {missing}"
     assert all(".." not in Path(name).parts for name in FILES)
     assert not any("organizar" in name.lower() or "versao_anterior" in name for name in FILES)

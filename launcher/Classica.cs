@@ -14,10 +14,13 @@ using System.Windows.Forms;
 
 internal static class Program
 {
-    internal static readonly string Root = AppDomain.CurrentDomain.BaseDirectory;
+    internal static readonly string Root = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Componentes");
 
     internal static void CheckPackage()
     {
+        string location = Path.GetFullPath(AppDomain.CurrentDomain.BaseDirectory).TrimEnd(Path.DirectorySeparatorChar);
+        if (location == Path.GetPathRoot(location).TrimEnd(Path.DirectorySeparatorChar))
+            throw new InvalidOperationException("Extraia a pasta Classica-2.1.2 completa do ZIP. A aplicação deve ficar em uma pasta própria, fora da raiz da unidade.");
         if (!Environment.Is64BitOperatingSystem)
             throw new InvalidOperationException("Esta versão requer Windows 10 ou 11 de 64 bits (Intel/AMD).");
         foreach (string name in new[] { "iniciar.ps1", "app.py", "tools.lock.json", "requirements.lock", "web/index.html" })

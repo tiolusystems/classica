@@ -22,6 +22,10 @@ atalhos, escolher um navegador ou instalar um lançador separado. Extraia a past
 inteira: o executável depende dos arquivos que o acompanham. Ele funciona a partir
 da própria pasta, mesmo se for aberto de outro diretório.
 
+A pasta principal mostra apenas **Clássica.exe**, **Leia-me.txt** e **Componentes**.
+Os scripts e arquivos técnicos ficam dentro de Componentes; a abertura normal
+é sempre pelo ícone Clássica. Mantenha essa pasta junto do executável.
+
 Uma janela clara mostra a preparação e eventuais erros. Depois da abertura da
 interface, essa janela fecha; use **Sair** na aplicação para encerrar o servidor.
 Não exige administrador, não cria atalhos nem adiciona inicialização com o Windows.
@@ -36,6 +40,9 @@ pode exibir um aviso de reputação.
 ### Alternativas de suporte
 
 Além do **Iniciar.bat**, há **Iniciar discreto.bat**. No modo discreto, a janela preta aparece apenas durante a preparação inicial e se fecha automaticamente depois que o navegador abre. A Clássica continua executando em segundo plano, sem depender de um console aberto. Para encerrar de fato, clique em **Sair** dentro da interface; apenas fechar a aba não interrompe o servidor nem a fila.
+
+Essas alternativas e `Atualizar.bat` ficam dentro de **Componentes** no ZIP.
+O início normal é sempre por **Clássica.exe**, na pasta principal.
 
 O modo clássico **Iniciar.bat** permanece como alternativa recomendada para diagnóstico. Se o início discreto falhar, consulte `ultimo-inicio.log` e `ultimo-discreto-erros.log` na pasta da Clássica e volte a usar o modo clássico. Não há serviço permanente instalado nem inicialização automática junto com o Windows.
 

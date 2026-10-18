@@ -7,6 +7,7 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[1]
 GENERATED = {"Clássica.exe": "build/Clássica.exe"}
 PACKAGE_ROOT = "Classica-2.1.2"
+USER_FILES = {"Clássica.exe", "Leia-me.txt"}
 FILES = (
     "app.py", "Iniciar.bat", "Iniciar discreto.bat", "Atualizar.bat", "iniciar.ps1", "LICENSE.txt",
     "README.md", "CHANGELOG.md", "SECURITY.md", "THIRD_PARTY.md",
@@ -20,13 +21,23 @@ FILES = (
     ".github/workflows/quality.yml",
     "assets/classica.ico", "assets/classica.png",
     "launcher/Classica.cs", "launcher/app.manifest", "scripts/build_launcher.ps1",
-    "Clássica.exe",
+    "Clássica.exe", "Leia-me.txt",
 )
 
 
 def source_path(name: str) -> Path:
     generated = ROOT / GENERATED.get(name, name)
-    return generated if generated.is_file() else ROOT / name
+    if generated.is_file():
+        return generated
+    # The test suite also rebuilds FROM the extracted ZIP. Public entry files
+    # live one level above Componentes in that layout.
+    if name in USER_FILES and ROOT.name == "Componentes":
+        return ROOT.parent / name
+    return ROOT / name
+
+
+def archive_path(name: str) -> str:
+    return PACKAGE_ROOT + "/" + ("" if name in USER_FILES else "Componentes/") + name
 
 
 def build(destination: Path) -> tuple[Path, Path]:
@@ -41,7 +52,7 @@ def build(destination: Path) -> tuple[Path, Path]:
             data = source_path(name).read_bytes()
             if name.endswith((".bat", ".ps1")):
                 data = data.replace(b"\r\n", b"\n").replace(b"\n", b"\r\n")
-            info = zipfile.ZipInfo(PACKAGE_ROOT + "/" + name, date_time=(2026, 10, 17, 0, 0, 0))
+            info = zipfile.ZipInfo(archive_path(name), date_time=(2026, 10, 17, 0, 0, 0))
             info.compress_type = zipfile.ZIP_DEFLATED
             info.external_attr = 0o100644 << 16
             package.writestr(info, data)

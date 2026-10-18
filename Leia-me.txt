@@ -1,0 +1,26 @@
+CLÁSSICA 2.1.2
+Áudio e vídeo no seu computador.
+by ☧ SYSTEMS
+
+PARA ABRIR
+Abra Clássica.exe, identificado pelo símbolo ☧.
+Se o Windows ocultar as extensões, o nome aparecerá apenas como Clássica.
+
+Na primeira abertura, aguarde a preparação dos componentes.
+É necessária conexão com a internet e cerca de 2 GB livres.
+Depois, a biblioteca abre no navegador do computador.
+
+PARA ENCERRAR
+Use Sair dentro da aplicação.
+Fechar apenas a aba mantém a aplicação ativa. Abra Clássica novamente para voltar.
+
+SOBRE ESTA PASTA
+Mantenha Clássica.exe e a pasta Componentes juntos.
+Os arquivos técnicos, licenças e instruções de suporte ficam em Componentes.
+Não é necessário abrir os scripts dessa pasta para usar a aplicação.
+
+Para atualizar, encerre a versão aberta e extraia o novo pacote em sua própria
+pasta. Não misture os arquivos de versões diferentes.
+
+REQUISITOS
+Windows 10 ou 11 de 64 bits, processador Intel ou AMD.

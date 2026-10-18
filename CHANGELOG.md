@@ -2,6 +2,8 @@
 
 ## 2.1.2 — candidata (ainda não publicada)
 
+- Pasta principal limpa: somente Clássica.exe, Leia-me.txt e Componentes. Scripts e arquivos técnicos ficam agrupados, com um único ponto de entrada visível.
+
 - Pasta extraída identificada como `Classica-2.1.2`, sem instruções para mesclar arquivos de versões diferentes.
 - Abrir novamente recupera a mesma sessão se a aba foi fechada. Depois de Sair, uma nova inicialização aguarda a liberação da sessão anterior.
 - Instalação de outra versão ainda ativa recebe uma mensagem clara, sem abrir silenciosamente a versão antiga. Os registros de cada abertura têm arquivos próprios.
