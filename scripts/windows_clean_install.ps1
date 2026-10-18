@@ -136,15 +136,6 @@ try {
     }
     Write-Host 'Fresh ZIP setup, local app startup, API, and no-browser-auth checks: PASS'
 
-    # Run the media conversion suite FROM THE EXTRACTED ZIP (not the checkout).
-    Push-Location -LiteralPath $appDir
-    try {
-        & $pythonExe -m unittest discover -s tests -v
-        if ($LASTEXITCODE -ne 0) { throw 'Bundled media/format regression tests failed.' }
-    }
-    finally { Pop-Location }
-    Write-Host 'Freshly installed ZIP: unit, format and integration tests PASS.'
-
     # The optional self-closing launcher must keep the local app reachable
     # after its PowerShell launcher exits, and Sair must terminate that server.
     $previousLocalAppData = $env:LOCALAPPDATA
@@ -156,7 +147,12 @@ try {
         Push-Location -LiteralPath $appDir
         try {
             $native = Start-Process -FilePath $launcher -WorkingDirectory $env:RUNNER_TEMP -PassThru
-            if (-not $native.WaitForExit(120000)) {
+            if (-not $native.WaitForExit(45000)) {
+                foreach ($logName in @('ultimo-lancador.log', 'ultimo-inicio.log', 'ultimo-discreto.log', 'ultimo-discreto-erros.log')) {
+                    $logPath = Join-Path $appDir $logName
+                    Write-Host "Diagnostic $logName"
+                    if (Test-Path -LiteralPath $logPath) { Get-Content -LiteralPath $logPath -Tail 80 | Write-Host }
+                }
                 Stop-Process -Id $native.Id -Force
                 throw 'Branded launcher did not close after opening the application.'
             }
@@ -194,6 +190,14 @@ try {
         }
         $env:LOCALAPPDATA = $previousLocalAppData
     }
+    # Run the media conversion suite FROM THE EXTRACTED ZIP (not the checkout).
+    Push-Location -LiteralPath $appDir
+    try {
+        & $pythonExe -m unittest discover -s tests -v
+        if ($LASTEXITCODE -ne 0) { throw 'Bundled media/format regression tests failed.' }
+    }
+    finally { Pop-Location }
+    Write-Host 'Freshly installed ZIP: unit, format and integration tests PASS.'
 }
 finally {
     if ($serverProcess) {

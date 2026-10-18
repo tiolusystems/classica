@@ -55,6 +55,7 @@ internal sealed class StartupWindow : Form
     private readonly ProgressBar progress;
     private Process child;
     private bool finished;
+    private readonly object logLock = new object();
 
     internal StartupWindow()
     {
@@ -92,6 +93,11 @@ internal sealed class StartupWindow : Form
 
     private void Append(string line)
     {
+        if (line != null) {
+            try { lock (logLock) File.AppendAllText(Path.Combine(Program.Root, "ultimo-lancador.log"), line + Environment.NewLine, System.Text.Encoding.UTF8); }
+            catch (IOException) { }
+            catch (UnauthorizedAccessException) { }
+        }
         if (line == null || IsDisposed) return;
         try { BeginInvoke((Action)delegate { if (!IsDisposed) details.AppendText(line + Environment.NewLine); }); }
         catch (InvalidOperationException) { }
@@ -117,11 +123,13 @@ internal sealed class StartupWindow : Form
             child.OutputDataReceived += delegate(object s, DataReceivedEventArgs e) { Append(e.Data); };
             child.ErrorDataReceived += delegate(object s, DataReceivedEventArgs e) { Append(e.Data); };
             child.Start();
+            Append("Inicializador iniciado.");
             child.BeginOutputReadLine();
             child.BeginErrorReadLine();
             await System.Threading.Tasks.Task.Run((Action)delegate { child.WaitForExit(); });
             finished = true;
             Result = child.ExitCode;
+            Append("Inicializador encerrado. Codigo: " + Result);
             if (Result == 0) { Close(); return; }
             Fail("Não foi possível abrir a Clássica. Consulte os detalhes abaixo e o arquivo ultimo-inicio.log na pasta da aplicação.");
         }
