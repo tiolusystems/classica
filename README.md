@@ -13,7 +13,7 @@ Cole o link, escolha áudio ou vídeo, selecione o formato e acompanhe a fila.
 2. Entre na pasta **Classica** e abra **Clássica.exe**, identificado pelo ícone ☧.
 3. Na primeira abertura, aguarde a preparação dos componentes. Reserve cerca
    de **2 GB livres**, além do espaço necessário para seus downloads.
-4. A interface abre no navegador do computador. No modo clássico, mantenha a janela de execução aberta; para encerrar use **Sair**.
+4. A interface abre no navegador do computador e a janela de preparação fecha. Para encerrar a aplicação, use **Sair**.
 
 ### Um único ponto de entrada
 

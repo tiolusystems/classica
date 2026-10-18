@@ -1,4 +1,4 @@
-param([switch]$Update, [switch]$SetupOnly, [switch]$Background)
+﻿param([switch]$Update, [switch]$SetupOnly, [switch]$Background)
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12

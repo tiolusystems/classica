@@ -126,7 +126,12 @@ internal sealed class StartupWindow : Form
             Append("Inicializador iniciado.");
             child.BeginOutputReadLine();
             child.BeginErrorReadLine();
-            await System.Threading.Tasks.Task.Run((Action)delegate { child.WaitForExit(); });
+            // The no-argument WaitForExit also waits for redirected pipe EOF.
+            // A detached Windows process can inherit those pipe handles even
+            // after PowerShell exits; wait only for the initializer process.
+            await System.Threading.Tasks.Task.Run((Action)delegate { while (!child.WaitForExit(250)) { } });
+            try { child.CancelOutputRead(); } catch (InvalidOperationException) { }
+            try { child.CancelErrorRead(); } catch (InvalidOperationException) { }
             finished = true;
             Result = child.ExitCode;
             Append("Inicializador encerrado. Codigo: " + Result);
