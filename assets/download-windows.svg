@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="410" height="76" viewBox="0 0 410 76" role="img" aria-labelledby="title desc">
+  <title id="title">Baixar Clássica para Windows</title>
+  <desc id="desc">Pacote pronto com o executável. Windows 10 e 11, 64 bits.</desc>
+  <rect x=".5" y=".5" width="409" height="75" rx="3" fill="#315747" stroke="#315747"/>
+  <path d="M29 25v22m-7-7 7 7 7-7M20 51h18" fill="none" stroke="#ecd5a6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M53 17v42" stroke="#9eaf9f" stroke-opacity=".5"/>
+  <text x="72" y="34" fill="#fffdf8" font-family="Segoe UI,Arial,sans-serif" font-size="19" font-weight="600">Baixar Clássica para Windows</text>
+  <text x="72" y="55" fill="#e3eadd" font-family="Segoe UI,Arial,sans-serif" font-size="12">Aplicação pronta · Windows 10 e 11 · 64 bits</text>
+</svg>
