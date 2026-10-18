@@ -1,6 +1,18 @@
 # Histórico de mudanças
 
-## 2.1.1 — candidata (ainda não publicada)
+## 2.1.2
+
+- Pasta principal limpa: somente Clássica.exe, Leia-me.txt e Componentes. Scripts e arquivos técnicos ficam agrupados, com um único ponto de entrada visível.
+
+- Pasta extraída identificada como `Classica-2.1.2`, sem instruções para mesclar arquivos de versões diferentes.
+- Abrir novamente recupera a mesma sessão se a aba foi fechada. Depois de Sair, uma nova inicialização aguarda a liberação da sessão anterior.
+- Instalação de outra versão ainda ativa recebe uma mensagem clara, sem abrir silenciosamente a versão antiga. Os registros de cada abertura têm arquivos próprios.
+
+- O ZIP inclui Clássica.exe com nome, ícone ☧ e metadados do produto; compilação do código-fonte no Windows, sem empacotador de terceiros.
+- Janela de preparação com progresso, detalhes e erros; abertura discreta da aplicação existente, sem instalação de atalhos ou privilégios administrativos.
+- Compilação integrada aos testes e ao release. Validação em Windows do executável extraído do ZIP, caminhos com espaços e acentos e encerramento pelo botão Sair.
+
+## 2.1.1 — 2026-10-17
 
 - Refinamento visual discreto de painéis e hierarquia, preservando o símbolo canônico ☧, cores funcionais e acessibilidade; dourado suave apenas em detalhes simbólicos e divisórias, com superfícies claras e sem sombras.
 - Botão “Limpar biblioteca” destacado; operação existente remove somente itens encerrados do histórico, sem apagar mídias ou downloads ativos.

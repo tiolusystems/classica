@@ -2,7 +2,7 @@
 
 **Áudio e vídeo, no seu computador.**
 
-by **☧ SYSTEMS** · versão **2.1.1**
+by **☧ SYSTEMS** · versão **2.1.2**
 
 Aplicação local em português para salvar gravações autorizadas do YouTube.
 Cole o link, escolha áudio ou vídeo, selecione o formato e acompanhe a fila.
@@ -10,14 +10,39 @@ Cole o link, escolha áudio ou vídeo, selecione o formato e acompanhe a fila.
 ## Começar no Windows
 
 1. Baixe o pacote da versão publicada e extraia o ZIP.
-2. Entre na pasta **Classica** e abra **Iniciar.bat**.
+2. Entre na pasta **Classica-2.1.2** e abra **Clássica.exe**, identificado pelo ícone ☧.
 3. Na primeira abertura, aguarde a preparação dos componentes. Reserve cerca
    de **2 GB livres**, além do espaço necessário para seus downloads.
-4. A interface abre no navegador do computador. No modo clássico, mantenha a janela de execução aberta; para encerrar use **Sair**.
+4. A interface abre no navegador do computador e a janela de preparação fecha. Para encerrar a aplicação, use **Sair**.
 
-### Inicialização discreta (opcional)
+### Um único ponto de entrada
+
+O ZIP já inclui **Clássica.exe**, com nome e ícone próprios. Não é necessário criar
+atalhos, escolher um navegador ou instalar um lançador separado. Extraia a pasta
+inteira: o executável depende dos arquivos que o acompanham. Ele funciona a partir
+da própria pasta, mesmo se for aberto de outro diretório.
+
+A pasta principal mostra apenas **Clássica.exe**, **Leia-me.txt** e **Componentes**.
+Os scripts e arquivos técnicos ficam dentro de Componentes; a abertura normal
+é sempre pelo ícone Clássica. Mantenha essa pasta junto do executável.
+
+Uma janela clara mostra a preparação e eventuais erros. Depois da abertura da
+interface, essa janela fecha; use **Sair** na aplicação para encerrar o servidor.
+Não exige administrador, não cria atalhos nem adiciona inicialização com o Windows.
+O lançador confere se o programa e a interface têm a mesma versão do executável;
+se encontrar arquivos de versões diferentes, informa como extrair o pacote correto.
+
+O executável é compilado do código `launcher/Classica.cs` pelo GitHub Actions,
+com o compilador .NET Framework do Windows. O ícone não é uma assinatura digital:
+esta distribuição ainda não tem certificado de assinatura de código e o Windows
+pode exibir um aviso de reputação.
+
+### Alternativas de suporte
 
 Além do **Iniciar.bat**, há **Iniciar discreto.bat**. No modo discreto, a janela preta aparece apenas durante a preparação inicial e se fecha automaticamente depois que o navegador abre. A Clássica continua executando em segundo plano, sem depender de um console aberto. Para encerrar de fato, clique em **Sair** dentro da interface; apenas fechar a aba não interrompe o servidor nem a fila.
+
+Essas alternativas e `Atualizar.bat` ficam dentro de **Componentes** no ZIP.
+O início normal é sempre por **Clássica.exe**, na pasta principal.
 
 O modo clássico **Iniciar.bat** permanece como alternativa recomendada para diagnóstico. Se o início discreto falhar, consulte `ultimo-inicio.log` e `ultimo-discreto-erros.log` na pasta da Clássica e volte a usar o modo clássico. Não há serviço permanente instalado nem inicialização automática junto com o Windows.
 
@@ -25,7 +50,12 @@ O modo clássico **Iniciar.bat** permanece como alternativa recomendada para dia
 página hospedada no GitHub Pages: o processamento exige Python, yt-dlp e FFmpeg
 no computador. Não é necessário fornecer senha, conta ou chave de API.
 
-O ZIP sempre contém uma única pasta `Classica/`. O inicializador recusa execução
+O ZIP contém uma única pasta `Classica-2.1.2/`, identificada pela versão.
+Extraia como uma pasta nova; não mescle arquivos com outra versão. O histórico e
+as preferências continuam no perfil do usuário. Se fechar apenas a aba, abrir
+Clássica de novo recupera a mesma sessão. Use **Sair** para encerrar de fato.
+Se outra versão estiver ativa, encerre-a antes de abrir a nova.
+O inicializador recusa execução
 diretamente na raiz de uma unidade. Esta versão **não inclui ferramenta de
 remoção, recuperação ou organização de arquivos de versões antigas**.
 
@@ -87,10 +117,10 @@ de login ou PO Token. Pare as tentativas e confira o vídeo diretamente no naveg
 A interface de download não solicita cookies nem depende de um navegador específico.
 Quando uma gravação não estiver disponível, interrompa as tentativas e consulte o vídeo no navegador. Não existe garantia de acesso a todos os conteúdos do YouTube.
 
-Para instalar uma nova versão da Clássica, substitua os arquivos dentro da
-**mesma pasta**. Mantenha os componentes locais já instalados. Não mova o
-ambiente Python depois de criado; se precisar mudar de lugar, extraia a versão
-em outra pasta e deixe o inicializador preparar um ambiente novo.
+Para instalar uma nova versão, encerre a aplicação pelo botão **Sair** e extraia
+o novo ZIP em sua própria pasta, identificada pela versão. Não copie arquivos
+sobre a pasta antiga nem mova o ambiente Python já preparado. A nova pasta
+prepara seus componentes; histórico e preferências continuam no perfil do usuário.
 
 ## Qualidade, marca e limites
 
@@ -126,6 +156,8 @@ python app.py
 python -m unittest discover -s tests -v
 node --check web/app.js
 python scripts/verify_release.py
+## No Windows, antes de empacotar:
+powershell -NoProfile -File scripts/build_launcher.ps1
 python scripts/package_release.py
 ```
 
@@ -139,9 +171,11 @@ npm run test:ui
 ```
 
 GitHub Actions inclui testes Linux, preparação e testes Windows, testes de
-interface e construção do ZIP. Uma tag `v2.1.1` aciona a publicação de uma versão
-com ZIP e SHA256 **apenas se os testes anteriores passarem**. Não confunda a
-existência do workflow com um resultado de CI já aprovado.
+interface e construção do ZIP. Integrar na `main` uma versão com número novo
+publica o ZIP e o SHA256 **apenas se todos os testes anteriores passarem**.
+O arquivo publicado é o mesmo testado na instalação limpa do Windows.
+Versões já publicadas permanecem imutáveis; alterações posteriores exigem outro
+número de versão. Uma tag também pode acionar esse fluxo, com validação do commit.
 
 ## Componentes e licenças
 

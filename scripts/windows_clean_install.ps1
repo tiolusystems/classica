@@ -18,12 +18,39 @@ if ($expected -notmatch '^[0-9a-f]{64}$' -or $actual -ne $expected) {
     throw 'Windows ZIP checksum mismatch.'
 }
 
-$workspace = Join-Path $env:RUNNER_TEMP ('classica-zip-clean-' + [Guid]::NewGuid().ToString('N'))
+$workspace = Join-Path $env:RUNNER_TEMP ('Classica espa' + [char]0x00E7 + 'o & acento-classica-zip-clean-' + [Guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Force -Path $workspace | Out-Null
 $serverProcess = $null
 try {
     Expand-Archive -LiteralPath $archivePath -DestinationPath $workspace
-    $appDir = Join-Path $workspace 'Classica'
+    $packageDir = Join-Path $workspace 'Classica-2.1.2'
+    $appDir = Join-Path $packageDir 'Componentes'
+    $launcherName = 'Cl' + [char]0x00E1 + 'ssica.exe'
+    $launcher = Join-Path $packageDir $launcherName
+    $publicItems = @(Get-ChildItem -LiteralPath $packageDir -Force | Select-Object -ExpandProperty Name)
+    if (@(Compare-Object $publicItems @($launcherName, 'Leia-me.txt', 'Componentes')).Count -ne 0) {
+        throw 'Distribution root must have one branded launcher, user guide and components folder only.'
+    }
+    if (-not (Test-Path -LiteralPath $launcher)) { throw 'Branded launcher missing from ZIP.' }
+    $version = [Diagnostics.FileVersionInfo]::GetVersionInfo($launcher)
+    if ($version.FileVersion -ne '2.1.2.0') { throw 'Launcher version mismatch.' }
+    Add-Type -AssemblyName System.Drawing
+    $icon = [Drawing.Icon]::ExtractAssociatedIcon($launcher)
+    if (-not $icon) { throw 'Launcher icon missing.' }
+    $icon.Dispose()
+    $probe = Start-Process -FilePath $launcher -ArgumentList '--check' -WorkingDirectory $env:RUNNER_TEMP -PassThru -Wait
+    if ($probe.ExitCode -ne 0) { throw 'Launcher failed package check from unrelated working directory.' }
+    $mixed = Join-Path $workspace 'mixed-files'
+    $mixedComponents = Join-Path $mixed 'Componentes'
+    New-Item -ItemType Directory -Force -Path (Join-Path $mixedComponents 'web') | Out-Null
+    Copy-Item -LiteralPath $launcher -Destination $mixed
+    foreach ($required in @('iniciar.ps1', 'tools.lock.json', 'requirements.lock', 'web/index.html')) {
+        Copy-Item -LiteralPath (Join-Path $appDir $required) -Destination (Join-Path $mixedComponents $required)
+    }
+    Set-Content -LiteralPath (Join-Path $mixedComponents 'app.py') -Value 'VERSION = "0.0.0"' -Encoding UTF8
+    $mixedCheck = Start-Process -FilePath (Join-Path $mixed ([IO.Path]::GetFileName($launcher))) -ArgumentList '--check' -PassThru -Wait
+    if ($mixedCheck.ExitCode -ne 1) { throw 'Launcher accepted mixed release files.' }
+    Write-Host 'Branded launcher rejects mixed release files: PASS'
     if (-not (Test-Path -LiteralPath (Join-Path $appDir 'Iniciar.bat')) -or
         -not (Test-Path -LiteralPath (Join-Path $appDir 'iniciar.ps1'))) {
         throw 'Release ZIP does not contain the required Classica/ launcher.'
@@ -59,7 +86,7 @@ try {
 
     Push-Location -LiteralPath $appDir
     try {
-        & $pythonExe -c "import app,pathlib; assert pathlib.Path(app.__file__).resolve().parent == pathlib.Path.cwd(); assert app.VERSION == '2.1.1'; assert all(app.dependencies().values()), app.dependencies(); print('Fresh runtime components: PASS')"
+        & $pythonExe -c "import app,pathlib; assert pathlib.Path(app.__file__).resolve().parent == pathlib.Path.cwd(); assert app.VERSION == '2.1.2'; assert all(app.dependencies().values()), app.dependencies(); print('Fresh runtime components: PASS')"
         if ($LASTEXITCODE -ne 0) { throw 'Fresh runtime import/dependencies check failed.' }
     }
     finally { Pop-Location }
@@ -92,14 +119,14 @@ try {
     # Inspect ASCII identifiers: Windows PowerShell 5.1 may mis-decode UTF-8
     # page text even though browsers honor the HTML charset meta tag.
     if ($page.StatusCode -ne 200 -or $page.Content -notmatch 'name="classica-token"' -or
-        $page.Content -notmatch 'v2\.1\.1' -or $page.Content -match 'use-edge-session') {
+        $page.Content -notmatch 'v2\.1\.2' -or $page.Content -match 'use-edge-session') {
         throw 'First-run UI invalid or contains browser cookie control.'
     }
     $tokenMatch = [regex]::Match($page.Content, 'name="classica-token"\s+content="([^"]+)"')
     if (-not $tokenMatch.Success) { throw 'Missing token in actual localhost UI.' }
     $headers = @{ 'X-Classica-Token' = $tokenMatch.Groups[1].Value }
     $state = Invoke-RestMethod -Uri ($url + '/api/state') -Headers $headers -TimeoutSec 15
-    if ($state.version -ne '2.1.1' -or $state.jobs.Count -ne 0) {
+    if ($state.version -ne '2.1.2' -or $state.jobs.Count -ne 0) {
         throw 'Version or initial queue state differs from expected fresh install.'
     }
     foreach ($component in @('yt_dlp','yt_dlp_ejs','ffmpeg','ffprobe','deno')) {
@@ -126,15 +153,6 @@ try {
     }
     Write-Host 'Fresh ZIP setup, local app startup, API, and no-browser-auth checks: PASS'
 
-    # Run the media conversion suite FROM THE EXTRACTED ZIP (not the checkout).
-    Push-Location -LiteralPath $appDir
-    try {
-        & $pythonExe -m unittest discover -s tests -v
-        if ($LASTEXITCODE -ne 0) { throw 'Bundled media/format regression tests failed.' }
-    }
-    finally { Pop-Location }
-    Write-Host 'Freshly installed ZIP: unit, format and integration tests PASS.'
-
     # The optional self-closing launcher must keep the local app reachable
     # after its PowerShell launcher exits, and Sair must terminate that server.
     $previousLocalAppData = $env:LOCALAPPDATA
@@ -145,8 +163,17 @@ try {
     try {
         Push-Location -LiteralPath $appDir
         try {
-            & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File (Join-Path $appDir 'iniciar.ps1') -Background
-            if ($LASTEXITCODE -ne 0) { throw 'Optional background launcher returned failure.' }
+            $native = Start-Process -FilePath $launcher -WorkingDirectory $env:RUNNER_TEMP -PassThru
+            if (-not $native.WaitForExit(45000)) {
+                foreach ($logName in @('ultimo-lancador.log', 'ultimo-inicio.log', 'ultimo-discreto.log', 'ultimo-discreto-erros.log')) {
+                    $logPath = Join-Path $appDir $logName
+                    Write-Host "Diagnostic $logName"
+                    if (Test-Path -LiteralPath $logPath) { Get-Content -LiteralPath $logPath -Tail 80 | Write-Host }
+                }
+                Stop-Process -Id $native.Id -Force
+                throw 'Branded launcher did not close after opening the application.'
+            }
+            if ($native.ExitCode -ne 0) { throw 'Branded launcher returned failure.' }
         }
         finally { Pop-Location }
         $hiddenLog = Join-Path $appDir 'ultimo-discreto.log'
@@ -161,8 +188,18 @@ try {
         if (-not $hiddenToken.Success) { throw 'Background application token was not served.' }
         $hiddenHeaders = @{ 'X-Classica-Token' = $hiddenToken.Groups[1].Value }
         $hiddenState = Invoke-RestMethod -Uri ($hiddenUrl + '/api/state') -Headers $hiddenHeaders -TimeoutSec 10
-        if ($hiddenState.version -ne '2.1.1') { throw 'Unexpected background application version.' }
+        if ($hiddenState.version -ne '2.1.2') { throw 'Unexpected background application version.' }
         Write-Host 'Optional detached console launch and live localhost HTTP: PASS'
+        # Reopening after a tab closes must reuse the same server and queue.
+        $profileData = Join-Path $env:LOCALAPPDATA 'Classica'
+        $instance = Get-Content -LiteralPath (Join-Path $profileData 'instancia.json') -Raw | ConvertFrom-Json
+        $originalPid = $instance.pid
+        $reopen = Start-Process -FilePath $launcher -WorkingDirectory $env:RUNNER_TEMP -PassThru
+        if (-not $reopen.WaitForExit(45000)) { Stop-Process -Id $reopen.Id -Force; throw 'Reopening the branded launcher hung.' }
+        if ($reopen.ExitCode -ne 0) { throw 'Reopening the branded launcher failed.' }
+        $reopened = Get-Content -LiteralPath (Join-Path $profileData 'instancia.json') -Raw | ConvertFrom-Json
+        if ($reopened.pid -ne $originalPid -or $reopened.url -ne $hiddenUrl) { throw 'Reopening created a duplicate instance.' }
+        Write-Host 'Reopening after closing tab reuses existing server: PASS'
         Invoke-RestMethod -Method Post -Uri ($hiddenUrl + '/api/shutdown') -Headers $hiddenHeaders -Body '{}' -ContentType 'application/json' -TimeoutSec 10 | Out-Null
         $hiddenStopped = $false
         for ($i = 0; $i -lt 30; $i++) {
@@ -172,6 +209,18 @@ try {
         }
         if (-not $hiddenStopped) { throw 'Sair did not stop the detached local server.' }
         Write-Host 'Background server shutdown from Sair action: PASS'
+        # Launch immediately after Sair and verify the complete new session.
+        $restart = Start-Process -FilePath $launcher -WorkingDirectory $env:RUNNER_TEMP -PassThru
+        if (-not $restart.WaitForExit(45000)) { Stop-Process -Id $restart.Id -Force; throw 'Restart after Sair hung.' }
+        if ($restart.ExitCode -ne 0) { throw 'Restart after Sair failed.' }
+        $restarted = Get-Content -LiteralPath (Join-Path $profileData 'instancia.json') -Raw | ConvertFrom-Json
+        if ($restarted.pid -eq $originalPid) { throw 'Restart did not start a new server.' }
+        $hiddenUrl = $restarted.url
+        $hiddenHeaders = @{ 'X-Classica-Token' = $restarted.token }
+        $restartedState = Invoke-RestMethod -Uri ($hiddenUrl + '/api/state') -Headers $hiddenHeaders -TimeoutSec 10
+        if ($restartedState.version -ne '2.1.2') { throw 'Restart opened an unexpected version.' }
+        Invoke-RestMethod -Method Post -Uri ($hiddenUrl + '/api/shutdown') -Headers $hiddenHeaders -Body '{}' -ContentType 'application/json' -TimeoutSec 10 | Out-Null
+        Write-Host 'Sair followed by new branded launch: PASS'
     }
     finally {
         if ($hiddenUrl -and $hiddenHeaders) {
@@ -180,6 +229,14 @@ try {
         }
         $env:LOCALAPPDATA = $previousLocalAppData
     }
+    # Run the media conversion suite FROM THE EXTRACTED ZIP (not the checkout).
+    Push-Location -LiteralPath $appDir
+    try {
+        & $pythonExe -m unittest discover -s tests -v
+        if ($LASTEXITCODE -ne 0) { throw 'Bundled media/format regression tests failed.' }
+    }
+    finally { Pop-Location }
+    Write-Host 'Freshly installed ZIP: unit, format and integration tests PASS.'
 }
 finally {
     if ($serverProcess) {

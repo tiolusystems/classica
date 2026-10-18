@@ -6,7 +6,7 @@ import re
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from package_release import FILES, ROOT
+from package_release import FILES, GENERATED, ROOT, source_path
 
 
 class Elements(HTMLParser):
@@ -25,11 +25,12 @@ def luminance(hex_color):
 
 
 def verify():
-    missing = [name for name in FILES if not (ROOT / name).is_file()]
+    missing = [name for name in FILES if name not in GENERATED and not source_path(name).is_file()]
     assert not missing, f"Missing release files: {missing}"
     assert all(".." not in Path(name).parts for name in FILES)
     assert not any("organizar" in name.lower() or "versao_anterior" in name for name in FILES)
     assert "Iniciar discreto.bat" in FILES, "Missing optional background launcher"
+    assert "Clássica.exe" in FILES, "Missing branded entry point"
     assert "[switch]$Background" in (ROOT / "iniciar.ps1").read_text(encoding="utf-8"), "Background mode not exposed by launcher"
     html = (ROOT / "web/index.html").read_text(encoding="utf-8")
     js = (ROOT / "web/app.js").read_text(encoding="utf-8")

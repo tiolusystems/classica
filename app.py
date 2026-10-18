@@ -23,9 +23,10 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlsplit, quote
 import uuid
 import webbrowser
+from urllib.request import Request, build_opener, ProxyHandler, HTTPRedirectHandler
 
 ROOT = Path(__file__).resolve().parent
-VERSION = "2.1.1"
+VERSION = "2.1.2"
 FORMATS = {"mp3": "MP3 · 320 kbps", "m4a": "M4A · AAC", "aac": "AAC",
            "wav": "WAV", "flac": "FLAC", "ogg": "OGG · Vorbis", "opus": "OPUS",
            "original": "Áudio original"}
@@ -478,6 +479,11 @@ class Handler(BaseHTTPRequestHandler):
         elif path in {"/app.js", "/style.css", "/favicon.svg"}:
             mime = {"/app.js": "application/javascript; charset=utf-8", "/style.css": "text/css; charset=utf-8", "/favicon.svg": "image/svg+xml"}[path]
             self.respond(200, (ROOT / "web" / path[1:]).read_bytes(), mime)
+        elif path == "/api/instance":
+            if self.headers.get("X-Classica-Token") != self.server.token:
+                self.respond(403, {"error": "Sessão inválida."})
+            else:
+                self.respond(200, {"version": VERSION, "directory": str(ROOT), "pid": os.getpid(), "closing": self.server.closing})
         elif path == "/api/state":
             if self.headers.get("X-Classica-Token") != self.server.token:
                 self.respond(403, {"error": "Sessão inválida. Reabra a aplicação."})
@@ -546,6 +552,7 @@ class Handler(BaseHTTPRequestHandler):
                 else:
                     subprocess.Popen(["xdg-open", folder], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             elif path == "/api/shutdown":
+                self.server.closing = True
                 self.respond(200, result)
                 threading.Thread(target=self.server.shutdown, daemon=True).start()
                 return
@@ -562,7 +569,34 @@ def create_server(manager, port=0):
     server.daemon_threads = True
     server.manager = manager
     server.token = secrets.token_urlsafe(32)
+    server.closing = False
     return server
+
+
+def active_instance(data_dir: Path):
+    """Only trust an authenticated response from the saved loopback endpoint."""
+    try:
+        record = json.loads((data_dir / 'instancia.json').read_text(encoding='utf-8'))
+        url = record['url']
+        if not isinstance(url, str) or not re.fullmatch(r'http://127\.0\.0\.1:[0-9]{1,5}', url):
+            return None
+        if not 1 <= urlsplit(url).port <= 65535:
+            return None
+        token = record['token']
+        if not isinstance(token, str) or not re.fullmatch(r'[A-Za-z0-9_-]{20,100}', token):
+            return None
+        # Explicitly disable proxies; a local-instance probe never leaves this PC.
+        class LocalOnly(HTTPRedirectHandler):
+            def redirect_request(self, req, fp, code, msg, headers, newurl):
+                return None
+        opener = build_opener(ProxyHandler({}), LocalOnly())
+        with opener.open(Request(url + '/api/instance', headers={'X-Classica-Token': token}), timeout=.5) as response:
+            actual = json.loads(response.read(4096))
+        if actual['pid'] != record['pid'] or actual['directory'] != record['directory'] or actual['version'] != record['version']:
+            return None
+        return dict(actual, url=url)
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
 
 
 def main():
@@ -575,26 +609,51 @@ def main():
     # OS-level advisory lock prevents two sessions from overwriting queue history.
     data_dir.mkdir(parents=True, exist_ok=True)
     lock_file = (data_dir / "sessao.lock").open("a+b")
-    try:
-        if os.name == "nt":
-            import msvcrt
-            if lock_file.tell() == 0:
-                lock_file.write(b"0")
-                lock_file.flush()
-            lock_file.seek(0)
-            msvcrt.locking(lock_file.fileno(), msvcrt.LK_NBLCK, 1)
-        else:
-            import fcntl
-            fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
-    except OSError:
-        print("A Clássica já está aberta. Use a janela existente ou encerre-a antes de abrir novamente.")
-        return 1
+    deadline = time.monotonic() + 20
+    while True:
+        try:
+            if os.name == "nt":
+                import msvcrt
+                if lock_file.tell() == 0:
+                    lock_file.write(b"0")
+                    lock_file.flush()
+                lock_file.seek(0)
+                msvcrt.locking(lock_file.fileno(), msvcrt.LK_NBLCK, 1)
+            else:
+                import fcntl
+                fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            break
+        except OSError:
+            current = active_instance(data_dir)
+            if current and not current.get('closing'):
+                lock_file.close()
+                if current['version'] != VERSION or Path(current['directory']).resolve() != ROOT:
+                    print(f"Outra instalação da Clássica está aberta: versão {current['version']}, pasta {current['directory']}. Encerre-a pelo botão Sair antes de abrir esta versão ({VERSION}).", flush=True)
+                    return 1
+                print(f"Clássica {VERSION} já está aberta. Reabrindo sua biblioteca.\nAbra no navegador: {current['url']}", flush=True)
+                if not args.no_browser:
+                    webbrowser.open(current['url'])
+                return 0
+            if time.monotonic() >= deadline:
+                lock_file.close()
+                print("Outra Clássica está iniciando ou ainda aberta. Se você fechou apenas a aba, a aplicação continua ativa. Encerre pelo botão Sair na janela existente e tente novamente. Uma versão anterior pode precisar ser encerrada primeiro.", flush=True)
+                return 1
+            time.sleep(.15)
     manager = Manager(data_dir)
     server = create_server(manager, args.port)
     url = f"http://127.0.0.1:{server.server_port}"
+    instance_file = data_dir / 'instancia.json'
+    record = {'url': url, 'token': server.token, 'pid': os.getpid(), 'version': VERSION, 'directory': str(ROOT)}
+    temporary = instance_file.with_suffix('.tmp')
+    with temporary.open('w', encoding='utf-8') as stream:
+        if os.name != 'nt':
+            os.chmod(temporary, 0o600)
+        json.dump(record, stream)
+    temporary.replace(instance_file)
     print("\nCLÁSSICA — áudio e vídeo · by ☧ SYSTEMS\n")
     print("Abra no navegador: " + url)
-    print("Mantenha esta janela aberta. Para encerrar, use o botão Sair ou Ctrl+C.\n", flush=True)
+    print(f"Versão {VERSION} · pasta {ROOT}")
+    print("Para encerrar, use Sair. Fechar a aba mantém a aplicação ativa; abra Clássica novamente para voltar.\n", flush=True)
     if not args.no_browser:
         webbrowser.open(url)
     try:
@@ -604,6 +663,7 @@ def main():
     finally:
         manager.stop()
         server.server_close()
+        instance_file.unlink(missing_ok=True)
         lock_file.close()
     return 0
 
