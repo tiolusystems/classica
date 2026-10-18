@@ -34,6 +34,16 @@ try {
     $icon.Dispose()
     $probe = Start-Process -FilePath $launcher -ArgumentList '--check' -WorkingDirectory $env:RUNNER_TEMP -PassThru -Wait
     if ($probe.ExitCode -ne 0) { throw 'Launcher failed package check from unrelated working directory.' }
+    $mixed = Join-Path $workspace 'mixed-files'
+    New-Item -ItemType Directory -Force -Path (Join-Path $mixed 'web') | Out-Null
+    Copy-Item -LiteralPath $launcher -Destination $mixed
+    foreach ($required in @('iniciar.ps1', 'tools.lock.json', 'requirements.lock', 'web/index.html')) {
+        Copy-Item -LiteralPath (Join-Path $appDir $required) -Destination (Join-Path $mixed $required)
+    }
+    Set-Content -LiteralPath (Join-Path $mixed 'app.py') -Value 'VERSION = "0.0.0"' -Encoding UTF8
+    $mixedCheck = Start-Process -FilePath (Join-Path $mixed ([IO.Path]::GetFileName($launcher))) -ArgumentList '--check' -PassThru -Wait
+    if ($mixedCheck.ExitCode -ne 1) { throw 'Launcher accepted mixed release files.' }
+    Write-Host 'Branded launcher rejects mixed release files: PASS'
     if (-not (Test-Path -LiteralPath (Join-Path $appDir 'Iniciar.bat')) -or
         -not (Test-Path -LiteralPath (Join-Path $appDir 'iniciar.ps1'))) {
         throw 'Release ZIP does not contain the required Classica/ launcher.'

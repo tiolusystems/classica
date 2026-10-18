@@ -20,9 +20,14 @@ internal static class Program
     {
         if (!Environment.Is64BitOperatingSystem)
             throw new InvalidOperationException("Esta versão requer Windows 10 ou 11 de 64 bits (Intel/AMD).");
-        foreach (string name in new[] { "iniciar.ps1", "app.py", "tools.lock.json", "requirements.lock" })
+        foreach (string name in new[] { "iniciar.ps1", "app.py", "tools.lock.json", "requirements.lock", "web/index.html" })
             if (!File.Exists(Path.Combine(Root, name)))
                 throw new FileNotFoundException("Extraia a pasta Classica completa do ZIP antes de abrir a aplicação. Arquivo ausente: " + name);
+        string version = Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
+        string expected = "VERSION = \"" + version + "\"";
+        if (!Array.Exists(File.ReadAllLines(Path.Combine(Root, "app.py")), line => line.Trim() == expected) ||
+            !File.ReadAllText(Path.Combine(Root, "web/index.html")).Contains(">v" + version + "<"))
+            throw new InvalidOperationException("Esta pasta mistura arquivos de versões diferentes. Extraia o ZIP completo da Clássica " + version + " em sua própria pasta e abra o executável de dentro dela.");
     }
 
     [STAThread]

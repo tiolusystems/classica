@@ -25,6 +25,8 @@ da própria pasta, mesmo se for aberto de outro diretório.
 Uma janela clara mostra a preparação e eventuais erros. Depois da abertura da
 interface, essa janela fecha; use **Sair** na aplicação para encerrar o servidor.
 Não exige administrador, não cria atalhos nem adiciona inicialização com o Windows.
+O lançador confere se o programa e a interface têm a mesma versão do executável;
+se encontrar arquivos de versões diferentes, informa como extrair o pacote correto.
 
 O executável é compilado do código `launcher/Classica.cs` pelo GitHub Actions,
 com o compilador .NET Framework do Windows. O ícone não é uma assinatura digital:
