@@ -1,5 +1,10 @@
 # Histórico de mudanças
 
+## 2.2.2
+
+- A opção de atalhos permanece visível após a instalação e permite **Criar ou atualizar atalhos** sem reinstalar a aplicação.
+- A criação dos atalhos valida a instalação gerenciada e mantém a sessão aberta depois de concluir.
+
 ## 2.2.1
 
 - Clareza na instalação: a ação da Ajuda passou a se chamar **Instalar e criar atalhos**, explicando que ela prepara a cópia gerenciada e cria atalhos na Área de Trabalho e no menu Iniciar.

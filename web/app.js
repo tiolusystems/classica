@@ -120,7 +120,8 @@ function renderMaintenance(pending){
   $('preview-button').disabled=busy||previewBusy;
   $('exit-button').disabled=busy;
   $('check-update').disabled=checkingUpdate||busy;
-  $('install-app').hidden=!!m.installed;
+  $('install-app').hidden=false;
+  $('install-app').textContent=m.installed?'Criar ou atualizar atalhos':'Instalar e criar atalhos';
   $('install-app').disabled=!desktop||busy||pending>0||previewBusy;
   $('apply-update').hidden=!m.update_available;
   $('apply-update').disabled=!desktop||busy||pending>0||previewBusy;
@@ -135,9 +136,13 @@ $('check-update').addEventListener('click',async()=>{
   try{await api('update/check',{});await refresh();}catch(error){$('maintenance-status').textContent=error.message;toast(error.message,true);}
   finally{checkingUpdate=false;$('check-update').disabled=!!snapshot?.maintenance?.busy;}
 });
-for(const [id,kind,label] of [['install-app','install','Instalar e criar atalhos'],['apply-update','update','Preparar e abrir a nova versão'],['rollback-app','rollback','Preparar e abrir a versão anterior']]){
+for(const [id,defaultKind,defaultLabel] of [['install-app','install','Instalar e criar atalhos'],['apply-update','update','Preparar e abrir a nova versão'],['rollback-app','rollback','Preparar e abrir a versão anterior']]){
   $(id).addEventListener('click',async()=>{
-    if(!confirm(label+'? A preparação usa internet e espaço em disco. Ao concluir, a aplicação será reaberta. Histórico, preferências e arquivos baixados serão preservados.'))return;
+    const maintenance=snapshot.maintenance||{};
+    const kind=id==='install-app'&&maintenance.installed?'shortcuts':defaultKind;
+    const label=id==='install-app'&&maintenance.installed?'Criar ou atualizar atalhos':defaultLabel;
+    const completion=kind==='shortcuts'?' Os atalhos serão criados ou atualizados sem reinstalar a aplicação.':' A aplicação será reaberta ao concluir.';
+    if(!confirm(label+'? A preparação usa internet e espaço em disco.'+completion+' Histórico, preferências e arquivos baixados serão preservados.'))return;
     try{await api('update/prepare',{kind});await refresh();}catch(error){toast(error.message,true);}
   });
 }

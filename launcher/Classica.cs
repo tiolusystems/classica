@@ -9,8 +9,8 @@ using System.Windows.Forms;
 [assembly: AssemblyDescription("Inicialização da Clássica — by ☧ SYSTEMS")]
 [assembly: AssemblyCompany("☧ SYSTEMS")]
 [assembly: AssemblyProduct("Clássica")]
-[assembly: AssemblyVersion("2.2.1.0")]
-[assembly: AssemblyFileVersion("2.2.1.0")]
+[assembly: AssemblyVersion("2.2.2.0")]
+[assembly: AssemblyFileVersion("2.2.2.0")]
 
 internal static class Program
 {
@@ -20,7 +20,7 @@ internal static class Program
     {
         string location = Path.GetFullPath(AppDomain.CurrentDomain.BaseDirectory).TrimEnd(Path.DirectorySeparatorChar);
         if (location == Path.GetPathRoot(location).TrimEnd(Path.DirectorySeparatorChar))
-            throw new InvalidOperationException("Extraia a pasta Classica-2.2.1 completa do ZIP. A aplicação deve ficar em uma pasta própria, fora da raiz da unidade.");
+            throw new InvalidOperationException("Extraia a pasta Classica-2.2.2 completa do ZIP. A aplicação deve ficar em uma pasta própria, fora da raiz da unidade.");
         if (!Environment.Is64BitOperatingSystem)
             throw new InvalidOperationException("Esta versão requer Windows 10 ou 11 de 64 bits (Intel/AMD).");
         foreach (string name in new[] { "iniciar.ps1", "app.py", "tools.lock.json", "requirements.lock", "web/index.html" })
@@ -72,7 +72,7 @@ internal sealed class StartupWindow : Form
     internal StartupWindow(string scriptName = "iniciar.ps1", string scriptArguments = "-Background")
     {
         script = scriptName; arguments = scriptArguments;
-        Text = "Clássica · 2.2.1";
+        Text = "Clássica · 2.2.2";
         Icon = System.Drawing.Icon.ExtractAssociatedIcon(Application.ExecutablePath);
         StartPosition = FormStartPosition.CenterScreen;
         AutoScaleMode = AutoScaleMode.Dpi;
@@ -88,7 +88,7 @@ internal sealed class StartupWindow : Form
         layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        layout.Controls.Add(new Label { Text = "Clássica 2.2.1", AutoSize = true, Font = new Font("Georgia", 20), Margin = new Padding(0, 0, 0, 10) });
+        layout.Controls.Add(new Label { Text = "Clássica 2.2.2", AutoSize = true, Font = new Font("Georgia", 20), Margin = new Padding(0, 0, 0, 10) });
         status = new Label { Text = "Preparando sua biblioteca…", AutoSize = true, Dock = DockStyle.Fill, Margin = new Padding(0, 0, 0, 12) };
         layout.Controls.Add(status);
         progress = new ProgressBar { Style = ProgressBarStyle.Marquee, Dock = DockStyle.Fill, Height = 5, Margin = new Padding(0, 0, 0, 12) };

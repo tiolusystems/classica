@@ -203,17 +203,19 @@ class MaintenanceService:
             self.state.update(values)
 
     def begin(self, kind):
-        if kind not in ('install', 'update', 'rollback'):
+        if kind not in ('install', 'update', 'rollback', 'shortcuts'):
             raise ValueError('Operação de manutenção inválida.')
         with self.lock:
             if self.snapshot()['busy']:
                 raise ValueError('Outra preparação está em andamento.')
             if kind == 'install' and self.installation()['installed']:
                 raise ValueError('Esta versão já está instalada no perfil do usuário.')
+            if kind == 'shortcuts' and not self.installation()['installed']:
+                raise ValueError('Instale a aplicação no perfil do usuário antes de criar atalhos.')
             if kind == 'rollback' and not self.installation()['can_rollback']:
                 raise ValueError('Não há uma versão anterior disponível para restaurar.')
             action_id = uuid.uuid4().hex
-            self.state = {'phase': 'copying' if kind == 'install' else 'downloading',
+            self.state = {'phase': 'copying' if kind in ('install', 'shortcuts') else 'downloading',
                           'message': 'Preparando a versão. A aplicação atual continua aberta.',
                           'progress': 0, 'action': None}
             self.thread = threading.Thread(target=self._prepare, args=(kind, action_id), daemon=True)
@@ -228,7 +230,16 @@ class MaintenanceService:
             staging.mkdir()
             content = staging / 'package'
             content.mkdir()
-            if kind == 'install':
+            if kind == 'shortcuts':
+                target = self.root.parent.resolve()
+                expected = (self.managed_root / 'versoes' / ('Classica-' + self.version)).resolve()
+                if target != expected or not (target / '.classica-package.json').is_file():
+                    raise ValueError('A instalação gerenciada não foi encontrada para criar os atalhos.')
+                version, digest = self.version, None
+                action = {'id': action_id, 'kind': kind, 'target': str(target), 'version': version}
+                self._set(phase='ready', message='Instalação encontrada. Preparando a criação dos atalhos.', progress=100, action=action)
+                return
+            elif kind == 'install':
                 from scripts.package_release import FILES, USER_FILES
                 for name in self.source_files or FILES:
                     relative = safe_relative(name)
@@ -302,3 +313,10 @@ class MaintenanceService:
         with self.lock:
             if self.state['action'] and self.state['action']['id'] == action_id:
                 self._set(phase='error', message='A manutenção não foi concluída. A versão anterior foi preservada.', action=None)
+
+    def completed(self, action_id):
+        with self.lock:
+            action = self.state.get('action')
+            if self.state['phase'] != 'preparing' or not action or action.get('id') != action_id or action.get('kind') != 'shortcuts':
+                raise ValueError('A criação dos atalhos não está pronta para ser concluída.')
+            self._set(phase='idle', message='Atalhos criados ou atualizados.', progress=100, action=None)

@@ -134,6 +134,21 @@ class MaintenanceTests(unittest.TestCase):
             with self.assertRaises(ValueError): manager.resume()
         finally: manager.stop()
 
+    def test_managed_install_can_create_shortcuts_without_reinstalling(self):
+        managed = Path(os.environ['LOCALAPPDATA']) / 'Programs' / 'Classica' / 'versoes' / ('Classica-' + VERSION)
+        (managed / 'Componentes').mkdir(parents=True)
+        (managed / '.classica-package.json').write_text(json.dumps({'version': VERSION, 'files': {}}), encoding='utf-8')
+        data = self.root / 'shortcut-data'; data.mkdir()
+        mt.atomic_json(data / 'instalacao.json', {'current': {'directory': str(managed), 'version': VERSION}, 'previous': None})
+        service = mt.MaintenanceService(managed / 'Componentes', VERSION, data)
+        state = self.finish(service, 'shortcuts')
+        self.assertEqual(state['phase'], 'ready')
+        self.assertEqual(state['action']['kind'], 'shortcuts')
+        service.preparing(state['action']['id'])
+        service.completed(state['action']['id'])
+        self.assertEqual(service.snapshot()['phase'], 'idle')
+        self.assertIn('Atalhos', service.snapshot()['message'])
+
     def test_rollback_downloads_official_previous_version(self):
         service=self.service(); service.data_dir.mkdir()
         mt.atomic_json(service.data_dir/'instalacao.json', {'previous':{'version':VERSION}})
