@@ -51,9 +51,9 @@ def verify():
     assert release_filename in (ROOT / "scripts/package_release.py").read_text(encoding="utf-8"), "Package version mismatch"
     assert "v" + version.group(1) in html, "Interface version mismatch"
     assert release_filename in (ROOT / ".github/workflows/quality.yml").read_text(encoding="utf-8"), "Clean install archive version mismatch"
-    for foreground, background in [("#172b3a", "#ffffff"), ("#526676", "#ffffff"),
-                                   ("#526676", "#f5f7f9"), ("#ffffff", "#0a655e"),
-                                   ("#922f22", "#ffffff")]:
+    for foreground, background in [("#29352e", "#fffdf8"), ("#62675c", "#fffdf8"),
+                                   ("#62675c", "#f6f2e9"), ("#ffffff", "#315747"),
+                                   ("#922f22", "#fffdf8")]:
         a, b = sorted((luminance(foreground), luminance(background)))
         ratio = (b+.05)/(a+.05)
         assert ratio >= 4.5, f"Insufficient token contrast: {foreground}/{background}: {ratio}"

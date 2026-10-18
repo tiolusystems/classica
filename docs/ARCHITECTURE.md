@@ -23,3 +23,23 @@ FFmpeg reais com conteúdo sintético.
 
 Limites: o servidor não foi projetado para exposição pública, clientes remotos,
 multiusuário, banco de dados remoto ou execução como serviço do Windows.
+
+## Desktop e manutenção (2.2.0)
+
+O controlador C# mantém o NotifyIcon enquanto o servidor Python está ativo. Um
+mutex por pasta/perfil evita controladores duplicados; eventos locais sinalizam
+Abrir/Encerrar. A sessão é confirmada no loopback com token privado antes de
+qualquer comando. A interface pode funcionar no navegador padrão.
+
+`maintenance.py` busca versões estáveis apenas em tiolusystems/classica, verifica
+tamanho e SHA256 do asset oficial, rejeita caminhos especiais, colisões Windows,
+links e conteúdo excessivo no ZIP. Copia somente a lista de distribuição na
+instalação inicial. Nenhuma versão existente é sobrescrita.
+
+O controlador executa `scripts/update_app.ps1` com apenas um ID aleatório. O helper
+confere sessão, destino e manifesto de hashes, prepara dependências, encerra a
+sessão antiga, abre a nova e confirma a resposta autenticada antes de registrar
+`instalacao.json` e os atalhos estáveis. Se falhar após a troca, tenta reabrir a
+versão de origem. Histórico/configuração permanecem em `%LOCALAPPDATA%\Classica`.
+Operações de manutenção exigem fila sem itens pendentes e consulta de detalhes
+encerrada. Não há serviço, autostart, removedor ou envio automático de diagnóstico.

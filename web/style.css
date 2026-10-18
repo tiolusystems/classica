@@ -157,3 +157,44 @@ input[type=range]{width:100%;min-height:2.75rem;accent-color:var(--accent)}
 .inline-link:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
 @media (max-width: 480px){.library-control .button{width:100%}.page-intro{margin-bottom:1.25rem}}
 @media (prefers-reduced-motion: reduce){.button{transition:none}}
+
+/* Clássica: manuscript proportions, engraved rules and quiet vegetal flourishes. */
+:root{--bg:#f6f2e9;--surface:#fffdf8;--ink:#29352e;--muted:#62675c;--line:#ded8c9;--gold:#856b3c;--gold-line:#d7c49c;--accent:#315747;--accent-hover:#244536;--tint:#edf1e9;--radius:.2rem}
+.app-header{border-top:3px solid var(--ink);border-bottom:3px double var(--gold-line);background:var(--surface)}
+.brand-symbol{border-radius:2px;outline:1px solid var(--gold-line);outline-offset:3px;background:var(--ink)}
+.brand strong{font-family:Georgia,'Times New Roman',serif;font-size:1.65rem;font-weight:400;letter-spacing:.005em}
+.brand-caption{font-size:.6rem;letter-spacing:.24em}
+h1,h2,.empty-state h3,.dialog-heading h2{font-family:Georgia,'Times New Roman',serif;font-weight:400;letter-spacing:-.025em}
+h1{font-size:clamp(2.1rem,1.4rem + 1.8vw,3rem)}
+h2{font-size:1.35rem}
+.eyebrow{font-weight:500;color:var(--gold);font-size:.6rem;letter-spacing:.2em}
+.page-intro{position:relative;border-bottom:1px solid var(--gold-line);padding-bottom:2rem;margin-bottom:2.1rem}
+.page-intro::after{content:'';position:absolute;bottom:-.8rem;left:calc(50% - 5.5rem);width:11rem;height:1.55rem;background:var(--bg) url('/ornament.svg') center/contain no-repeat;pointer-events:none}
+.local-badge{background:transparent;border:0;border-left:1px solid var(--gold-line);border-radius:0;padding:.35rem 0 .35rem 1rem;color:var(--muted);font-weight:400}
+.panel{border-color:var(--line);border-top:2px solid var(--gold-line);border-radius:2px}
+.panel-heading{position:relative;border-top:0;border-bottom:1px solid var(--line);padding:0 0 1rem;margin-bottom:1.2rem}
+.panel-heading::after{content:'❦';position:absolute;right:0;bottom:-.7rem;line-height:1.2;color:var(--gold);font-family:Georgia,serif;background:var(--surface);padding-left:.6rem;font-size:1rem;pointer-events:none}
+.step-label{padding-top:.4rem;font-family:Georgia,serif;font-weight:400;letter-spacing:.12em;font-size:.62rem}
+.button,textarea,input[type=text],select,.choice-grid label>span,.icon-button{border-radius:2px}
+.secondary:hover:not(:disabled),.quiet:hover{background:#f1ede3}
+textarea,input[type=text],select{border-color:#b4b5a7}
+.path{color:var(--muted)}
+.empty-icon{border:0;border-radius:0;background:transparent;color:var(--gold);font-family:Georgia,serif;font-size:2.4rem;width:4rem;height:3rem}
+.empty-state h3{font-size:1.3rem}
+.job{border-color:var(--line)}
+.job-icon{border-radius:0;background:transparent;color:var(--gold)}
+.job pre{background:#f3f0e7;border-radius:2px}
+.app-footer{border-top:3px double var(--gold-line)}
+.app-footer>span:first-child{font-family:Georgia,serif;letter-spacing:.02em}
+.help-brand{border-top:3px double var(--gold-line)}
+dialog{border-top:3px double var(--gold-line)}
+dialog::backdrop{background:#202c2866}
+.link-preview{margin:.3rem 0 1rem;padding:.8rem 1rem;border-left:2px solid var(--gold-line);background:#f6f3eb;overflow-wrap:anywhere}
+.link-preview h3{font-family:Georgia,serif;font-size:1rem;font-weight:400}
+.maintenance-section,.support-section{border-top:1px solid var(--line);margin-top:1.5rem;padding-top:.1rem}
+.maintenance-actions{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:.8rem}
+#maintenance-status{font-size:.75rem;color:var(--ink);border-left:2px solid var(--gold-line);padding-left:.7rem}
+#copy-report{margin-top:.7rem}
+#support-report{margin-top:.8rem;font-size:.7rem;max-height:15rem}
+@media(max-width:40rem){h1{font-size:2rem}.page-intro{padding-bottom:1.7rem}.brand strong{font-size:1.55rem}.maintenance-actions>.button{width:100%}}
+@media(forced-colors:active){.page-intro::after{display:none}.panel-heading::after{color:CanvasText}.panel,.app-header{border-color:CanvasText}}

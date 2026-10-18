@@ -2,7 +2,7 @@
 
 **Áudio e vídeo, no seu computador.**
 
-by **☧ SYSTEMS** · versão **2.1.2**
+by **☧ SYSTEMS** · versão **2.2.0**
 
 Aplicação local em português para salvar gravações autorizadas do YouTube.
 Cole o link, escolha áudio ou vídeo, selecione o formato e acompanhe a fila.
@@ -10,7 +10,7 @@ Cole o link, escolha áudio ou vídeo, selecione o formato e acompanhe a fila.
 ## Começar no Windows
 
 1. Baixe o pacote da versão publicada e extraia o ZIP.
-2. Entre na pasta **Classica-2.1.2** e abra **Clássica.exe**, identificado pelo ícone ☧.
+2. Entre na pasta **Classica-2.2.0** e abra **Clássica.exe**, identificado pelo ícone ☧.
 3. Na primeira abertura, aguarde a preparação dos componentes. Reserve cerca
    de **2 GB livres**, além do espaço necessário para seus downloads.
 4. A interface abre no navegador do computador e a janela de preparação fecha. Para encerrar a aplicação, use **Sair**.
@@ -27,8 +27,8 @@ Os scripts e arquivos técnicos ficam dentro de Componentes; a abertura normal
 é sempre pelo ícone Clássica. Mantenha essa pasta junto do executável.
 
 Uma janela clara mostra a preparação e eventuais erros. Depois da abertura da
-interface, essa janela fecha; use **Sair** na aplicação para encerrar o servidor.
-Não exige administrador, não cria atalhos nem adiciona inicialização com o Windows.
+interface, essa janela fecha e o ícone ☧ fica perto do relógio. Use **Abrir Clássica** ou **Encerrar Clássica** nesse ícone, ou **Sair** na interface.
+Não exige administrador. A instalação opcional cria atalhos; não há inicialização automática com o Windows.
 O lançador confere se o programa e a interface têm a mesma versão do executável;
 se encontrar arquivos de versões diferentes, informa como extrair o pacote correto.
 
@@ -50,7 +50,7 @@ O modo clássico **Iniciar.bat** permanece como alternativa recomendada para dia
 página hospedada no GitHub Pages: o processamento exige Python, yt-dlp e FFmpeg
 no computador. Não é necessário fornecer senha, conta ou chave de API.
 
-O ZIP contém uma única pasta `Classica-2.1.2/`, identificada pela versão.
+O ZIP contém uma única pasta `Classica-2.2.0/`, identificada pela versão.
 Extraia como uma pasta nova; não mescle arquivos com outra versão. O histórico e
 as preferências continuam no perfil do usuário. Se fechar apenas a aba, abrir
 Clássica de novo recupera a mesma sessão. Use **Sair** para encerrar de fato.
@@ -90,7 +90,34 @@ Histórico e configurações ficam em `%LOCALAPPDATA%\Classica`. A versão 2.0
 mantém compatibilidade com o histórico da versão anterior. Encerrar interrompe
 os itens pendentes; ao reabrir, use Tentar novamente para retomá-los.
 
-## Atualizar
+## Instalar e atualizar pela Ajuda
+
+Na **Ajuda**, use **Instalar neste computador** para copiar a aplicação para
+`%LOCALAPPDATA%\Programs\Classica` e criar atalhos na Área de Trabalho e no menu
+Iniciar. É opcional; a versão portátil continua funcionando. Não precisa de
+administrador e não inclui removedor.
+
+**Verificar atualizações** consulta somente as versões estáveis do repositório
+oficial. **Atualizar aplicação** verifica tamanho e SHA256 do ZIP, valida os
+caminhos e os arquivos e prepara a nova versão em uma pasta própria. Os componentes
+são preparados antes de encerrar a versão atual. A nova sessão é confirmada antes
+da troca dos atalhos. Se a troca falhar, a aplicação tenta reabrir a versão anterior.
+Após uma atualização, **Voltar à versão anterior** recupera o pacote oficial anterior.
+
+Conclua ou cancele itens pendentes antes de instalar ou atualizar. Reserve cerca
+de 2 GB por versão, além dos downloads. Pastas anteriores são preservadas; não há
+limpeza automática. O histórico e as preferências ficam no mesmo perfil. Como em
+qualquer aplicação sem certificado, o executável **não tem assinatura digital**.
+
+**Ver detalhes do link** consulta título, duração e qualidades de um único vídeo,
+sem baixar a mídia. A consulta respeita a pausa do YouTube e pode encontrar as
+mesmas restrições do download. Digitar um link não faz uma consulta automática.
+
+**Copiar relatório de diagnóstico**, na Ajuda, mostra e copia versões, estado dos
+componentes, contagens da fila e categorias de falha, sem links, títulos, caminhos,
+tokens ou dados da conta. O relatório não é enviado automaticamente.
+
+### Atualizar apenas o extrator (opção técnica)
 
 Feche a aplicação e execute `Atualizar.bat` para buscar uma versão mais recente
 do extrator. É uma ação explícita: a versão resultante pode diferir da baseline

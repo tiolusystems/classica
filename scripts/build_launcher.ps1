@@ -7,9 +7,9 @@ $output = Join-Path $root 'build'
 New-Item -ItemType Directory -Force -Path $output | Out-Null
 $launcher = Join-Path $output ('Cl' + [char]0x00E1 + 'ssica.exe')
 & $compiler /nologo /target:winexe /platform:x64 /optimize+ /codepage:65001 `
-    /reference:System.Windows.Forms.dll /reference:System.Drawing.dll `
+    /reference:System.Windows.Forms.dll /reference:System.Drawing.dll /reference:System.Web.Extensions.dll `
     "/win32icon:$(Join-Path $root 'assets\classica.ico')" `
     "/win32manifest:$(Join-Path $root 'launcher\app.manifest')" `
-    "/out:$launcher" (Join-Path $root 'launcher\Classica.cs')
+    "/out:$launcher" (Get-ChildItem -LiteralPath (Join-Path $root 'launcher') -Filter '*.cs' | Select-Object -ExpandProperty FullName)
 if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $launcher)) { throw 'Falha ao compilar Clássica.' }
 Write-Host "Launcher compiled: $launcher"

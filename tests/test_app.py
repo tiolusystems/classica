@@ -345,6 +345,28 @@ class HttpTests(IsolatedApp):
         self.assertEqual(self.manager.jobs[-1]["resolution"], "720")
         self.assertEqual(self.request("/api/enqueue", {"urls":[URL],"format":"mp4","authorized":True,"resolution":"garbage"})[0], 400)
 
+    def test_support_preview_and_maintenance_api_auth_and_pause(self):
+        for route in ('diagnostics', 'desktop'):
+            self.assertEqual(self.request('/api/'+route, token=False)[0], 403)
+        self.assertEqual(self.request('/api/preview', {'url':URL}, token=False)[0], 403)
+        with patch.object(self.manager.preview, 'inspect', return_value={'title':'Fixture'}) as inspect:
+            self.assertEqual(self.request('/api/preview', {'url':'https://attacker.test/a'})[0], 400)
+            inspect.assert_not_called()
+            self.assertEqual(self.request('/api/preview', {'url':URL})[0], 200)
+            self.manager.queue_pause.update(manual=True)
+            self.assertEqual(self.request('/api/preview', {'url':URL})[0], 400)
+            self.assertEqual(inspect.call_count, 1)
+        self.assertEqual(self.request('/api/update/prepare', {'kind':'install'})[0], 400)
+        self.assertEqual(self.request('/api/desktop')[0], 200)
+        self.manager.enqueue([URL],'mp3',True)
+        self.assertEqual(self.request('/api/update/prepare', {'kind':'install'})[0], 400)
+        self.manager.cancel(self.manager.jobs[0]['id'])
+        self.manager.maintenance._set(phase='preparing')
+        self.assertEqual(self.request('/api/shutdown', {})[0], 400)
+        self.assertEqual(self.request('/api/preview', {'url':URL})[0], 400)
+        self.assertEqual(self.request('/api/desktop/transition', {'id':'f'*32})[0], 400)
+        self.assertEqual(self.request('/ornament.svg')[0], 200)
+
     def test_api_refuses_browser_cookies_on_enqueue_and_retry(self):
         for flag in (True, False, "edge:arbitrary"):
             payload = {"urls": [URL], "format": "mp3", "authorized": True, "use_edge_session": flag}
