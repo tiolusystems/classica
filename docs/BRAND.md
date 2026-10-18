@@ -9,7 +9,7 @@ e assinatura ☧ SYSTEMS nos metadados. O ícone `assets/classica.ico` contém
 nenhum arquivo de fonte é distribuído. A prévia é `assets/classica.png`.
 O favicon da interface permanece o existente.
 
-O executável não instala atalhos e não altera as associações de arquivos.
+A instalação opcional na Ajuda cria atalhos no perfil do usuário. As associações de arquivos não são alteradas.
 
 **Assinatura visível canônica:** `by ☧ SYSTEMS`.
 
@@ -22,8 +22,8 @@ A Clássica continua sendo o nome do produto. A assinatura aparece no rodapé e
 na ajuda; o símbolo identifica o aplicativo no cabeçalho e favicon. Não foram
 copiados a logomarca ou os ativos comerciais da Elite Agrociências.
 
-Paleta funcional desta aplicação: fundo `#F5F7F9`, superfícies brancas, texto
-`#172B3A`, texto secundário `#526676`, ação `#0A655E`, foco `#135FD1` e erro
+Paleta da interface: fundo `#F6F2E9`, superfícies `#FFFDF8`, texto
+`#29352E`, texto secundário `#62675C`, ação `#315747`, foco `#135FD1` e erro
 `#922F22`. São escolhas de interface; não são apresentadas como manual
 institucional previamente aprovado da ☧ SYSTEMS.
 

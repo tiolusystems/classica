@@ -103,26 +103,53 @@ def summarize_metadata(info: dict, url: str) -> dict:
 
 
 class PreviewService:
-    def __init__(self):
+    def __init__(self, terminate=None):
         self.lock = threading.Lock()
         self.cache = {}
+        self.process_lock = threading.Lock()
+        self.process = None
+        self.stopping = False
+        self.terminate = terminate or (lambda process: process.kill())
+
+    def stop(self):
+        with self.process_lock:
+            self.stopping = True
+            if self.process and self.process.poll() is None:
+                self.terminate(self.process)
 
     def inspect(self, url: str) -> dict:
         if not self.lock.acquire(blocking=False):
             raise ValueError('Outra consulta de detalhes está em andamento. Aguarde.')
         try:
+            if self.stopping:
+                raise ValueError('A aplicação está sendo encerrada.')
             cached = self.cache.get(url)
             if cached and time.monotonic() - cached[0] < 600:
                 return dict(cached[1], cached=True)
             # Files bound memory use even if a remote response is unexpectedly large.
             with tempfile.TemporaryFile() as output, tempfile.TemporaryFile() as errors:
-                kwargs = {'stdout': output, 'stderr': errors, 'timeout': 35}
+                kwargs = {'stdout': output, 'stderr': errors}
                 if os.name == 'nt':
                     kwargs['creationflags'] = subprocess.CREATE_NO_WINDOW
-                result = subprocess.run(preview_command(url), **kwargs)
+                else:
+                    kwargs['start_new_session'] = True
+                with self.process_lock:
+                    if self.stopping:
+                        raise ValueError('A aplicação está sendo encerrada.')
+                    process = self.process = subprocess.Popen(preview_command(url), **kwargs)
+                try:
+                    try:
+                        process.wait(timeout=35)
+                    except subprocess.TimeoutExpired:
+                        self.terminate(process)
+                        process.wait(timeout=10)
+                        raise
+                finally:
+                    with self.process_lock:
+                        self.process = None
                 errors.seek(0)
                 error = errors.read(16000).decode('utf-8', errors='replace')
-                if result.returncode:
+                if process.returncode:
                     raise ValueError(error or 'A origem não respondeu à consulta.')
                 if output.tell() > 8 * 1024 * 1024:
                     raise ValueError('A resposta da origem excedeu o limite da consulta.')

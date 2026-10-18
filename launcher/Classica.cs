@@ -150,7 +150,7 @@ internal sealed class StartupWindow : Form
             Result = child.ExitCode;
             Append("Inicializador encerrado. Codigo: " + Result);
             if (Result == 0) { Close(); return; }
-            Fail("Não foi possível abrir a Clássica. Consulte os detalhes abaixo e o arquivo ultimo-inicio.log na pasta da aplicação.");
+            Fail(script == "iniciar.ps1" ? "Não foi possível abrir a Clássica. Confira os detalhes abaixo." : "A manutenção não foi concluída. A versão anterior foi preservada. Confira os detalhes abaixo.");
         }
         catch (Exception error) { finished = true; Result = 1; Append(error.Message); Fail("Não foi possível iniciar. Confira os detalhes abaixo."); }
         finally { if (child != null) child.Dispose(); }

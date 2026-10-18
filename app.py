@@ -205,7 +205,7 @@ class Manager:
         self.folder = str(Path.home() / "Music" / "Classica")
         self.jobs = []
         self.queue_pause = {"until": 0, "manual": False, "reason": ""}
-        self.preview = PreviewService()
+        self.preview = PreviewService(terminate_process)
         self.maintenance = MaintenanceService(ROOT, VERSION, self.data_dir)
         self.desktop_seen = 0
         self.preview_active = 0
@@ -463,6 +463,7 @@ class Manager:
     def stop(self):
         self.stopping.set()
         self.wake.set()
+        self.preview.stop()
         with self.lock:
             if self.process:
                 terminate_process(self.process)

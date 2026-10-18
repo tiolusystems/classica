@@ -63,7 +63,7 @@ try {
     return {
       shadows:selectors.map(selector=>getComputedStyle(document.querySelector(selector)).boxShadow),
       emblemColor:getComputedStyle(document.querySelector('.brand-symbol')).color,
-      panelMarker:getComputedStyle(document.querySelector('.panel-heading')).borderTopColor,
+      panelMarker:getComputedStyle(document.querySelector('.panel')).borderTopColor,
       pageBackground:getComputedStyle(document.body).backgroundColor
     };
   });

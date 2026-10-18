@@ -3,7 +3,7 @@ from pathlib import Path
 import subprocess
 import tempfile
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 
 import app
 from features import PreviewService, diagnosis, preview_command, summarize_metadata, support_report
@@ -34,17 +34,29 @@ class PreviewTests(unittest.TestCase):
             self.assertIn('--skip-download', command)
             self.assertFalse(kwargs.get('shell', False))
             kwargs['stdout'].write(json.dumps(INFO).encode())
-            return subprocess.CompletedProcess(command, 0)
-        with patch('features.subprocess.run', side_effect=run) as process:
+            return Mock(returncode=0, wait=Mock(return_value=0))
+        with patch('features.subprocess.Popen', side_effect=run) as process:
             self.assertFalse(service.inspect(URL)['cached'])
             self.assertTrue(service.inspect(URL)['cached'])
             self.assertEqual(process.call_count, 1)
-        with patch('features.subprocess.run', side_effect=subprocess.TimeoutExpired('preview',35)):
+        with patch('features.subprocess.Popen', side_effect=subprocess.TimeoutExpired('preview',35)):
             with self.assertRaisesRegex(ValueError,'demorou'): PreviewService().inspect(URL)
         service.lock.acquire()
         try:
             with self.assertRaisesRegex(ValueError,'andamento'): service.inspect(URL)
         finally: service.lock.release()
+
+    def test_exit_terminates_only_owned_preview_and_blocks_restart(self):
+        owned = Mock()
+        owned.poll.return_value = None
+        terminate = Mock()
+        service = PreviewService(terminate)
+        service.process = owned
+        service.stop()
+        terminate.assert_called_once_with(owned)
+        with patch('features.subprocess.Popen') as process:
+            with self.assertRaisesRegex(ValueError,'encerrada'): service.inspect(URL)
+            process.assert_not_called()
 
     def test_report_does_not_leak_job_information(self):
         with tempfile.TemporaryDirectory() as temp:
