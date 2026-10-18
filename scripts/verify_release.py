@@ -51,6 +51,8 @@ def verify():
     assert release_filename in (ROOT / "scripts/package_release.py").read_text(encoding="utf-8"), "Package version mismatch"
     assert "v" + version.group(1) in html, "Interface version mismatch"
     assert release_filename in (ROOT / ".github/workflows/quality.yml").read_text(encoding="utf-8"), "Clean install archive version mismatch"
+    download_url = f"https://github.com/tiolusystems/classica/releases/download/v{version.group(1)}/{release_filename}"
+    assert download_url in (ROOT / "README.md").read_text(encoding="utf-8"), "Public download button points to a different version"
     for foreground, background in [("#29352e", "#fffdf8"), ("#62675c", "#fffdf8"),
                                    ("#62675c", "#f6f2e9"), ("#ffffff", "#315747"),
                                    ("#922f22", "#fffdf8")]:

@@ -16,10 +16,10 @@ FILES = (
     "web/index.html", "web/style.css", "web/app.js", "web/favicon.svg", "web/ornament.svg",
     "tests/test_app.py", "tests/test_features.py", "tests/test_maintenance.py", "tests/test_release.py", "tests/test_lifecycle.py", "tests/ui-smoke.mjs",
     "scripts/package_release.py", "scripts/verify_release.py",
-    "docs/ARCHITECTURE.md", "docs/BRAND.md", "docs/QUALITY.md",
+    "docs/ARCHITECTURE.md", "docs/BRAND.md", "docs/QUALITY.md", "docs/DEVELOPMENT.md",
     "docs/TRACEABILITY.md", "docs/VALIDATION.md",
     ".github/workflows/quality.yml",
-    "assets/classica.ico", "assets/classica.png",
+    "assets/classica.ico", "assets/classica.png", "assets/download-windows.svg",
     "launcher/Classica.cs", "launcher/DesktopContext.cs", "scripts/update_app.ps1", "launcher/app.manifest", "scripts/build_launcher.ps1",
     "Clássica.exe", "Leia-me.txt",
 )
