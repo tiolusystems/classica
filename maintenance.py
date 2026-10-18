@@ -117,9 +117,12 @@ def extract_verified(archive: Path, destination: Path, version: str):
             raise ValueError('O conteúdo do pacote excedeu o limite permitido.')
         seen, validated = set(), []
         for item in members:
-            if not item.filename.startswith(prefix):
+            # ZipInfo normalizes backslashes on Windows. Validate the original
+            # name as stored, before any platform-specific normalization.
+            original = item.orig_filename
+            if not original.startswith(prefix):
                 raise ValueError('O pacote contém arquivos fora da pasta da versão.')
-            relative = item.filename[len(prefix):].rstrip('/')
+            relative = original[len(prefix):].rstrip('/')
             if not relative:
                 continue
             part = safe_relative(relative)

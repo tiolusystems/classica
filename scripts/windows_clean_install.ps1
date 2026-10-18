@@ -166,13 +166,19 @@ try {
         $deadline = (Get-Date).AddSeconds($Seconds)
         while ((Get-Date) -lt $deadline) {
             Start-Sleep -Milliseconds 400
+            $preparationFailure=$null
             try {
                 $record = [IO.File]::ReadAllText((Join-Path $profileData 'instancia.json')) | ConvertFrom-Json
-                if ($record.directory -ne $ExpectedDirectory -or $record.version -ne '2.2.0') { continue }
+                if ($record.directory -ne $ExpectedDirectory -or $record.version -ne '2.2.0') {
+                    $oldState=Invoke-RestMethod -Uri ($record.url+'/api/state') -Headers @{'X-Classica-Token'=$record.token} -TimeoutSec 3
+                    if ($oldState.maintenance.phase -eq 'error') { $preparationFailure=$oldState.maintenance.message }
+                } else {
                 $headers = @{'X-Classica-Token'=$record.token}
                 $current = Invoke-RestMethod -Uri ($record.url + '/api/state') -Headers $headers -TimeoutSec 3
                 if ($current.version -eq '2.2.0' -and $current.desktop_available) { return $record }
+                }
             } catch { }
+            if ($preparationFailure) { throw ('Guided installation failed: '+$preparationFailure) }
         }
         throw 'Native controller/server did not become ready.'
     }
@@ -193,6 +199,14 @@ try {
         $instance=Wait-Native $appDir
         if ($instance.pid -ne $originalPid) { throw 'Reopening created a duplicate server.' }
         Write-Host 'Tray remains alive and duplicate opening reuses one server: PASS'
+        $systemPowerShell=Join-Path ([Environment]::GetFolderPath('System')) 'WindowsPowerShell\v1.0\powershell.exe'
+        $helperArguments='-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "{0}" -ActionId {1}' -f (Join-Path $appDir 'scripts\update_app.ps1'), ('f'*32)
+        $invalid=Start-Process -FilePath $systemPowerShell -ArgumentList $helperArguments -Wait -PassThru -WindowStyle Hidden
+        if ($invalid.ExitCode -ne 1) { throw 'Maintenance helper accepted an unknown action.' }
+        $afterInvalid=Wait-Native $appDir
+        if ($afterInvalid.pid -ne $originalPid -or $native.HasExited) { throw 'Rejected maintenance changed the active session.' }
+        Write-Host 'Unknown maintenance action is rejected while original remains alive: PASS'
+
         $diagnostic=Invoke-RestMethod -Uri ($hiddenUrl+'/api/diagnostics') -Headers $hiddenHeaders -TimeoutSec 5
         if ($diagnostic.report -match 'BaW_jenozKc' -or $diagnostic.report.Contains($profileData)) { throw 'Support report leaked private data.' }
         # Install from the exact extracted release. This exercises staging,

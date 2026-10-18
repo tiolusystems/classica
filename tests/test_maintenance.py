@@ -25,7 +25,11 @@ def package(version=VERSION, extra=None):
     files.update(extra or {})
     output = io.BytesIO()
     with zipfile.ZipFile(output, 'w') as z:
-        for name, value in files.items(): z.writestr(f'Classica-{version}/'+name, value)
+        for name, value in files.items():
+            original = f'Classica-{version}/'+name
+            info = zipfile.ZipInfo(original)
+            info.filename = info.orig_filename = original
+            z.writestr(info, value)
     return output.getvalue()
 
 

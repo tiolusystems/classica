@@ -42,6 +42,7 @@ function Run-Preparation($Directory, $Option, $Label) {
     $errLog = Join-Path $logDir ($Option.TrimStart('-') + '-erros.log')
     $arguments = '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "{0}" {1}' -f (Join-Path $Directory 'iniciar.ps1'), $Option
     $process = Start-Process -FilePath $powershell -ArgumentList $arguments -WorkingDirectory $Directory -PassThru -WindowStyle Hidden -RedirectStandardOutput $outLog -RedirectStandardError $errLog
+    $null = $process.Handle
     while (-not $process.WaitForExit(250)) { }
     if ($process.ExitCode -ne 0) {
         Get-Content -LiteralPath $outLog -Tail 20 -ErrorAction SilentlyContinue | Write-Host

@@ -71,6 +71,8 @@ try {
   assert.equal(presentation.emblemColor,'rgb(236, 213, 166)','Warm gold preserves Chi-Rho on dark tile');
   assert.equal(presentation.panelMarker,'rgb(215, 196, 156)','Muted gold used only for ornamental separators');
   assert.equal(presentation.pageBackground,'rgb(246, 242, 233)','Comfortable and light canvas');
+  await page.locator('#toast').evaluate(node=>node.hidden=true);
+  await page.locator(':focus').evaluateAll(nodes=>nodes.forEach(node=>node.blur()));
   await mkdir('output/ui',{recursive:true});
   await page.screenshot({path:'output/ui/classica-desktop.png',fullPage:true});
   await page.setViewportSize({width:390,height:844});

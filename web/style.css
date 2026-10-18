@@ -19,7 +19,7 @@ h1,h2,h3,p{margin:0}
 a{color:var(--accent);text-underline-offset:3px}
 [hidden]{display:none!important}
 .skip-link{position:fixed;left:1rem;top:-6rem;background:var(--ink);color:white;padding:.75rem 1rem;z-index:99;border-radius:.4rem}
-.skip-link:focus{top:1rem}
+.skip-link:focus-visible{top:1rem}
 .app-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;min-height:5.25rem;padding:1rem clamp(1rem,4vw,4rem);background:var(--surface);border-bottom:1px solid var(--line)}
 .brand{display:flex;align-items:center;gap:.8rem;color:var(--ink);text-decoration:none;min-width:0}
 .brand-symbol{width:2.75rem;height:2.75rem;display:grid;place-items:center;background:var(--ink);color:white;border-radius:.6rem;font:2rem/1 Georgia,'Times New Roman',serif}
