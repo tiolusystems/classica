@@ -109,28 +109,41 @@ try {
     if ($SetupOnly) { Stop-Transcript | Out-Null; exit 0 }
     if ($Background) {
         # Opt-in background process: original console-based Iniciar.bat remains unchanged.
-        $outputLog = Join-Path $PSScriptRoot 'ultimo-discreto.log'
-        $errorLog = Join-Path $PSScriptRoot 'ultimo-discreto-erros.log'
+        # Each launch owns its streams. Reopening must not truncate or lock the
+        # output file still held by the existing background server.
+        $launchLogs = Join-Path $toolsDir ('logs\' + [Guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Force -Path $launchLogs | Out-Null
+        $outputLog = Join-Path $launchLogs 'saida.log'
+        $errorLog = Join-Path $launchLogs 'erros.log'
+        $lastOutput = Join-Path $PSScriptRoot 'ultimo-discreto.log'
+        $lastError = Join-Path $PSScriptRoot 'ultimo-discreto-erros.log'
         $appScript = Join-Path $PSScriptRoot 'app.py'
         Write-Host 'Iniciando a Classica em segundo plano. Use Sair na interface para encerrar.'
         $arguments = ('"{0}"' -f $appScript)
         $child = Start-Process -FilePath $pythonExe -WorkingDirectory $PSScriptRoot -ArgumentList $arguments -PassThru -WindowStyle Hidden -RedirectStandardOutput $outputLog -RedirectStandardError $errorLog
         try {
             $ready = $false
-            for ($attempt = 0; $attempt -lt 60; $attempt++) {
+            for ($attempt = 0; $attempt -lt 120; $attempt++) {
                 Start-Sleep -Milliseconds 250
-                if ($child.HasExited) {
+                if ($child.HasExited -and $child.ExitCode -ne 0) {
                     $details = if (Test-Path -LiteralPath $errorLog) { [string](Get-Content -LiteralPath $errorLog -Raw) } else { '' }
+                    if (Test-Path -LiteralPath $outputLog) { $details += [string](Get-Content -LiteralPath $outputLog -Raw) }
                     throw ('Nao foi possivel iniciar a Classica sem janela. ' + $details + ' Consulte ultimo-discreto-erros.log.')
                 }
                 $output = if (Test-Path -LiteralPath $outputLog) { [string](Get-Content -LiteralPath $outputLog -Raw) } else { '' }
                 if ($output -match 'http://127\.0\.0\.1:\d+') { $ready = $true; break }
+                if ($child.HasExited) { throw 'A Classica encerrou sem informar o endereco local. Consulte ultimo-discreto.log.' }
             }
-            if (-not $ready) { throw 'A Clássica não confirmou a inicialização em 15 segundos. Confira ultimo-discreto-erros.log.' }
+            if (-not $ready) { throw 'A Clássica não confirmou a inicialização em 30 segundos. Confira ultimo-discreto-erros.log.' }
+            Copy-Item -LiteralPath $outputLog -Destination $lastOutput -Force
+            Copy-Item -LiteralPath $errorLog -Destination $lastError -Force
+            Write-Host ('Registro completo desta abertura: ' + $launchLogs)
             Write-Host 'Clássica aberta no navegador; a janela de inicialização pode ser fechada.'
             Stop-Transcript | Out-Null
             exit 0
         } catch {
+            if (Test-Path -LiteralPath $outputLog) { Copy-Item -LiteralPath $outputLog -Destination $lastOutput -Force -ErrorAction SilentlyContinue }
+            if (Test-Path -LiteralPath $errorLog) { Copy-Item -LiteralPath $errorLog -Destination $lastError -Force -ErrorAction SilentlyContinue }
             if (-not $child.HasExited) { Stop-Process -Id $child.Id -Force -ErrorAction SilentlyContinue }
             throw
         }

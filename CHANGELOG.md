@@ -2,6 +2,10 @@
 
 ## 2.1.2 — candidata (ainda não publicada)
 
+- Pasta extraída identificada como `Classica-2.1.2`, sem instruções para mesclar arquivos de versões diferentes.
+- Abrir novamente recupera a mesma sessão se a aba foi fechada. Depois de Sair, uma nova inicialização aguarda a liberação da sessão anterior.
+- Instalação de outra versão ainda ativa recebe uma mensagem clara, sem abrir silenciosamente a versão antiga. Os registros de cada abertura têm arquivos próprios.
+
 - O ZIP inclui Clássica.exe com nome, ícone ☧ e metadados do produto; compilação do código-fonte no Windows, sem empacotador de terceiros.
 - Janela de preparação com progresso, detalhes e erros; abertura discreta da aplicação existente, sem instalação de atalhos ou privilégios administrativos.
 - Compilação integrada aos testes e ao release. Validação em Windows do executável extraído do ZIP, caminhos com espaços e acentos e encerramento pelo botão Sair.

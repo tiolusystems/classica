@@ -23,7 +23,7 @@ New-Item -ItemType Directory -Force -Path $workspace | Out-Null
 $serverProcess = $null
 try {
     Expand-Archive -LiteralPath $archivePath -DestinationPath $workspace
-    $appDir = Join-Path $workspace 'Classica'
+    $appDir = Join-Path $workspace 'Classica-2.1.2'
     $launcher = Join-Path $appDir ('Cl' + [char]0x00E1 + 'ssica.exe')
     if (-not (Test-Path -LiteralPath $launcher)) { throw 'Branded launcher missing from ZIP.' }
     $version = [Diagnostics.FileVersionInfo]::GetVersionInfo($launcher)
@@ -173,6 +173,16 @@ try {
         $hiddenState = Invoke-RestMethod -Uri ($hiddenUrl + '/api/state') -Headers $hiddenHeaders -TimeoutSec 10
         if ($hiddenState.version -ne '2.1.2') { throw 'Unexpected background application version.' }
         Write-Host 'Optional detached console launch and live localhost HTTP: PASS'
+        # Reopening after a tab closes must reuse the same server and queue.
+        $profileData = Join-Path $env:LOCALAPPDATA 'Classica'
+        $instance = Get-Content -LiteralPath (Join-Path $profileData 'instancia.json') -Raw | ConvertFrom-Json
+        $originalPid = $instance.pid
+        $reopen = Start-Process -FilePath $launcher -WorkingDirectory $env:RUNNER_TEMP -PassThru
+        if (-not $reopen.WaitForExit(45000)) { Stop-Process -Id $reopen.Id -Force; throw 'Reopening the branded launcher hung.' }
+        if ($reopen.ExitCode -ne 0) { throw 'Reopening the branded launcher failed.' }
+        $reopened = Get-Content -LiteralPath (Join-Path $profileData 'instancia.json') -Raw | ConvertFrom-Json
+        if ($reopened.pid -ne $originalPid -or $reopened.url -ne $hiddenUrl) { throw 'Reopening created a duplicate instance.' }
+        Write-Host 'Reopening after closing tab reuses existing server: PASS'
         Invoke-RestMethod -Method Post -Uri ($hiddenUrl + '/api/shutdown') -Headers $hiddenHeaders -Body '{}' -ContentType 'application/json' -TimeoutSec 10 | Out-Null
         $hiddenStopped = $false
         for ($i = 0; $i -lt 30; $i++) {
@@ -182,6 +192,18 @@ try {
         }
         if (-not $hiddenStopped) { throw 'Sair did not stop the detached local server.' }
         Write-Host 'Background server shutdown from Sair action: PASS'
+        # Launch immediately after Sair and verify the complete new session.
+        $restart = Start-Process -FilePath $launcher -WorkingDirectory $env:RUNNER_TEMP -PassThru
+        if (-not $restart.WaitForExit(45000)) { Stop-Process -Id $restart.Id -Force; throw 'Restart after Sair hung.' }
+        if ($restart.ExitCode -ne 0) { throw 'Restart after Sair failed.' }
+        $restarted = Get-Content -LiteralPath (Join-Path $profileData 'instancia.json') -Raw | ConvertFrom-Json
+        if ($restarted.pid -eq $originalPid) { throw 'Restart did not start a new server.' }
+        $hiddenUrl = $restarted.url
+        $hiddenHeaders = @{ 'X-Classica-Token' = $restarted.token }
+        $restartedState = Invoke-RestMethod -Uri ($hiddenUrl + '/api/state') -Headers $hiddenHeaders -TimeoutSec 10
+        if ($restartedState.version -ne '2.1.2') { throw 'Restart opened an unexpected version.' }
+        Invoke-RestMethod -Method Post -Uri ($hiddenUrl + '/api/shutdown') -Headers $hiddenHeaders -Body '{}' -ContentType 'application/json' -TimeoutSec 10 | Out-Null
+        Write-Host 'Sair followed by new branded launch: PASS'
     }
     finally {
         if ($hiddenUrl -and $hiddenHeaders) {

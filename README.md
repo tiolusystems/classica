@@ -10,7 +10,7 @@ Cole o link, escolha áudio ou vídeo, selecione o formato e acompanhe a fila.
 ## Começar no Windows
 
 1. Baixe o pacote da versão publicada e extraia o ZIP.
-2. Entre na pasta **Classica** e abra **Clássica.exe**, identificado pelo ícone ☧.
+2. Entre na pasta **Classica-2.1.2** e abra **Clássica.exe**, identificado pelo ícone ☧.
 3. Na primeira abertura, aguarde a preparação dos componentes. Reserve cerca
    de **2 GB livres**, além do espaço necessário para seus downloads.
 4. A interface abre no navegador do computador e a janela de preparação fecha. Para encerrar a aplicação, use **Sair**.
@@ -41,7 +41,12 @@ O modo clássico **Iniciar.bat** permanece como alternativa recomendada para dia
 página hospedada no GitHub Pages: o processamento exige Python, yt-dlp e FFmpeg
 no computador. Não é necessário fornecer senha, conta ou chave de API.
 
-O ZIP sempre contém uma única pasta `Classica/`. O inicializador recusa execução
+O ZIP contém uma única pasta `Classica-2.1.2/`, identificada pela versão.
+Extraia como uma pasta nova; não mescle arquivos com outra versão. O histórico e
+as preferências continuam no perfil do usuário. Se fechar apenas a aba, abrir
+Clássica de novo recupera a mesma sessão. Use **Sair** para encerrar de fato.
+Se outra versão estiver ativa, encerre-a antes de abrir a nova.
+O inicializador recusa execução
 diretamente na raiz de uma unidade. Esta versão **não inclui ferramenta de
 remoção, recuperação ou organização de arquivos de versões antigas**.
 
@@ -103,10 +108,10 @@ de login ou PO Token. Pare as tentativas e confira o vídeo diretamente no naveg
 A interface de download não solicita cookies nem depende de um navegador específico.
 Quando uma gravação não estiver disponível, interrompa as tentativas e consulte o vídeo no navegador. Não existe garantia de acesso a todos os conteúdos do YouTube.
 
-Para instalar uma nova versão da Clássica, substitua os arquivos dentro da
-**mesma pasta**. Mantenha os componentes locais já instalados. Não mova o
-ambiente Python depois de criado; se precisar mudar de lugar, extraia a versão
-em outra pasta e deixe o inicializador preparar um ambiente novo.
+Para instalar uma nova versão, encerre a aplicação pelo botão **Sair** e extraia
+o novo ZIP em sua própria pasta, identificada pela versão. Não copie arquivos
+sobre a pasta antiga nem mova o ambiente Python já preparado. A nova pasta
+prepara seus componentes; histórico e preferências continuam no perfil do usuário.
 
 ## Qualidade, marca e limites
 

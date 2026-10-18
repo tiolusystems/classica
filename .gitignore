@@ -13,6 +13,8 @@ artifacts/
 node_modules/
 historico*.json
 sessao.lock
+instancia.json
+instancia.tmp
 *.part
 *.ytdl
 *.mp3

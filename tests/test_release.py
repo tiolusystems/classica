@@ -31,14 +31,15 @@ class ReleaseTests(unittest.TestCase):
             second, _ = package_release.build(root / "second")
             self.assertEqual(first.read_bytes(), second.read_bytes())
             with zipfile.ZipFile(first) as package:
+                prefix = package_release.PACKAGE_ROOT + '/'
                 self.assertIsNone(package.testzip())
-                self.assertTrue(package.read('Classica/Clássica.exe').startswith(b'MZ'))
-                self.assertIn('Classica/assets/classica.ico', package.namelist())
-                self.assertIn("Classica/Iniciar discreto.bat", package.namelist())
-                self.assertIn(b"-Background", package.read("Classica/Iniciar discreto.bat"))
-                self.assertIn(b"[switch]$Background", package.read("Classica/iniciar.ps1"))
-                self.assertEqual(set(package.namelist()), {"Classica/"+name for name in package_release.FILES})
-                self.assertNotIn(b"Organizar_extracao_antiga", package.read("Classica/README.md"))
+                self.assertTrue(package.read(prefix+'Clássica.exe').startswith(b'MZ'))
+                self.assertIn(prefix+'assets/classica.ico', package.namelist())
+                self.assertIn(prefix+"Iniciar discreto.bat", package.namelist())
+                self.assertIn(b"-Background", package.read(prefix+"Iniciar discreto.bat"))
+                self.assertIn(b"[switch]$Background", package.read(prefix+"iniciar.ps1"))
+                self.assertEqual(set(package.namelist()), {prefix+name for name in package_release.FILES})
+                self.assertNotIn(b"Organizar_extracao_antiga", package.read(prefix+"README.md"))
             self.assertIn(first.name, checksum.read_text())
 
 

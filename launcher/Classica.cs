@@ -59,7 +59,7 @@ internal sealed class StartupWindow : Form
 
     internal StartupWindow()
     {
-        Text = "Clássica";
+        Text = "Clássica · 2.1.2";
         Icon = System.Drawing.Icon.ExtractAssociatedIcon(Application.ExecutablePath);
         StartPosition = FormStartPosition.CenterScreen;
         AutoScaleMode = AutoScaleMode.Dpi;
@@ -75,7 +75,7 @@ internal sealed class StartupWindow : Form
         layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        layout.Controls.Add(new Label { Text = "Clássica", AutoSize = true, Font = new Font("Segoe UI", 20), Margin = new Padding(0, 0, 0, 10) });
+        layout.Controls.Add(new Label { Text = "Clássica 2.1.2", AutoSize = true, Font = new Font("Segoe UI", 20), Margin = new Padding(0, 0, 0, 10) });
         status = new Label { Text = "Preparando sua biblioteca…", AutoSize = true, Dock = DockStyle.Fill, Margin = new Padding(0, 0, 0, 12) };
         layout.Controls.Add(status);
         progress = new ProgressBar { Style = ProgressBarStyle.Marquee, Dock = DockStyle.Fill, Height = 5, Margin = new Padding(0, 0, 0, 12) };
