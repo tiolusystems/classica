@@ -241,7 +241,12 @@ try {
         $instance=Wait-Native $installedComponents
         $hiddenUrl=$instance.url; $hiddenHeaders=@{'X-Classica-Token'=$instance.token}
         Invoke-RestMethod -Uri ($hiddenUrl+'/api/shutdown') -Headers $hiddenHeaders -Method Post -ContentType 'application/json' -Body '{}' -TimeoutSec 10 | Out-Null
-        Write-Host 'Installed restart and web Sair: PASS'
+        $afterWebExit=Start-Process -FilePath $stable -WorkingDirectory $env:RUNNER_TEMP -PassThru
+        $lastInstance=Wait-Native $installedComponents
+        if ($lastInstance.pid -eq $instance.pid) { throw 'Immediate reopen after web Sair reused the closing session.' }
+        $hiddenUrl=$lastInstance.url; $hiddenHeaders=@{'X-Classica-Token'=$lastInstance.token}
+        Invoke-RestMethod -Uri ($hiddenUrl+'/api/shutdown') -Headers $hiddenHeaders -Method Post -ContentType 'application/json' -Body '{}' -TimeoutSec 10 | Out-Null
+        Write-Host 'Installed restart and immediate reopen after web Sair: PASS'
     }
     catch {
         foreach ($logName in @('ultimo-lancador.log','ultimo-inicio.log','ultimo-discreto-erros.log')) {

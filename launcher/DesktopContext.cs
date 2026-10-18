@@ -65,6 +65,7 @@ internal sealed class DesktopContext : ApplicationContext
     private bool polling, busy, ending;
     private int missed;
     internal int Result;
+    private bool restartRequested;
 
     internal static int? ForwardInstalled(string[] args)
     {
@@ -90,11 +91,22 @@ internal sealed class DesktopContext : ApplicationContext
         using (var mutex = new Mutex(true, name, out first))
         using (var open = new EventWaitHandle(false, EventResetMode.AutoReset, name + "-open"))
         using (var exit = new EventWaitHandle(false, EventResetMode.AutoReset, name + "-exit")) {
+            // An old controller may be disposing just after Sair. Take over if
+            // it released its mutex, instead of sending an event into the gap.
+            if (!first) {
+                try { first = mutex.WaitOne(200); }
+                catch (AbandonedMutexException) { first = true; }
+            }
             if (!first) { (args.Length == 1 ? exit : open).Set(); return 0; }
             if (args.Length == 1) { mutex.ReleaseMutex(); return 0; }
+            int result = 0; bool restart = false;
             try {
-                using (var context = new DesktopContext(open, exit)) { Application.Run(context); return context.Result; }
+                using (var context = new DesktopContext(open, exit)) {
+                    Application.Run(context); result = context.Result; restart = context.restartRequested;
+                }
             } finally { mutex.ReleaseMutex(); }
+            if (restart) Process.Start(new ProcessStartInfo(Application.ExecutablePath) { UseShellExecute = true });
+            return result;
         }
     }
 
@@ -118,7 +130,18 @@ internal sealed class DesktopContext : ApplicationContext
         start.Show();
     }
     private void Post(Action action) { try { dispatch.BeginInvoke(action); } catch (InvalidOperationException) { } }
-    private void Open() { if (session != null && !busy) Process.Start(new ProcessStartInfo(session.Url) { UseShellExecute = true }); }
+    private async void Open()
+    {
+        if (session == null || busy) return;
+        bool closed = ending;
+        if (!closed) {
+            try { var live = await Task.Run(() => session.Request("instance")); closed = Convert.ToBoolean(live["closing"]); }
+            catch (Exception) { closed = true; }
+        }
+        if (closed) { restartRequested = true; ExitThread(); return; }
+        try { Process.Start(new ProcessStartInfo(session.Url) { UseShellExecute = true }); }
+        catch (Exception) { MessageBox.Show("Não foi possível abrir o navegador padrão.", "Clássica"); }
+    }
     private async void Stop()
     {
         if (session == null || busy || ending) return;
@@ -127,6 +150,7 @@ internal sealed class DesktopContext : ApplicationContext
             if (Convert.ToInt32(state["pending"]) > 0 && MessageBox.Show("Existem downloads pendentes. Encerrar e interromper a fila?", "Clássica", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
             await Task.Run(() => session.Request("shutdown", "{}"));
             ending = true;
+            ExitThread();
         } catch (Exception) { MessageBox.Show("Não foi possível encerrar agora. Aguarde a manutenção ou use Sair na aplicação.", "Clássica"); }
     }
     private async void Poll(object sender, EventArgs args)

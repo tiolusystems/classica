@@ -29,6 +29,10 @@ try {
   const errors=[];page.on('pageerror',error=>errors.push(error.message));
   await page.goto(`http://127.0.0.1:${port}`);
   await page.getByText('Conexão local',{exact:true}).waitFor();
+  await page.keyboard.press('Tab');
+  assert.equal(await page.locator('.skip-link').evaluate(node=>node===document.activeElement&&getComputedStyle(node).opacity==='1'),true,'Keyboard skip link is visible on focus');
+  await page.keyboard.press('Enter');
+  assert.equal(await page.locator('#main').evaluate(node=>node===document.activeElement),true,'Skip link focuses main content');
   await page.getByRole('button',{name:'Retomar fila',exact:true}).click();
   await page.locator('#queue-warning').waitFor({state:'hidden'});
   assert.equal(await page.locator('#use-edge-session').count(),0,'Sem controle de cookies na interface');
