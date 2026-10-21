@@ -118,7 +118,7 @@ class ModuleManager:
         info["installed"] = {module: {
             "available": self.executable(module) is not None,
             "version": self._record(module).get("version"),
-            "can_rollback": self.executable(module, self._record(module).get("previous")) is not None,
+            "can_rollback": bool(self._record(module).get("previous") and self.executable(module, self._record(module)["previous"])),
         } for module in MODULES}
         info["busy"] = info["phase"] in {"downloading", "verifying", "installing"}
         return info
@@ -222,7 +222,7 @@ class ModuleManager:
                 raise ValueError("Conclua a instalação antes de retornar.")
             record = self._record(module)
             previous = record.get("previous")
-            if not self.executable(module, previous):
+            if not previous or not self.executable(module, previous):
                 raise ValueError("Não há uma versão anterior disponível.")
             current = self._folder(module) / "current.json"
             temp = current.with_suffix(".tmp")
