@@ -33,9 +33,9 @@ def main() -> None:
         assert not original.exists(), "O instalador de módulos não pode alterar o YouTube."
         manager._install("x")  # idempotent; previous user data remains untouched
         assert manager.executable("x").is_file()
-        # Verify the production GUI executable X >=1.1.0 starts headless and
+        # Verify the production GUI executable X >=1.1.1 starts headless and
         # serves the authenticated iframe session without an extra browser.
-        assert tuple(int(p) for p in manager.snapshot()["installed"]["x"]["version"].split(".")) >= (1, 1, 0), "Release X with embedded mode is required"
+        assert tuple(int(p) for p in manager.snapshot()["installed"]["x"]["version"].split(".")) >= (1, 1, 1), "Release X 1.1.1 with embedded mode and staged downloads is required"
         manager.begin_embedded_x()
         deadline = time.monotonic() + 35
         embedded = manager.embedded_snapshot()
