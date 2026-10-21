@@ -68,7 +68,7 @@ function render() {
   $('clear-button').disabled=!all.some(j=>terminal.has(j.status));
 }
 async function refresh() { if(stopped)return; try{snapshot=await api('state');failures=0;$('connection-text').textContent='Conexão local';$('connection-text').parentElement.classList.remove('offline');render();}catch(error){failures++;if(failures>=3){$('connection-text').textContent='Sem conexão';$('connection-text').parentElement.classList.add('offline');}if(failures===3)toast(snapshot?.maintenance?.busy?'A versão preparada está sendo aberta. Você pode fechar esta aba quando a nova janela aparecer.':'Conexão local perdida. Abra a Clássica pelo ícone perto do relógio.',!snapshot?.maintenance?.busy);} }
-$('download-form').addEventListener('submit',async event=>{event.preventDefault();const urls=$('urls').value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);if(!urls.length){toast('Cole pelo menos um link de vídeo.',true);return;}const submit=$('submit-button');submit.disabled=true;try{const isVideo=document.querySelector('input[name="kind"]:checked').value==='video';const format=document.querySelector(isVideo?'input[name="video-format"]:checked':'input[name="format"]:checked').value;const r=await api('enqueue',{urls,format,authorized:true,resolution:isVideo?$('resolution').value:'best'});$('urls').value='';$('link-preview').hidden=true;toast(`${r.added} ${r.added===1?'download adicionado':'downloads adicionados'} à fila.${r.skipped?' '+r.skipped+' já estavam na fila.':''}`);await refresh();}catch(error){toast(error.message,true);}finally{submit.disabled=false;}});
+$('download-form').addEventListener('submit',async event=>{event.preventDefault();const urls=$('urls').value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);if(!urls.length){toast('Cole pelo menos um link de vídeo.',true);return;}const submit=$('submit-button');submit.disabled=true;try{const isVideo=document.querySelector('input[name="kind"]:checked').value==='video';const format=document.querySelector(isVideo?'input[name="video-format"]:checked':'input[name="format"]:checked').value;const r=await api('enqueue',{urls,format,authorized:$('yt-authorized').checked,resolution:isVideo?$('resolution').value:'best'});$('urls').value='';$('yt-authorized').checked=false;$('link-preview').hidden=true;toast(`${r.added} ${r.added===1?'download adicionado':'downloads adicionados'} à fila.${r.skipped?' '+r.skipped+' já estavam na fila.':''}`);await refresh();}catch(error){toast(error.message,true);}finally{submit.disabled=false;}});
 function settings() {if(!snapshot)return;$('folder-input').value=snapshot.folder;$('settings-dialog').showModal();}
 $('settings-button').addEventListener('click',settings);$('folder-button').addEventListener('click',settings);
 $('settings-form').addEventListener('submit',async event=>{event.preventDefault();const submit=event.submitter;submit.disabled=true;try{await api('folder',{folder:$('folder-input').value});$('settings-dialog').close();toast('Pasta de destino atualizada.');await refresh();}catch(error){toast(error.message,true);}finally{submit.disabled=false;}});
@@ -155,49 +155,104 @@ $('copy-report').addEventListener('click',async()=>{
 });
 
 
-// Separate, opt-in modules: never modify or share the YouTube downloader.
-let modulesPolling=false;
-async function refreshModules(){
-  if(modulesPolling || !$('platforms-dialog').open)return;
-  modulesPolling=true;
-  try {
-    const state=await api('modules/status');
-    const installed=state.installed||{};
-    const x=installed.x||{}, hub=installed.hub||{};
-    const details=[
-      'X: '+(x.available?'instalado · v'+x.version:'não instalado'),
-      'Central: '+(hub.available?'instalada · v'+hub.version:'não instalada')
-    ];
-    $('modules-status').textContent=(state.message||details.join('  |  '))+
-      (state.busy?'  ·  '+details.join('  |  '):'  ·  '+details.join('  |  '));
-    $('modules-progress').style.width=Math.max(0,Math.min(100,Number(state.progress)||0))+'%';
-    $('modules-install').disabled=!!state.busy;
-    $('modules-launch').disabled=!!state.busy||!hub.available;
-    $('modules-rollback-x').hidden=!x.can_rollback;
-    $('modules-rollback-hub').hidden=!hub.can_rollback;
-  }catch(error){$('modules-status').textContent=error.message||'Não foi possível consultar os módulos.';}
-  finally{modulesPolling=false;}
+// Clássica is now the shell: change tabs, not windows. The X process and
+// history remain independent and communicate through a private loopback session.
+let currentWorkspace='youtube', modulesPolling=false, embeddedRequested=false;
+function selectWorkspace(name){
+  if(!['youtube','x'].includes(name))return;
+  currentWorkspace=name;
+  for(const item of ['youtube','x']){
+    const selected=item===name,button=$('tab-'+item);
+    button.setAttribute('aria-selected',String(selected));
+    button.tabIndex=selected?0:-1;
+    $(item+'-workspace').hidden=!selected;
+  }
+  document.title=name==='x'?'Clássica · X':'Clássica · YouTube';
+  if(name==='x')void refreshX();
 }
-$('platforms-button').addEventListener('click',()=>{
-  $('platforms-dialog').showModal();
-  void refreshModules();
+for(const name of ['youtube','x']){
+  $('tab-'+name).addEventListener('click',()=>selectWorkspace(name));
+}
+$('tab-youtube').parentElement.addEventListener('keydown',event=>{
+  if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+  event.preventDefault();
+  const next=event.key==='Home'?'youtube':event.key==='End'?'x':currentWorkspace==='youtube'?'x':'youtube';
+  $('tab-'+next).focus();
+  selectWorkspace(next);
 });
-$('modules-install').addEventListener('click',async()=>{
-  if(!confirm('Instalar ou atualizar a central e o X a partir dos Releases oficiais? Os módulos serão armazenados em pastas próprias; o YouTube permanecerá intacto.'))return;
-  const button=$('modules-install');button.disabled=true;
-  try{const state=await api('modules/install',{module:'all'});$('modules-status').textContent=state.message;await refreshModules();}
-  catch(error){toast(error.message,true);$('modules-status').textContent=error.message;}
-  finally{button.disabled=false;}
+function supportsEmbedded(version){
+  const parts=String(version||'0.0.0').split('.').map(Number);
+  return parts.length===3 && parts.every(Number.isInteger) &&
+    (parts[0]>1 || parts[0]===1 && parts[1]>=1);
+}
+async function startEmbeddedX(){
+  embeddedRequested=true;
+  try{
+    await api('modules/embed',{});
+    $('x-status').textContent='Abrindo o módulo X nesta aba…';
+  }catch(error){
+    $('x-status').textContent=error.message;
+    $('x-retry').hidden=false;
+  }
+}
+async function refreshX(){
+  if(currentWorkspace!=='x'||modulesPolling)return;
+  modulesPolling=true;
+  try{
+    const state=await api('modules/status');
+    const x=state.installed?.x||{};
+    const embedded=state.embedded||{};
+    const setup=$('x-module-setup'),frame=$('x-frame');
+    const install=$('x-install'),retry=$('x-retry'),rollback=$('x-rollback');
+    const canEmbed=x.available&&supportsEmbedded(x.version);
+    install.hidden=canEmbed&&!state.busy;
+    install.textContent=x.available?'Atualizar Clássica X':'Instalar Clássica X';
+    install.disabled=!!state.busy;
+    rollback.hidden=!x.can_rollback;
+    retry.hidden=true;
+    if(state.busy){
+      setup.hidden=false;frame.hidden=true;
+      $('x-status').textContent=state.message||'Instalando o módulo X…';
+    }else if(!canEmbed){
+      setup.hidden=false;frame.hidden=true;
+      $('x-status').textContent=x.available?'O Clássica X instalado precisa ser atualizado para utilizar esta aba.':'Instale o Clássica X para baixar vídeos autorizados, sem abrir outras janelas.';
+    }else if(embedded.status==='ready'&&embedded.url){
+      if(frame.src!==embedded.url)frame.src=embedded.url;
+      frame.hidden=false;setup.hidden=true;
+    }else{
+      setup.hidden=false;frame.hidden=true;
+      $('x-status').textContent=embedded.status==='error'?(embedded.error||'Falha ao abrir o X.'):'Preparando a interface do X…';
+      if(embedded.status==='error'){
+        retry.hidden=false;
+      }else if(embedded.status==='idle'&&!embeddedRequested){
+        void startEmbeddedX();
+      }
+    }
+  }catch(error){
+    $('x-module-setup').hidden=false;
+    $('x-frame').hidden=true;
+    $('x-status').textContent=error.message||'Falha ao consultar módulo X.';
+  }finally{modulesPolling=false;}
+}
+$('x-install').addEventListener('click',async()=>{
+  if(!confirm('Instalar ou atualizar Clássica X de fonte oficial, sem alterar o YouTube?'))return;
+  const b=$('x-install');b.disabled=true;
+  try{
+    const state=await api('modules/install',{module:'x'});
+    embeddedRequested=false;
+    $('x-status').textContent=state.message||'Preparando instalação…';
+    void refreshX();
+  }catch(error){$('x-status').textContent=error.message;toast(error.message,true);}
+  finally{b.disabled=false;}
 });
-$('modules-launch').addEventListener('click',async()=>{
-  try{await api('modules/launch',{module:'hub'});toast('Central aberta.');}
+$('x-retry').addEventListener('click',async()=>{
+  $('x-retry').hidden=true;
+  embeddedRequested=false;
+  await startEmbeddedX();
+});
+$('x-rollback').addEventListener('click',async()=>{
+  if(!confirm('Voltar o X à versão anterior? O YouTube permanece intacto.'))return;
+  try{await api('modules/rollback',{module:'x'});embeddedRequested=false;await refreshX();}
   catch(error){toast(error.message,true);}
 });
-for(const name of ['x','hub']){
-  $('modules-rollback-'+name).addEventListener('click',async()=>{
-    if(!confirm('Voltar à versão anterior deste módulo? O aplicativo YouTube não será alterado.'))return;
-    try{await api('modules/rollback',{module:name});await refreshModules();toast('Versão anterior selecionada.');}
-    catch(error){toast(error.message,true);}
-  });
-}
-setInterval(()=>{if($('platforms-dialog').open)void refreshModules();},1500);
+setInterval(()=>{if(currentWorkspace==='x')void refreshX();},1200);
