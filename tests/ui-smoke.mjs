@@ -46,6 +46,7 @@ try {
   assert.match(await page.locator('#preview-title').textContent(),/Paganini <img/);
   assert.equal(await page.locator('#link-preview img').count(),0,'Metadata rendered as text');
   assert.match(await page.locator('#preview-meta').textContent(),/04:45/);
+  await page.locator('#yt-authorized').check();
   await page.getByRole('button',{name:'Baixar vídeo',exact:true}).click();
   await page.getByText('Vídeo · MP4',{exact:true}).waitFor();
   await page.getByText('Até 720p',{exact:true}).waitFor();
@@ -111,12 +112,15 @@ try {
   assert.ok(!report.includes('BaW_jenozKc')&&!report.includes(directory));
   await page.screenshot({path:'output/ui/classica-help-200.png',fullPage:true});
   await page.keyboard.press('Escape');
-  await page.getByRole('button',{name:'Plataformas',exact:true}).click();
-  await page.getByRole('dialog',{name:'Biblioteca Clássica'}).waitFor();
-  assert.equal(await page.locator('#modules-install').isVisible(),true);
-  assert.equal(await page.locator('#modules-launch').isDisabled(),true);
-  await page.waitForFunction(()=>document.querySelector('#modules-status')?.textContent?.includes('X:'),{timeout:8000});
-  await page.keyboard.press('Escape');
+  await page.getByRole('tab',{name:/\\u{1D54F} X/u}).click();
+  await page.locator('#x-workspace').waitFor({state:'visible'});
+  await page.locator('#x-install').waitFor({state:'visible'});
+  assert.equal(await page.locator('#youtube-workspace').isVisible(),false);
+  assert.equal(await page.locator('#x-frame').isVisible(),false,'X unavailable in this isolated fixture');
+  assert.equal(await page.locator('#x-status').textContent().then(x=>x.includes('Instale')),true);
+  await page.getByRole('tab',{name:/YouTube/}).click();
+  assert.equal(await page.locator('#youtube-workspace').isVisible(),true);
+  assert.equal(await page.locator('#x-workspace').isVisible(),false);
   assert.deepEqual(errors,[],'JavaScript runtime errors');
   console.log('UI smoke OK: sem seletor Edge, fila e retry sem cookies, audio/video, API local, cancelamento, 4 larguras, leitura 200%, persistencia e ajuda.');
 } finally {
