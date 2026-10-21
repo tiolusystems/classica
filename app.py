@@ -29,7 +29,7 @@ from maintenance import MaintenanceService
 from module_manager import ModuleManager
 
 ROOT = Path(__file__).resolve().parent
-VERSION = "2.3.0"
+VERSION = "2.4.0"
 FORMATS = {"mp3": "MP3 · 320 kbps", "m4a": "M4A · AAC", "aac": "AAC",
            "wav": "WAV", "flac": "FLAC", "ogg": "OGG · Vorbis", "opus": "OPUS",
            "original": "Áudio original"}
