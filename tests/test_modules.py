@@ -111,5 +111,15 @@ class ModuleTests(unittest.TestCase):
                 extract_verified(file, folder / "unpack2", "ClassicaX", "1.0.0")
 
 
+    def test_embed_reports_idle_without_running_module(self):
+        with tempfile.TemporaryDirectory() as folder:
+            manager = ModuleManager(root=Path(folder) / "Programs")
+            self.assertEqual(manager.embedded_snapshot()["status"], "idle")
+            self.assertIsNone(manager.embedded_snapshot()["url"])
+            manager.shutdown()
+            self.assertIsNone(manager.embedded_snapshot()["url"])
+
+
+
 if __name__ == "__main__":
     unittest.main()
