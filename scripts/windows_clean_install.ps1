@@ -23,7 +23,7 @@ New-Item -ItemType Directory -Force -Path $workspace | Out-Null
 $serverProcess = $null
 try {
     Expand-Archive -LiteralPath $archivePath -DestinationPath $workspace
-    $packageDir = Join-Path $workspace 'Classica-2.3.0'
+    $packageDir = Join-Path $workspace 'Classica-2.4.0'
     $appDir = Join-Path $packageDir 'Componentes'
     $launcherName = 'Cl' + [char]0x00E1 + 'ssica.exe'
     $launcher = Join-Path $packageDir $launcherName
@@ -33,7 +33,7 @@ try {
     }
     if (-not (Test-Path -LiteralPath $launcher)) { throw 'Branded launcher missing from ZIP.' }
     $version = [Diagnostics.FileVersionInfo]::GetVersionInfo($launcher)
-    if ($version.FileVersion -ne '2.3.0.0') { throw 'Launcher version mismatch.' }
+    if ($version.FileVersion -ne '2.4.0.0') { throw 'Launcher version mismatch.' }
     Add-Type -AssemblyName System.Drawing
     $icon = [Drawing.Icon]::ExtractAssociatedIcon($launcher)
     if (-not $icon) { throw 'Launcher icon missing.' }
@@ -86,7 +86,7 @@ try {
 
     Push-Location -LiteralPath $appDir
     try {
-        & $pythonExe -c "import app,pathlib; assert pathlib.Path(app.__file__).resolve().parent == pathlib.Path.cwd(); assert app.VERSION == '2.3.0'; assert all(app.dependencies().values()), app.dependencies(); print('Fresh runtime components: PASS')"
+        & $pythonExe -c "import app,pathlib; assert pathlib.Path(app.__file__).resolve().parent == pathlib.Path.cwd(); assert app.VERSION == '2.4.0'; assert all(app.dependencies().values()), app.dependencies(); print('Fresh runtime components: PASS')"
         if ($LASTEXITCODE -ne 0) { throw 'Fresh runtime import/dependencies check failed.' }
     }
     finally { Pop-Location }
@@ -126,7 +126,7 @@ try {
     if (-not $tokenMatch.Success) { throw 'Missing token in actual localhost UI.' }
     $headers = @{ 'X-Classica-Token' = $tokenMatch.Groups[1].Value }
     $state = Invoke-RestMethod -Uri ($url + '/api/state') -Headers $headers -TimeoutSec 15
-    if ($state.version -ne '2.3.0' -or $state.jobs.Count -ne 0) {
+    if ($state.version -ne '2.4.0' -or $state.jobs.Count -ne 0) {
         throw 'Version or initial queue state differs from expected fresh install.'
     }
     foreach ($component in @('yt_dlp','yt_dlp_ejs','ffmpeg','ffprobe','deno')) {
@@ -169,13 +169,13 @@ try {
             $preparationFailure=$null
             try {
                 $record = [IO.File]::ReadAllText((Join-Path $profileData 'instancia.json')) | ConvertFrom-Json
-                if ($record.directory -ne $ExpectedDirectory -or $record.version -ne '2.3.0') {
+                if ($record.directory -ne $ExpectedDirectory -or $record.version -ne '2.4.0') {
                     $oldState=Invoke-RestMethod -Uri ($record.url+'/api/state') -Headers @{'X-Classica-Token'=$record.token} -TimeoutSec 3
                     if ($oldState.maintenance.phase -eq 'error') { $preparationFailure=$oldState.maintenance.message }
                 } else {
                 $headers = @{'X-Classica-Token'=$record.token}
                 $current = Invoke-RestMethod -Uri ($record.url + '/api/state') -Headers $headers -TimeoutSec 3
-                if ($current.version -eq '2.3.0' -and $current.desktop_available) { return $record }
+                if ($current.version -eq '2.4.0' -and $current.desktop_available) { return $record }
                 }
             } catch { }
             if ($preparationFailure) { throw ('Guided installation failed: '+$preparationFailure) }
@@ -212,7 +212,7 @@ try {
         # Install from the exact extracted release. This exercises staging,
         # hash verification, setup before shutdown, new tray, pointer and profile.
         Invoke-RestMethod -Uri ($hiddenUrl+'/api/update/prepare') -Headers $hiddenHeaders -Method Post -ContentType 'application/json' -Body '{"kind":"install"}' -TimeoutSec 10 | Out-Null
-        $installedPackage=Join-Path $env:LOCALAPPDATA 'Programs\Classica\versoes\Classica-2.3.0'
+        $installedPackage=Join-Path $env:LOCALAPPDATA 'Programs\Classica\versoes\Classica-2.4.0'
         $installedComponents=Join-Path $installedPackage 'Componentes'
         $instance=Wait-Native $installedComponents 600
         $hiddenUrl=$instance.url; $hiddenHeaders=@{'X-Classica-Token'=$instance.token}
