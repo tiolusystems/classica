@@ -244,7 +244,7 @@ class ModuleManager:
         if not executable:
             raise ValueError("Instale o Clássica X para utilizar esta aba.")
         version = self._record("x").get("version", "0.0.0")
-        if tuple(map(int, version.split("."))) < (1, 1, 0):
+        if tuple(map(int, version.split("."))) < (1, 1, 1):
             raise ValueError("Atualize o Clássica X para abrir diretamente nesta aba.")
         with self.lock:
             if self._embedded_stopping:
