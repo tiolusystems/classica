@@ -229,6 +229,11 @@ async function refreshX(){
     }else if(!canEmbed){
       setup.hidden=false;frame.hidden=true;
       $('x-status').textContent=x.available?'O Clássica X instalado precisa ser atualizado para utilizar esta aba.':'Instale o Clássica X para baixar vídeos autorizados, sem abrir outras janelas.';
+    }else if(embedded.status==='ready'&&embedded.version!==x.version){
+      // The new module is installed but the old process still owns this tab.
+      // Never silently terminate an active user's download.
+      setup.hidden=false;frame.hidden=true;
+      $('x-status').textContent='Atualização do X concluída. Clique em Sair e abra novamente a Clássica para usar a versão atualizada.';
     }else if(embedded.status==='ready'&&embedded.url){
       if(frame.src!==embedded.url)frame.src=embedded.url;
       frame.hidden=false;setup.hidden=true;
