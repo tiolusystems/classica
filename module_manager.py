@@ -95,6 +95,7 @@ class ModuleManager:
         self._embedded_worker: threading.Thread | None = None
         self._embedded_status = "idle"
         self._embedded_url: str | None = None
+        self._embedded_version: str | None = None
         self._embedded_error = ""
         self._embedded_stopping = False
 
@@ -232,6 +233,7 @@ class ModuleManager:
                 self._embedded_error = "O módulo X foi encerrado. Use Abrir X para reabrir."
             return {
                 "status": self._embedded_status,
+                "version": self._embedded_version,
                 "url": self._embedded_url if running and self._embedded_status == "ready" else None,
                 "error": self._embedded_error,
             }
@@ -250,6 +252,8 @@ class ModuleManager:
             if self._embedded_stopping:
                 raise ValueError("A central está encerrando.")
             if self._embedded_process and self._embedded_process.poll() is None and self._embedded_status == "ready":
+                if self._embedded_version != version:
+                    raise ValueError("O módulo X foi atualizado. Use Sair e abra a Clássica novamente para carregar a nova versão sem interromper downloads.")
                 return self.embedded_snapshot()
             if self._embedded_worker and self._embedded_worker.is_alive():
                 return self.embedded_snapshot()
@@ -278,6 +282,7 @@ class ModuleManager:
                 )
                 with self.lock:
                     self._embedded_process = process
+                    self._embedded_version = self._record("x").get("version")
                     if self._embedded_stopping:
                         process.terminate()
                         return
