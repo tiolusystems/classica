@@ -115,7 +115,7 @@ try {
   await page.getByRole('dialog',{name:'Biblioteca Clássica'}).waitFor();
   assert.equal(await page.locator('#modules-install').isVisible(),true);
   assert.equal(await page.locator('#modules-launch').isDisabled(),true);
-  assert.match(await page.locator('#modules-status').textContent(),/X:/);
+  await page.waitForFunction(()=>document.querySelector('#modules-status')?.textContent?.includes('X:'),{timeout:8000});
   await page.keyboard.press('Escape');
   assert.deepEqual(errors,[],'JavaScript runtime errors');
   console.log('UI smoke OK: sem seletor Edge, fila e retry sem cookies, audio/video, API local, cancelamento, 4 larguras, leitura 200%, persistencia e ajuda.');
