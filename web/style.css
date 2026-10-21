@@ -202,3 +202,20 @@ dialog::backdrop{background:#202c2866}
 /* At large reading sizes, give controls a full column before words become cramped. */
 html[data-reading=large] .content-grid{grid-template-columns:minmax(0,1fr)}
 html[data-reading=large] .library{min-height:20rem}
+
+
+/* Unified Clássica workspace — tabs replace a chain of intermediate windows. */
+.workspace-tabs{display:flex;gap:.4rem;align-items:center;border-bottom:1px solid var(--gold-line);margin:-.4rem 0 2rem;padding:0 .25rem}
+.workspace-tab{position:relative;min-height:3.25rem;padding:.75rem 1.4rem;color:var(--muted);font-size:.92rem;font-weight:650;border:0;border-radius:.4rem .4rem 0 0}
+.workspace-tab:hover{background:#eef2f5}
+.workspace-tab[aria-selected="true"]{color:var(--accent);background:var(--surface)}
+.workspace-tab[aria-selected="true"]::after{content:"";position:absolute;height:3px;bottom:-1px;left:.6rem;right:.6rem;background:var(--gold)}
+.workspace-tab span{margin-right:.45rem}
+.confirm-rights{display:flex;align-items:flex-start;gap:.75rem;font-size:.78rem;color:var(--muted);line-height:1.6;margin:1rem 0}
+.confirm-rights input{width:1rem;height:1rem;margin-top:.1rem;accent-color:var(--accent);flex-shrink:0}
+.module-setup{padding:1.5rem;max-width:46rem;margin-bottom:1.25rem}
+.module-setup p[role="status"]{font-size:.9rem;margin:1rem 0}
+.module-setup .maintenance-actions{display:flex;flex-wrap:wrap;gap:.7rem;margin:1rem 0}
+.embedded-module{display:block;width:100%;height:max(42rem,calc(100vh - 18rem));border:1px solid var(--line);border-radius:var(--radius);background:var(--surface)}
+.embedded-module[hidden]{display:none}
+@media (max-width:42rem){.workspace-tabs{margin-bottom:1.4rem}.workspace-tab{flex:1 1 0;padding:.6rem}.embedded-module{height:45rem;border-radius:.5rem}.module-setup{padding:1rem}}
