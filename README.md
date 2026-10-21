@@ -46,7 +46,7 @@ ficam em Componentes.
 
 ## Navegação por abas
 
-A partir da versão 2.4.0, a própria Clássica exibe as abas **YouTube** e **X**. Ao selecionar X, você pode instalá-lo ou atualizá-lo com um botão, sem abrir Hub ou outro navegador. O módulo X (mínimo 1.1.1) executa em processo separado, com API local autenticada, dados e histórico próprios. O Clássica YouTube continua independente. Instalação opt-in. O Clássica X destina-se a publicações públicas autorizadas e requer Windows x64; versões oficiais são verificadas por SHA-256 antes da instalação.
+A partir da versão 2.4.0, a própria Clássica exibe as abas **YouTube** e **X**. Ao selecionar **X**, o módulo é preparado automaticamente se estiver ausente ou incompatível, sem abrir Hub, outros aplicativos ou outro navegador. Nas próximas aberturas, a instalação já preparada é reutilizada, sem novos cliques nem downloads. Se a preparação falhar, aparece uma ação para tentar novamente. O módulo X (mínimo 1.1.1) executa em processo separado, com API local autenticada, dados e histórico próprios. O Clássica YouTube continua independente. O módulo só é preparado quando a aba X é acessada; o uso do YouTube não instala o X. O Clássica X destina-se a publicações públicas autorizadas e requer Windows x64; versões oficiais são verificadas por SHA-256 antes da instalação.
 
 ## No dia a dia
 
