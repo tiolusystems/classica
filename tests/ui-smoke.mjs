@@ -46,6 +46,7 @@ try {
   assert.match(await page.locator('#preview-title').textContent(),/Paganini <img/);
   assert.equal(await page.locator('#link-preview img').count(),0,'Metadata rendered as text');
   assert.match(await page.locator('#preview-meta').textContent(),/04:45/);
+  await page.locator('#yt-authorized').check();
   await page.getByRole('button',{name:'Baixar vídeo',exact:true}).click();
   await page.getByText('Vídeo · MP4',{exact:true}).waitFor();
   await page.getByText('Até 720p',{exact:true}).waitFor();
@@ -107,16 +108,52 @@ try {
   await page.getByRole('button',{name:'Copiar relatório de diagnóstico',exact:true}).click();
   await page.locator('#support-report').waitFor();
   const report=await page.locator('#support-report').inputValue();
-  assert.match(report,/Clássica 2.3.0/);
+  assert.match(report,/Clássica 2.4.0/);
   assert.ok(!report.includes('BaW_jenozKc')&&!report.includes(directory));
   await page.screenshot({path:'output/ui/classica-help-200.png',fullPage:true});
   await page.keyboard.press('Escape');
-  await page.getByRole('button',{name:'Plataformas',exact:true}).click();
-  await page.getByRole('dialog',{name:'Biblioteca Clássica'}).waitFor();
-  assert.equal(await page.locator('#modules-install').isVisible(),true);
-  assert.equal(await page.locator('#modules-launch').isDisabled(),true);
-  await page.waitForFunction(()=>document.querySelector('#modules-status')?.textContent?.includes('X:'),{timeout:8000});
-  await page.keyboard.press('Escape');
+  // Model a fresh user and a subsequent launch. No live download or GitHub
+  // access is needed: these routes replace ONLY the modules endpoints.
+  let installations=0, embeddedStarts=0, statusPolls=0;
+  let installedVersion=null, installing=false;
+  await page.route('**/api/modules/**',async route=>{
+    const {pathname}=new URL(route.request().url());
+    let body={},code=200;
+    if(pathname==='/api/modules/status'){
+      statusPolls++;
+      if(installing&&statusPolls>=3){installing=false;installedVersion='1.1.1';}
+      body={phase:installing?'downloading':'ready',busy:installing,module:'x',
+            message:installing?'Preparando módulo X…':'Módulos prontos.',
+            installed:{x:{available:!!installedVersion,version:installedVersion,can_rollback:false}},
+            embedded:{status:'idle',url:null,version:null}};
+    }else if(pathname==='/api/modules/install'){
+      installations++;installing=true;statusPolls=0;
+      body={phase:'downloading',busy:true,module:'x',message:'Instalando…'};
+    }else if(pathname==='/api/modules/embed'){
+      embeddedStarts++;body={status:'starting'};
+    }else{code=404;body={error:'Unknown fixture API'};}
+    await route.fulfill({status:code,contentType:'application/json',body:JSON.stringify(body)});
+  });
+  await page.locator('#tab-x').click();
+  await page.locator('#x-workspace').waitFor({state:'visible'});
+  await page.waitForFunction(()=>document.querySelector('#x-status')?.textContent?.includes('Preparando'));
+  // Installation is automatic on the first visit, without clicking Update.
+  const deadline=Date.now()+8000;
+  while((installations!==1||embeddedStarts!==1)&&Date.now()<deadline)await page.waitForTimeout(100);
+  assert.equal(installations,1,'Missing X installs automatically exactly once');
+  assert.equal(embeddedStarts,1,'New X starts in the tab after installation');
+  assert.equal(await page.locator('#youtube-workspace').isVisible(),false);
+  await page.getByRole('tab',{name:/YouTube/}).click();
+  assert.equal(await page.locator('#youtube-workspace').isVisible(),true);
+  await page.reload(); // a new browser session uses the persisted installed X
+  await page.getByText('Conexão local',{exact:true}).waitFor();
+  await page.locator('#tab-x').click();
+  while(embeddedStarts!==2&&Date.now()<deadline+3000)await page.waitForTimeout(100);
+  assert.equal(embeddedStarts,2,'Already-installed X starts again without reinstallation');
+  assert.equal(installations,1,'No repeated installation upon a fresh opening');
+  assert.equal(await page.locator('#x-install').isVisible(),false,'No repeated Update button');
+  await page.getByRole('tab',{name:/YouTube/}).click();
+  assert.equal(await page.locator('#x-workspace').isVisible(),false);
   assert.deepEqual(errors,[],'JavaScript runtime errors');
   console.log('UI smoke OK: sem seletor Edge, fila e retry sem cookies, audio/video, API local, cancelamento, 4 larguras, leitura 200%, persistencia e ajuda.');
 } finally {

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import hashlib
+import http.client
 import json
 import os
 from pathlib import Path
@@ -11,6 +12,7 @@ import stat
 import subprocess
 import tempfile
 import threading
+import time
 from urllib.request import Request
 import zipfile
 
@@ -89,6 +91,13 @@ class ModuleManager:
         self.lock = threading.RLock()
         self.worker: threading.Thread | None = None
         self.state = {"phase": "idle", "message": "", "module": "", "progress": 0}
+        self._embedded_process: subprocess.Popen | None = None
+        self._embedded_worker: threading.Thread | None = None
+        self._embedded_status = "idle"
+        self._embedded_url: str | None = None
+        self._embedded_version: str | None = None
+        self._embedded_error = ""
+        self._embedded_stopping = False
 
     def _folder(self, module: str) -> Path:
         return self.root / MODULES[module][1]
@@ -213,6 +222,124 @@ class ModuleManager:
         flags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
         subprocess.Popen([str(executable)], cwd=str(executable.parent),
                          creationflags=flags, shell=False)
+
+    def embedded_snapshot(self) -> dict:
+        """The UI receives an authenticated, loopback-only iframe address."""
+        with self.lock:
+            running = self._embedded_process is not None and self._embedded_process.poll() is None
+            if self._embedded_status == "ready" and not running:
+                self._embedded_status = "error"
+                self._embedded_url = None
+                self._embedded_error = "O módulo X foi encerrado. Use Abrir X para reabrir."
+            return {
+                "status": self._embedded_status,
+                "version": self._embedded_version,
+                "url": self._embedded_url if running and self._embedded_status == "ready" else None,
+                "error": self._embedded_error,
+            }
+
+    def begin_embedded_x(self) -> dict:
+        """Start the X engine without a separate browser or Tkinter hub."""
+        if os.name != "nt":
+            raise ValueError("A interface integrada do X requer Windows.")
+        executable = self.executable("x")
+        if not executable:
+            raise ValueError("Instale o Clássica X para utilizar esta aba.")
+        version = self._record("x").get("version", "0.0.0")
+        if tuple(map(int, version.split("."))) < (1, 1, 1):
+            raise ValueError("Atualize o Clássica X para abrir diretamente nesta aba.")
+        with self.lock:
+            if self._embedded_stopping:
+                raise ValueError("A central está encerrando.")
+            if self._embedded_process and self._embedded_process.poll() is None and self._embedded_status == "ready":
+                if self._embedded_version != version:
+                    raise ValueError("O módulo X foi atualizado. Use Sair e abra a Clássica novamente para carregar a nova versão sem interromper downloads.")
+                return self.embedded_snapshot()
+            if self._embedded_worker and self._embedded_worker.is_alive():
+                return self.embedded_snapshot()
+            self._embedded_status = "starting"
+            self._embedded_url = None
+            self._embedded_error = ""
+            self._embedded_worker = threading.Thread(target=self._start_embedded_x, args=(executable,), daemon=True)
+            self._embedded_worker.start()
+        return self.embedded_snapshot()
+
+    def _start_embedded_x(self, executable: Path) -> None:
+        process = None
+        try:
+            base = self._folder("x")
+            base.mkdir(parents=True, exist_ok=True)
+            with tempfile.TemporaryDirectory(prefix=".classica-tab-", dir=base) as scratch:
+                ready = Path(scratch) / "session.json"
+                env = os.environ.copy()
+                env["CLASSICA_X_EMBED_READY_FILE"] = str(ready)
+                env.pop("CLASSICA_X_SMOKE_ALLOW_SYNTHETIC_MEDIA", None)
+                process = subprocess.Popen(
+                    [str(executable)], cwd=str(executable.parent),
+                    env=env, shell=False,
+                    stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                    creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+                )
+                with self.lock:
+                    self._embedded_process = process
+                    self._embedded_version = self._record("x").get("version")
+                    if self._embedded_stopping:
+                        process.terminate()
+                        return
+                deadline = time.monotonic() + 25
+                while time.monotonic() < deadline:
+                    with self.lock:
+                        if self._embedded_stopping:
+                            process.terminate()
+                            return
+                    if process.poll() is not None:
+                        raise RuntimeError("O Clássica X foi encerrado antes de iniciar a interface.")
+                    if ready.is_file():
+                        record = json.loads(ready.read_text(encoding="utf-8"))
+                        port, token = record.get("port"), record.get("session")
+                        if not isinstance(port, int) or not 1 <= port <= 65535 or not isinstance(token, str) or not re.fullmatch(r"[A-Za-z0-9_-]{20,100}", token):
+                            raise RuntimeError("Sessão local do X inválida.")
+                        # Check the token against the actual local X server. No proxy or remote call.
+                        connection = http.client.HTTPConnection("127.0.0.1", port, timeout=2)
+                        try:
+                            connection.request("GET", "/api/state", headers={
+                                "Host": f"127.0.0.1:{port}", "X-Classica-Session": token,
+                            })
+                            response = connection.getresponse()
+                            response.read(4096)
+                            if response.status != 200:
+                                raise RuntimeError("O Clássica X não confirmou a sessão local.")
+                        finally:
+                            connection.close()
+                        with self.lock:
+                            if not self._embedded_stopping:
+                                self._embedded_url = f"http://127.0.0.1:{port}/?embedded=1#session={token}"
+                                self._embedded_status = "ready"
+                        return
+                    time.sleep(0.15)
+                raise TimeoutError("O Clássica X não iniciou a aba dentro do tempo esperado.")
+        except Exception as error:
+            with self.lock:
+                self._embedded_status = "error"
+                self._embedded_error = str(error)[:250]
+                self._embedded_url = None
+            if process and process.poll() is None:
+                process.terminate()
+
+    def shutdown(self) -> None:
+        """Stop only the X subprocess owned by this shell; do not touch standalone apps."""
+        with self.lock:
+            self._embedded_stopping = True
+            process = self._embedded_process
+            worker = self._embedded_worker
+        if process and process.poll() is None:
+            try:
+                process.terminate()
+                process.wait(timeout=4)
+            except (OSError, subprocess.TimeoutExpired):
+                process.kill()
+        if worker and worker.is_alive() and worker is not threading.current_thread():
+            worker.join(timeout=4)
 
     def rollback(self, module: str) -> dict:
         if module not in MODULES:

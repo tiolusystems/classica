@@ -29,7 +29,7 @@ from maintenance import MaintenanceService
 from module_manager import ModuleManager
 
 ROOT = Path(__file__).resolve().parent
-VERSION = "2.3.0"
+VERSION = "2.4.0"
 FORMATS = {"mp3": "MP3 · 320 kbps", "m4a": "M4A · AAC", "aac": "AAC",
            "wav": "WAV", "flac": "FLAC", "ogg": "OGG · Vorbis", "opus": "OPUS",
            "original": "Áudio original"}
@@ -497,7 +497,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("X-Classica-Version", VERSION)
         self.send_header("X-Frame-Options", "DENY")
         self.send_header("Referrer-Policy", "no-referrer")
-        self.send_header("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'")
+        self.send_header("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-src http://127.0.0.1:*; frame-ancestors 'none'; base-uri 'none'; form-action 'self'")
         self.end_headers()
         self.wfile.write(body)
 
@@ -525,7 +525,9 @@ class Handler(BaseHTTPRequestHandler):
             if self.headers.get('X-Classica-Token') != self.server.token:
                 self.respond(403, {'error': 'Sessão inválida.'})
             else:
-                self.respond(200, self.server.modules.snapshot())
+                result = self.server.modules.snapshot()
+                result["embedded"] = self.server.modules.embedded_snapshot()
+                self.respond(200, result)
         elif path in ('/api/diagnostics', '/api/desktop'):
             if self.headers.get('X-Classica-Token') != self.server.token:
                 self.respond(403, {'error': 'Sessão inválida.'})
@@ -602,6 +604,8 @@ class Handler(BaseHTTPRequestHandler):
                         manager.preview_active -= 1
             elif path == '/api/modules/install':
                 result = self.server.modules.begin(data.get('module', 'all'))
+            elif path == '/api/modules/embed':
+                result = self.server.modules.begin_embedded_x()
             elif path == '/api/modules/launch':
                 self.server.modules.launch(data.get('module', 'hub'))
             elif path == '/api/modules/rollback':
@@ -758,6 +762,7 @@ def main():
     except KeyboardInterrupt:
         pass
     finally:
+        server.modules.shutdown()
         manager.stop()
         server.server_close()
         instance_file.unlink(missing_ok=True)

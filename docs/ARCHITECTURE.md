@@ -44,6 +44,21 @@ versão de origem. Histórico/configuração permanecem em `%LOCALAPPDATA%\Class
 Operações de manutenção exigem fila sem itens pendentes e consulta de detalhes
 encerrada. Não há serviço, autostart, removedor ou envio automático de diagnóstico.
 
-## Plataforma modular (2.3.0)
+## Plataforma modular (2.4.0)
 
 O Clássica YouTube continua usando exclusivamente seu motor, fila e dados locais. O arquivo `module_manager.py` opera de forma separada: consulta os Releases oficiais de `tiolusystems/classica-x` e `tiolusystems/classica-hub`, verifica o digest SHA-256 informado pela API do GitHub e extrai pacotes exclusivamente em diretórios próprios de cada módulo no perfil Windows. Não incorpora binários externos ao ZIP do YouTube nem altera o contrato de atualização e rollback da aplicação original. A instalação é iniciada explicitamente no diálogo Plataformas; a interface não exige login no GitHub nem privilégios administrativos. Cada módulo mantém seu próprio processo e atualização, inclusive rollback individual.
+
+
+## Navegação única (2.4.0)
+
+A interface principal do Clássica passa a ser um shell de abas YouTube/X, sem
+janelas Tkinter ou navegadores adicionais durante a alternância. O X é um
+executável/processo independente >=1.1.1, iniciado em modo incorporado por
+arquivo de sessão descartável dentro do perfil Windows. O servidor principal
+verifica o token contra a API loopback do X antes de expor uma URL local ao
+cliente autenticado. A interface X é renderizada em iframe sandboxed apenas de
+origem loopback; os dados, extrator, estado, downloads e atualizações X ficam
+completamente fora do motor YouTube. O processo filho X é encerrado juntamente
+com o shell que o iniciou. Não há migração de históricos.
+
+A aba X provisiona automaticamente uma versão compatível apenas na primeira utilização ou se a versão instalada estiver abaixo do mínimo exigido; quando já está instalada, não consulta nem reinstala o módulo em cada inicialização. Falhas de rede deixam a opção de tentar novamente, sem apagar o módulo anterior.

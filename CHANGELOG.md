@@ -1,5 +1,12 @@
 # Histórico de mudanças
 
+## 2.4.0 — Navegação por abas
+- Janela única do Clássica: YouTube e X em abas, sem lançar o Hub/Tkinter intermediário.
+- Módulo X independente inicia na aba de forma local e autenticada, sem abrir outro navegador.
+- Instalação ou atualização de compatibilidade do X automaticamente ao acessar a aba pela primeira vez, com verificação SHA-256; reaberturas reutilizam a versão já instalada. Falhas permitem tentar novamente sem afetar o YouTube.
+- Aceite de uso responsável consistente entre as duas plataformas.
+- Histórico e mecanismos de download mantidos em processos e pastas separadas.
+
 ## 2.3.0
 
 - Biblioteca modular acessível em **Plataformas**, com instalação opt-in do Clássica X e da central de aplicativos (Hub).

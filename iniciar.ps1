@@ -7,7 +7,7 @@ $toolsDir = Join-Path $PSScriptRoot '.tools'
 $binDir = Join-Path $toolsDir 'bin'
 $pythonExe = Join-Path $PSScriptRoot '.venv\Scripts\python.exe'
 $uvExe = Join-Path $binDir 'uv.exe'
-$headers = @{ 'User-Agent' = 'Classica/2.3.0'; 'Accept' = 'application/vnd.github+json' }
+$headers = @{ 'User-Agent' = 'Classica/2.4.0'; 'Accept' = 'application/vnd.github+json' }
 $toolsLock = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'tools.lock.json') -Raw | ConvertFrom-Json
 
 function Install-ReleaseZip([string]$Repository, [string]$Destination, [string]$Executable) {
@@ -45,17 +45,62 @@ function Install-ReleaseZip([string]$Repository, [string]$Destination, [string]$
     }
 }
 
+function Get-ActiveClassicaInstance {
+    # Authenticated localhost check: ignore stale instance files after crashes.
+    $file = Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'Classica\instancia.json'
+    if (-not (Test-Path -LiteralPath $file -PathType Leaf)) { return $null }
+    try {
+        if ((Get-Item -LiteralPath $file).Length -gt 16384) { return $null }
+        $record = Get-Content -LiteralPath $file -Raw -Encoding UTF8 | ConvertFrom-Json
+        $match = [regex]::Match([string]$record.url, '^http://127\.0\.0\.1:([0-9]{1,5})$')
+        if (-not $match.Success -or [int]$match.Groups[1].Value -lt 1 -or
+            [int]$match.Groups[1].Value -gt 65535 -or
+            [string]$record.token -cnotmatch '^[A-Za-z0-9_-]{20,128}$') { return $null }
+        $request = [System.Net.HttpWebRequest]::Create($record.url + '/api/instance')
+        $request.Proxy = $null
+        $request.AllowAutoRedirect = $false
+        $request.Timeout = 1500
+        $request.ReadWriteTimeout = 1500
+        $request.Headers.Add('X-Classica-Token', [string]$record.token)
+        $response = $request.GetResponse()
+        try {
+            if ([int]$response.StatusCode -ne 200 -or $response.ContentLength -gt 16384) { return $null }
+            $reader = New-Object System.IO.StreamReader($response.GetResponseStream(), [Text.Encoding]::UTF8)
+            try { $received = $reader.ReadToEnd() }
+            finally { $reader.Dispose() }
+            if ($received.Length -gt 16384) { return $null }
+            $live = $received | ConvertFrom-Json
+            if ($record.version -eq $live.version -and $record.directory -eq $live.directory -and
+                [string]$record.pid -eq [string]$live.pid -and $live.closing -ne $true) {
+                return $live
+            }
+        } finally { $response.Dispose() }
+    } catch { return $null }
+    return $null
+}
+
 try {
     if ($PSScriptRoot.TrimEnd('\') -eq [IO.Path]::GetPathRoot($PSScriptRoot).TrimEnd('\')) {
         throw 'A aplicacao deve ficar em uma pasta propria, por exemplo C:\Classica. Extraia a pasta Classica do ZIP e abra Iniciar.bat dentro dela.'
     }
     Start-Transcript -Path (Join-Path $PSScriptRoot 'ultimo-inicio.log') -Force | Out-Null
     Write-Host ''
-    Write-Host ('CLASSICA 2.3.0 - Audio e video | by ' + [char]0x2627 + ' SYSTEMS') -ForegroundColor DarkGreen
+    Write-Host ('CLASSICA 2.4.0 - Audio e video | by ' + [char]0x2627 + ' SYSTEMS') -ForegroundColor DarkGreen
     Write-Host 'Na primeira abertura, os componentes gratuitos serao baixados automaticamente.'
     Write-Host 'Reserve cerca de 2 GB livres. A preparacao pode levar alguns minutos.'
     Write-Host 'Nenhuma senha, conta ou chave de API e necessaria.'
     Write-Host ''
+    if (-not $SetupOnly) {
+        $existing = Get-ActiveClassicaInstance
+        if ($existing -and $existing.version -ne '2.4.0') {
+            throw ("A Classica " + $existing.version + " continua aberta em segundo plano. " +
+                   "Clique na seta ^ ao lado do relogio do Windows, localize o icone da Classica " +
+                   "e escolha Encerrar Classica. Depois abra esta versao 2.4.0 novamente. " +
+                   "Fechar somente a aba do navegador nao encerra a aplicacao. " +
+                   "Se houver downloads em andamento, conclua-os antes de encerrar. " +
+                   "Nao e necessario reinstalar componentes.")
+        }
+    }
     if (-not [Environment]::Is64BitOperatingSystem) { throw 'Esta versao requer Windows de 64 bits.' }
     if ($env:PROCESSOR_ARCHITECTURE -eq 'ARM64' -or $env:PROCESSOR_ARCHITEW6432 -eq 'ARM64') {
         throw 'Este pacote foi preparado para Windows x64 (Intel/AMD). Um pacote ARM64 e necessario neste computador.'
