@@ -15,7 +15,7 @@
 <a href="#main" class="skip-link">Ir para o conteúdo</a>
 <header class="app-header">
   <a class="brand" href="/" aria-label="Clássica, início"><span class="brand-symbol" aria-hidden="true">☧</span><span><strong>Clássica</strong><span class="brand-caption">ÁUDIO E VÍDEO</span></span></a>
-  <nav aria-label="Ações da aplicação" class="header-actions"><span class="connection"><span class="dot" aria-hidden="true"></span><span id="connection-text">Conectando</span></span><button id="help-top-button" class="button quiet" type="button">Ajuda</button><button id="settings-button" class="button secondary" type="button">Preferências</button><button id="exit-button" class="button quiet" type="button">Sair</button></nav>
+  <nav aria-label="Ações da aplicação" class="header-actions"><span class="connection"><span class="dot" aria-hidden="true"></span><span id="connection-text">Conectando</span></span><button id="platforms-button" class="button secondary" type="button">Plataformas</button><button id="help-top-button" class="button quiet" type="button">Ajuda</button><button id="settings-button" class="button secondary" type="button">Preferências</button><button id="exit-button" class="button quiet" type="button">Sair</button></nav>
 </header>
 <main id="main" tabindex="-1">
   <section class="page-intro" aria-labelledby="page-title"><div><p class="eyebrow">☧ SYSTEMS · ACERVO MUSICAL</p><h1 id="page-title">Baixar áudio e vídeo</h1><p>Cole um link, escolha o formato e acompanhe o download.</p></div><span class="local-badge">Processamento local</span></section>
@@ -51,7 +51,7 @@
       <div class="library-bottom"><span class="hint">Os downloads salvos permanecem na pasta escolhida.</span></div>
     </section>
   </div>
-  <footer class="app-footer"><span>Clássica <span class="version">v2.2.2</span></span><span class="developer-signature" aria-label="by ☧ SYSTEMS">by <span aria-hidden="true">☧</span> SYSTEMS</span></footer>
+  <footer class="app-footer"><span>Clássica <span class="version">v2.3.0</span></span><span class="developer-signature" aria-label="by ☧ SYSTEMS">by <span aria-hidden="true">☧</span> SYSTEMS</span></footer>
 </main>
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 <dialog id="settings-dialog" aria-labelledby="preferences-title"><form id="settings-form"><div class="dialog-heading"><h2 id="preferences-title">Preferências</h2><button type="button" class="close-dialog icon-button" aria-label="Fechar preferências">×</button></div><p class="hint">Os próximos downloads usam a pasta abaixo. Os arquivos já salvos permanecem em seus locais.</p><label for="folder-input" class="field-label">Pasta dos downloads</label><input id="folder-input" type="text" required spellcheck="false" aria-describedby="folder-hint"><p id="folder-hint" class="hint">Use o caminho completo. Exemplo: C:\Users\Luciano\Music\Classica</p><div class="reading-settings"><label for="font-size" class="field-label">Tamanho do texto <output id="font-size-label" for="font-size">100%</output></label><input id="font-size" type="range" min="100" max="200" step="10" value="100" aria-describedby="reading-hint"><p id="reading-hint" class="hint">A fonte acompanha a janela. Ajuste de 100% a 200% para uma leitura confortável. O ajuste de leitura é salvo automaticamente neste navegador.</p><button id="reset-reading" type="button" class="text-button">Restaurar leitura padrão</button></div><div class="dialog-actions"><button type="button" class="close-dialog button secondary">Fechar</button><button type="submit" class="button primary">Salvar pasta</button></div></form></dialog>
@@ -75,6 +75,26 @@
 
   <h3>Privacidade, direitos e responsabilidade</h3><p>A interface funciona localmente; o extrator se conecta ao YouTube para obter os conteúdos solicitados. A ferramenta não verifica automaticamente direitos autorais, licenças ou permissões. O usuário deve assegurar que possui autorização ou fundamento legal aplicável para cada download, respeitando os direitos dos titulares e as condições das plataformas. Obras antigas podem ter gravações, execuções e edições protegidas separadamente. Este aviso é informativo e não exclui obrigações legais nem substitui orientação jurídica.</p>
   <p class="hint">Windows 10/11 x64. Sem contorno de CAPTCHA, DRM ou pagamento. Os componentes externos mantêm suas próprias licenças. A documentação do projeto descreve os testes e seus limites.</p>
+  <div class="help-brand developer-signature" aria-label="by ☧ SYSTEMS">by <span aria-hidden="true">☧</span> SYSTEMS</div>
+</dialog>
+
+<dialog id="platforms-dialog" aria-labelledby="platforms-title">
+  <div class="dialog-heading"><h2 id="platforms-title">Biblioteca Clássica</h2><button type="button" class="close-dialog icon-button" aria-label="Fechar plataformas">×</button></div>
+  <p>A Clássica YouTube continua como está. Instale o módulo X e a central separadamente, sem compartilhar dependências, downloads ou histórico.</p>
+  <div class="modules-panel">
+    <h3>Aplicativos disponíveis</h3>
+    <p class="hint">YouTube · já integrado nesta instalação. X · vídeos públicos autorizados.</p>
+    <p class="notice">Os módulos usam arquivos oficiais do GitHub com verificação SHA-256. A instalação é opcional e não substitui o aplicativo YouTube.</p>
+    <p id="modules-status" role="status" aria-live="polite">Consultando módulos instalados…</p>
+    <div class="progress" aria-label="Progresso de preparação dos módulos"><span id="modules-progress" style="width:0"></span></div>
+    <div class="maintenance-actions">
+      <button id="modules-install" class="button primary" type="button">Instalar ou atualizar central + X</button>
+      <button id="modules-launch" class="button secondary" type="button" disabled>Abrir central de aplicativos</button>
+      <button id="modules-rollback-x" class="text-button" type="button" hidden>Voltar versão anterior do X</button>
+      <button id="modules-rollback-hub" class="text-button" type="button" hidden>Voltar versão anterior da central</button>
+    </div>
+    <p class="hint">Windows 10/11 x64. Os módulos não possuem assinatura digital. Caso o Windows apresente um aviso de segurança, confira a origem do pacote; não desative as proteções do sistema.</p>
+  </div>
   <div class="help-brand developer-signature" aria-label="by ☧ SYSTEMS">by <span aria-hidden="true">☧</span> SYSTEMS</div>
 </dialog>
 </body>
