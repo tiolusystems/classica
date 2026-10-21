@@ -157,7 +157,7 @@ $('copy-report').addEventListener('click',async()=>{
 
 // Clássica is now the shell: change tabs, not windows. The X process and
 // history remain independent and communicate through a private loopback session.
-let currentWorkspace='youtube', modulesPolling=false, embeddedRequested=false;
+let currentWorkspace='youtube', modulesPolling=false, embeddedRequested=false, xAutoInstallAttempted=false;
 window.addEventListener('message',event=>{
   const frame=$('x-frame');
   // Only the exact X iframe and its loopback origin can adjust layout.
@@ -208,6 +208,20 @@ async function startEmbeddedX(){
     $('x-retry').hidden=false;
   }
 }
+async function prepareXOnce(){
+  // A missing or incompatible module is provisioned at most once per app session.
+  // The backend verifies the official release, size and SHA-256, and preserves
+  // the previous installation if the network, archive or validation fails.
+  if(xAutoInstallAttempted)return;
+  xAutoInstallAttempted=true;
+  try{
+    const result=await api('modules/install',{module:'x'});
+    $('x-status').textContent=result.message||'Preparando Clássica X…';
+  }catch(error){
+    $('x-status').textContent=error.message||'A instalação automática não pôde ser concluída.';
+    $('x-install').hidden=false;
+  }
+}
 async function refreshX(){
   if(currentWorkspace!=='x'||modulesPolling)return;
   modulesPolling=true;
@@ -218,8 +232,8 @@ async function refreshX(){
     const setup=$('x-module-setup'),frame=$('x-frame');
     const install=$('x-install'),retry=$('x-retry'),rollback=$('x-rollback');
     const canEmbed=x.available&&supportsEmbedded(x.version);
-    install.hidden=canEmbed&&!state.busy;
-    install.textContent=x.available?'Atualizar Clássica X':'Instalar Clássica X';
+    install.hidden=canEmbed||!!state.busy||!xAutoInstallAttempted;
+    install.textContent=x.available?'Tentar atualizar X novamente':'Tentar instalar X novamente';
     install.disabled=!!state.busy;
     rollback.hidden=!x.can_rollback;
     retry.hidden=true;
@@ -228,7 +242,14 @@ async function refreshX(){
       $('x-status').textContent=state.message||'Instalando o módulo X…';
     }else if(!canEmbed){
       setup.hidden=false;frame.hidden=true;
-      $('x-status').textContent=x.available?'O Clássica X instalado precisa ser atualizado para utilizar esta aba.':'Instale o Clássica X para baixar vídeos autorizados, sem abrir outras janelas.';
+      if(!xAutoInstallAttempted){
+        $('x-status').textContent=x.available?'Atualizando o X para a versão compatível…':'Preparando Clássica X automaticamente pela primeira vez…';
+        void prepareXOnce();
+      }else{
+        $('x-status').textContent=state.phase==='error'&&state.module==='x'
+          ? (state.message||'A instalação do X não foi concluída. Tente novamente.')
+          : (state.message||'Não foi possível preparar o X automaticamente. Use Tentar novamente.');
+      }
     }else if(embedded.status==='ready'&&embedded.version!==x.version){
       // The new module is installed but the old process still owns this tab.
       // Never silently terminate an active user's download.
@@ -253,10 +274,10 @@ async function refreshX(){
   }finally{modulesPolling=false;}
 }
 $('x-install').addEventListener('click',async()=>{
-  if(!confirm('Instalar ou atualizar Clássica X de fonte oficial, sem alterar o YouTube?'))return;
   const b=$('x-install');b.disabled=true;
   try{
     const state=await api('modules/install',{module:'x'});
+    xAutoInstallAttempted=true;
     embeddedRequested=false;
     $('x-status').textContent=state.message||'Preparando instalação…';
     void refreshX();
