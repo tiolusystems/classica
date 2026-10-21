@@ -158,6 +158,19 @@ $('copy-report').addEventListener('click',async()=>{
 // Clássica is now the shell: change tabs, not windows. The X process and
 // history remain independent and communicate through a private loopback session.
 let currentWorkspace='youtube', modulesPolling=false, embeddedRequested=false;
+window.addEventListener('message',event=>{
+  const frame=$('x-frame');
+  // Only the exact X iframe and its loopback origin can adjust layout.
+  if(!frame||event.source!==frame.contentWindow||!frame.src)return;
+  let expected;
+  try{expected=new URL(frame.src).origin;}catch{return;}
+  if(event.origin!==expected || !expected.startsWith('http://127.0.0.1:'))return;
+  const payload=event.data;
+  if(!payload || payload.type!=='classica-x:height')return;
+  const height=Number(payload.height);
+  if(!Number.isFinite(height)||height<200||height>8000)return;
+  frame.style.height=Math.ceil(height+16)+'px';
+});
 function selectWorkspace(name){
   if(!['youtube','x'].includes(name))return;
   currentWorkspace=name;
@@ -183,7 +196,7 @@ $('tab-youtube').parentElement.addEventListener('keydown',event=>{
 function supportsEmbedded(version){
   const parts=String(version||'0.0.0').split('.').map(Number);
   return parts.length===3 && parts.every(Number.isInteger) &&
-    (parts[0]>1 || parts[0]===1 && parts[1]>=1);
+    (parts[0]>1 || parts[0]===1 && (parts[1]>1 || parts[1]===1 && parts[2]>=1));
 }
 async function startEmbeddedX(){
   embeddedRequested=true;
