@@ -112,7 +112,7 @@ try {
   assert.ok(!report.includes('BaW_jenozKc')&&!report.includes(directory));
   await page.screenshot({path:'output/ui/classica-help-200.png',fullPage:true});
   await page.keyboard.press('Escape');
-  await page.getByRole('tab',{name:/\\u{1D54F} X/u}).click();
+  await page.locator('#tab-x').click();
   await page.locator('#x-workspace').waitFor({state:'visible'});
   await page.locator('#x-install').waitFor({state:'visible'});
   assert.equal(await page.locator('#youtube-workspace').isVisible(),false);
