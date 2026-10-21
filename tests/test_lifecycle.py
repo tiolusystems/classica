@@ -73,7 +73,7 @@ class LifecycleTests(unittest.TestCase):
                 # never silently route the user to the older installation.
                 other = root / 'other-version'
                 other.mkdir()
-                for module in ('features.py', 'maintenance.py'):
+                for module in ('features.py', 'maintenance.py', 'module_manager.py'):
                     shutil.copyfile(app.ROOT/module, other/module)
                 source = (app.ROOT/'app.py').read_text(encoding='utf-8')
                 (other/'app.py').write_text(source.replace('VERSION = "2.2.2"', 'VERSION = "9.9.9"'), encoding='utf-8')
