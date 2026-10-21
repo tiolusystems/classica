@@ -60,3 +60,5 @@ cliente autenticado. A interface X é renderizada em iframe sandboxed apenas de
 origem loopback; os dados, extrator, estado, downloads e atualizações X ficam
 completamente fora do motor YouTube. O processo filho X é encerrado juntamente
 com o shell que o iniciou. Não há migração de históricos.
+
+A aba X provisiona automaticamente uma versão compatível apenas na primeira utilização ou se a versão instalada estiver abaixo do mínimo exigido; quando já está instalada, não consulta nem reinstala o módulo em cada inicialização. Falhas de rede deixam a opção de tentar novamente, sem apagar o módulo anterior.
