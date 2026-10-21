@@ -1,5 +1,14 @@
 # Histórico de mudanças
 
+## 2.3.0
+
+- Biblioteca modular acessível em **Plataformas**, com instalação opt-in do Clássica X e da central de aplicativos (Hub).
+- Os módulos usam Releases oficiais separados, validação SHA-256 e pastas versionadas por aplicativo; atualização e retorno à versão anterior independentes.
+- Preservado integralmente o motor de download YouTube, o histórico e o atualizador guiado existente.
+- O Clássica X usa a identidade visual marfim, filetes dourados e símbolo ☧ já aplicada à Clássica.
+- O X ainda depende da disponibilidade das publicações públicas na plataforma; apenas conteúdos autorizados.
+
+
 ## 2.2.2
 
 - A opção de atalhos permanece visível após a instalação e permite **Criar ou atualizar atalhos** sem reinstalar a aplicação.
