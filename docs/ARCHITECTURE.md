@@ -53,7 +53,7 @@ O Clássica YouTube continua usando exclusivamente seu motor, fila e dados locai
 
 A interface principal do Clássica passa a ser um shell de abas YouTube/X, sem
 janelas Tkinter ou navegadores adicionais durante a alternância. O X é um
-executável/processo independente >=1.1.0, iniciado em modo incorporado por
+executável/processo independente >=1.1.1, iniciado em modo incorporado por
 arquivo de sessão descartável dentro do perfil Windows. O servidor principal
 verifica o token contra a API loopback do X antes de expor uma URL local ao
 cliente autenticado. A interface X é renderizada em iframe sandboxed apenas de
