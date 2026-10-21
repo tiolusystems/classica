@@ -4,25 +4,25 @@
 
 **Sua música e seus vídeos, no seu computador.**
 
-by **☧ SYSTEMS** · versão **2.2.2**
+by **☧ SYSTEMS** · versão **2.3.0**
 
 Cole o link de uma gravação autorizada do YouTube, escolha áudio ou vídeo
 e acompanhe o download em uma interface em português.
 
 ## Baixar
 
-[![Baixar Clássica para Windows](assets/download-windows.svg)](https://github.com/tiolusystems/classica/releases/download/v2.2.2/Classica-2.2.2-Windows-x64.zip)
+[![Baixar Clássica para Windows](assets/download-windows.svg)](https://github.com/tiolusystems/classica/releases/download/v2.3.0/Classica-2.3.0-Windows-x64.zip)
 
 **Windows 10 e 11 · 64 bits · Intel/AMD**
 
-O botão baixa o pacote pronto, **Classica-2.2.2-Windows-x64.zip**, com o
+O botão baixa o pacote pronto, **Classica-2.3.0-Windows-x64.zip**, com o
 executável **Clássica.exe**. Não é necessário conhecer programação.
 
 ## Começar em três passos
 
 1. **Baixe** pelo botão acima. Se já houver uma versão aberta, encerre-a pelo botão **Sair**.
 2. **Extraia** o ZIP: clique com o botão direito no arquivo e escolha **Extrair Tudo**. Mantenha a pasta completa.
-3. **Abra Clássica.exe**, dentro de **Classica-2.2.2**. Na primeira abertura, aguarde a preparação dos componentes.
+3. **Abra Clássica.exe**, dentro de **Classica-2.3.0**. Na primeira abertura, aguarde a preparação dos componentes.
 
 A primeira preparação usa internet e requer cerca de **2 GB livres**, além
 do espaço para suas músicas e vídeos. Depois, a interface abre no navegador.
@@ -43,6 +43,10 @@ na pasta principal. Mantenha esses três itens juntos; os arquivos de suporte
 ficam em Componentes.
 
 </details>
+
+## Biblioteca de aplicativos
+
+A partir da versão 2.3.0, use **Plataformas** para instalar e abrir a central de módulos ☧ SYSTEMS e o Clássica X. A instalação é opcional e separada do YouTube: cada aplicativo mantém seu próprio mecanismo de download, histórico, arquivos e atualizações. O Clássica X destina-se a publicações públicas autorizadas e requer Windows x64; versões oficiais são verificadas por SHA-256 antes da instalação.
 
 ## No dia a dia
 

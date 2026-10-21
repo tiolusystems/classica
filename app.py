@@ -26,9 +26,10 @@ import webbrowser
 from urllib.request import Request, build_opener, ProxyHandler, HTTPRedirectHandler
 from features import PreviewService, diagnosis, support_report
 from maintenance import MaintenanceService
+from module_manager import ModuleManager
 
 ROOT = Path(__file__).resolve().parent
-VERSION = "2.2.2"
+VERSION = "2.3.0"
 FORMATS = {"mp3": "MP3 · 320 kbps", "m4a": "M4A · AAC", "aac": "AAC",
            "wav": "WAV", "flac": "FLAC", "ogg": "OGG · Vorbis", "opus": "OPUS",
            "original": "Áudio original"}
@@ -520,6 +521,11 @@ class Handler(BaseHTTPRequestHandler):
                 self.respond(403, {"error": "Sessão inválida. Reabra a aplicação."})
             else:
                 self.respond(200, self.server.manager.snapshot())
+        elif path == '/api/modules/status':
+            if self.headers.get('X-Classica-Token') != self.server.token:
+                self.respond(403, {'error': 'Sessão inválida.'})
+            else:
+                self.respond(200, self.server.modules.snapshot())
         elif path in ('/api/diagnostics', '/api/desktop'):
             if self.headers.get('X-Classica-Token') != self.server.token:
                 self.respond(403, {'error': 'Sessão inválida.'})
@@ -594,6 +600,12 @@ class Handler(BaseHTTPRequestHandler):
                 finally:
                     with manager.lock:
                         manager.preview_active -= 1
+            elif path == '/api/modules/install':
+                result = self.server.modules.begin(data.get('module', 'all'))
+            elif path == '/api/modules/launch':
+                self.server.modules.launch(data.get('module', 'hub'))
+            elif path == '/api/modules/rollback':
+                result = self.server.modules.rollback(data.get('module'))
             elif path == '/api/update/check':
                 result = manager.maintenance.check()
             elif path == '/api/update/prepare':
@@ -652,6 +664,7 @@ def create_server(manager, port=0):
     server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
     server.daemon_threads = True
     server.manager = manager
+    server.modules = ModuleManager()
     server.token = secrets.token_urlsafe(32)
     server.closing = False
     return server

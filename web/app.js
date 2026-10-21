@@ -153,3 +153,51 @@ $('copy-report').addEventListener('click',async()=>{
     catch{$('support-report').focus();$('support-report').select();$('report-status').textContent='Selecione e copie o relatório abaixo (Ctrl+C).';}
   }catch(error){toast(error.message,true);}finally{b.disabled=false;}
 });
+
+
+// Separate, opt-in modules: never modify or share the YouTube downloader.
+let modulesPolling=false;
+async function refreshModules(){
+  if(modulesPolling || !$('platforms-dialog').open)return;
+  modulesPolling=true;
+  try {
+    const state=await api('modules/status');
+    const installed=state.installed||{};
+    const x=installed.x||{}, hub=installed.hub||{};
+    const details=[
+      'X: '+(x.available?'instalado · v'+x.version:'não instalado'),
+      'Central: '+(hub.available?'instalada · v'+hub.version:'não instalada')
+    ];
+    $('modules-status').textContent=(state.message||details.join('  |  '))+
+      (state.busy?'  ·  '+details.join('  |  '):'  ·  '+details.join('  |  '));
+    $('modules-progress').style.width=Math.max(0,Math.min(100,Number(state.progress)||0))+'%';
+    $('modules-install').disabled=!!state.busy;
+    $('modules-launch').disabled=!!state.busy||!hub.available;
+    $('modules-rollback-x').hidden=!x.can_rollback;
+    $('modules-rollback-hub').hidden=!hub.can_rollback;
+  }catch(error){$('modules-status').textContent=error.message||'Não foi possível consultar os módulos.';}
+  finally{modulesPolling=false;}
+}
+$('platforms-button').addEventListener('click',()=>{
+  $('platforms-dialog').showModal();
+  void refreshModules();
+});
+$('modules-install').addEventListener('click',async()=>{
+  if(!confirm('Instalar ou atualizar a central e o X a partir dos Releases oficiais? Os módulos serão armazenados em pastas próprias; o YouTube permanecerá intacto.'))return;
+  const button=$('modules-install');button.disabled=true;
+  try{const state=await api('modules/install',{module:'all'});$('modules-status').textContent=state.message;await refreshModules();}
+  catch(error){toast(error.message,true);$('modules-status').textContent=error.message;}
+  finally{button.disabled=false;}
+});
+$('modules-launch').addEventListener('click',async()=>{
+  try{await api('modules/launch',{module:'hub'});toast('Central aberta.');}
+  catch(error){toast(error.message,true);}
+});
+for(const name of ['x','hub']){
+  $('modules-rollback-'+name).addEventListener('click',async()=>{
+    if(!confirm('Voltar à versão anterior deste módulo? O aplicativo YouTube não será alterado.'))return;
+    try{await api('modules/rollback',{module:name});await refreshModules();toast('Versão anterior selecionada.');}
+    catch(error){toast(error.message,true);}
+  });
+}
+setInterval(()=>{if($('platforms-dialog').open)void refreshModules();},1500);

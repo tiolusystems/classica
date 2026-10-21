@@ -6,10 +6,10 @@ import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
 GENERATED = {"Clássica.exe": "build/Clássica.exe"}
-PACKAGE_ROOT = "Classica-2.2.2"
+PACKAGE_ROOT = "Classica-2.3.0"
 USER_FILES = {"Clássica.exe", "Leia-me.txt"}
 FILES = (
-    "app.py", "features.py", "maintenance.py", "Iniciar.bat", "Iniciar discreto.bat", "Atualizar.bat", "iniciar.ps1", "LICENSE.txt",
+    "app.py", "features.py", "maintenance.py", "module_manager.py", "Iniciar.bat", "Iniciar discreto.bat", "Atualizar.bat", "iniciar.ps1", "LICENSE.txt",
     "README.md", "CHANGELOG.md", "SECURITY.md", "THIRD_PARTY.md",
     "requirements.in", "requirements.txt", "requirements.lock", "tools.lock.json",
     "package.json", "package-lock.json", ".gitignore", ".gitattributes",
@@ -46,7 +46,7 @@ def build(destination: Path) -> tuple[Path, Path]:
         if not binary.is_file() or binary.read_bytes()[:2] != b"MZ":
             raise RuntimeError(f"Compile {name} on Windows with scripts/build_launcher.ps1 before packaging.")
     destination.mkdir(parents=True, exist_ok=True)
-    archive = destination / "Classica-2.2.2-Windows-x64.zip"
+    archive = destination / "Classica-2.3.0-Windows-x64.zip"
     with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as package:
         for name in FILES:
             data = source_path(name).read_bytes()

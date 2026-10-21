@@ -43,3 +43,7 @@ sessão antiga, abre a nova e confirma a resposta autenticada antes de registrar
 versão de origem. Histórico/configuração permanecem em `%LOCALAPPDATA%\Classica`.
 Operações de manutenção exigem fila sem itens pendentes e consulta de detalhes
 encerrada. Não há serviço, autostart, removedor ou envio automático de diagnóstico.
+
+## Plataforma modular (2.3.0)
+
+O Clássica YouTube continua usando exclusivamente seu motor, fila e dados locais. O arquivo `module_manager.py` opera de forma separada: consulta os Releases oficiais de `tiolusystems/classica-x` e `tiolusystems/classica-hub`, verifica o digest SHA-256 informado pela API do GitHub e extrai pacotes exclusivamente em diretórios próprios de cada módulo no perfil Windows. Não incorpora binários externos ao ZIP do YouTube nem altera o contrato de atualização e rollback da aplicação original. A instalação é iniciada explicitamente no diálogo Plataformas; a interface não exige login no GitHub nem privilégios administrativos. Cada módulo mantém seu próprio processo e atualização, inclusive rollback individual.
