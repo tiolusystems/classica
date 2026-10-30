@@ -54,7 +54,7 @@ try {
   await page.locator('#yt-authorized').check();
   await page.getByRole('button',{name:'Baixar vídeo',exact:true}).click();
   await page.getByText('Vídeo · MP4',{exact:true}).waitFor();
-  await page.getByText('Até 240p',{exact:true}).waitFor();
+  await page.locator('#jobs').getByText('Até 240p',{exact:true}).waitFor();
   assert.equal(await page.evaluate(async()=>{const r=await fetch('/api/state',{headers:{'X-Classica-Token':document.querySelector('meta[name="classica-token"]').content}});return Object.hasOwn((await r.json()).jobs[0],'use_edge_session');}),false);
   await page.getByRole('button',{name:'Cancelar',exact:true}).click();
   await page.getByText('Cancelado',{exact:true}).waitFor();
