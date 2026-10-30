@@ -139,7 +139,12 @@ class AppTests(IsolatedApp):
         second = self.manager.enqueue([URL], "mp4", True, "1080")
         duplicate = self.manager.enqueue([URL], "mp4", True, "720")
         self.assertEqual((first["added"], second["added"], duplicate["skipped"]), (1, 1, 1))
+        low = self.manager.enqueue([URL], "mp4", True, "144")
+        self.assertEqual(low["added"], 1)
+        self.assertEqual(self.manager.jobs[-1]["resolution"], "144")
+        self.assertIn("[height<=144]", app.command_for(self.manager.jobs[-1])[app.command_for(self.manager.jobs[-1]).index("-f")+1])
         names = [app.command_for(j)[app.command_for(j).index("-o")+1] for j in self.manager.jobs]
+        self.assertEqual(len(set(names)), 3)
         self.assertNotEqual(names[0], names[1])
         for invalid in ["99999", "720;calc", None, 720]:
             with self.assertRaises(ValueError):
@@ -343,6 +348,10 @@ class HttpTests(IsolatedApp):
         self.assertEqual(json.loads(body)["added"], 1)
         self.assertEqual(self.request("/api/enqueue", {"urls":[URL],"format":"mp4","authorized":True,"resolution":"720"})[0], 200)
         self.assertEqual(self.manager.jobs[-1]["resolution"], "720")
+        for lower in ("360", "240", "144"):
+            status, _, _ = self.request("/api/enqueue", {"urls":[URL], "format":"mp4", "authorized":True, "resolution":lower})
+            self.assertEqual(status, 200)
+            self.assertEqual(self.manager.jobs[-1]["resolution"], lower)
         self.assertEqual(self.request("/api/enqueue", {"urls":[URL],"format":"mp4","authorized":True,"resolution":"garbage"})[0], 400)
 
     def test_support_preview_and_maintenance_api_auth_and_pause(self):
@@ -431,10 +440,10 @@ class AudioConversionTests(unittest.TestCase):
     def test_video_selector_caps_resolution_and_merges_audio(self):
         import yt_dlp
         formats = [dict(format_id="a", url="https://example.com/a", vcodec="none", acodec="aac", ext="m4a")]
-        for height in [360, 720, 1080, 1440, 2160]:
+        for height in [144, 240, 360, 720, 1080, 1440, 2160]:
             formats.append(dict(format_id=str(height), url="https://example.com/v", vcodec="h264", acodec="none", height=height, width=height*16//9, ext="mp4"))
         with yt_dlp.YoutubeDL({"quiet":True}) as ydl:
-            for resolution, expected in [("480",360),("720",720),("1080",1080),("1440",1440),("2160",2160),("best",2160)]:
+            for resolution, expected in [("144",144),("240",240),("360",360),("480",360),("720",720),("1080",1080),("1440",1440),("2160",2160),("best",2160)]:
                 selected = list(ydl.build_format_selector(app.video_selector(resolution))({"formats":formats,"incomplete_formats":False,"has_merged_format":False}))
                 self.assertEqual(len(selected),1)
                 self.assertEqual(selected[0]["requested_formats"][0]["height"], expected)

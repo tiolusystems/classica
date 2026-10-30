@@ -1,5 +1,12 @@
 # Histórico de mudanças
 
+## 2.4.1 — Vídeos de menor tamanho
+- Opções de resolução máxima até 360p, 240p e 144p na aba YouTube, além das existentes.
+- Seleção de formato restringe a altura do vídeo; não amplia artificialmente vídeos abaixo do limite nem substitui o limite por uma resolução superior indisponível.
+- Mesmo mecanismo de download, áudio, histórico e atualização; validação de API, seleção de formatos e testes da interface cobrindo as novas opções.
+- Arquivos geralmente menores, sem promessa de tamanho fixo: a disponibilidade e bitrate dependem da origem e da duração.
+
+
 ## 2.4.0 — Navegação por abas
 - Janela única do Clássica: YouTube e X em abas, sem lançar o Hub/Tkinter intermediário.
 - Módulo X independente inicia na aba de forma local e autenticada, sem abrir outro navegador.

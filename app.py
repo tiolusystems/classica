@@ -29,12 +29,12 @@ from maintenance import MaintenanceService
 from module_manager import ModuleManager
 
 ROOT = Path(__file__).resolve().parent
-VERSION = "2.4.0"
+VERSION = "2.4.1"
 FORMATS = {"mp3": "MP3 · 320 kbps", "m4a": "M4A · AAC", "aac": "AAC",
            "wav": "WAV", "flac": "FLAC", "ogg": "OGG · Vorbis", "opus": "OPUS",
            "original": "Áudio original"}
 VIDEO_FORMATS = {"mp4": "MP4", "mkv": "MKV", "webm": "WebM"}
-RESOLUTIONS = {"best", "2160", "1440", "1080", "720", "480"}
+RESOLUTIONS = {"best", "2160", "1440", "1080", "720", "480", "360", "240", "144"}
 ACTIVE = {"preparing", "downloading", "converting"}
 TERMINAL = {"done", "error", "cancelled", "interrupted"}
 VIDEO_ID = re.compile(r"^[A-Za-z0-9_-]{11}$")

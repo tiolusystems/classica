@@ -7,7 +7,7 @@ $toolsDir = Join-Path $PSScriptRoot '.tools'
 $binDir = Join-Path $toolsDir 'bin'
 $pythonExe = Join-Path $PSScriptRoot '.venv\Scripts\python.exe'
 $uvExe = Join-Path $binDir 'uv.exe'
-$headers = @{ 'User-Agent' = 'Classica/2.4.0'; 'Accept' = 'application/vnd.github+json' }
+$headers = @{ 'User-Agent' = 'Classica/2.4.1'; 'Accept' = 'application/vnd.github+json' }
 $toolsLock = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'tools.lock.json') -Raw | ConvertFrom-Json
 
 function Install-ReleaseZip([string]$Repository, [string]$Destination, [string]$Executable) {
@@ -85,17 +85,17 @@ try {
     }
     Start-Transcript -Path (Join-Path $PSScriptRoot 'ultimo-inicio.log') -Force | Out-Null
     Write-Host ''
-    Write-Host ('CLASSICA 2.4.0 - Audio e video | by ' + [char]0x2627 + ' SYSTEMS') -ForegroundColor DarkGreen
+    Write-Host ('CLASSICA 2.4.1 - Audio e video | by ' + [char]0x2627 + ' SYSTEMS') -ForegroundColor DarkGreen
     Write-Host 'Na primeira abertura, os componentes gratuitos serao baixados automaticamente.'
     Write-Host 'Reserve cerca de 2 GB livres. A preparacao pode levar alguns minutos.'
     Write-Host 'Nenhuma senha, conta ou chave de API e necessaria.'
     Write-Host ''
     if (-not $SetupOnly) {
         $existing = Get-ActiveClassicaInstance
-        if ($existing -and $existing.version -ne '2.4.0') {
+        if ($existing -and $existing.version -ne '2.4.1') {
             throw ("A Classica " + $existing.version + " continua aberta em segundo plano. " +
                    "Clique na seta ^ ao lado do relogio do Windows, localize o icone da Classica " +
-                   "e escolha Encerrar Classica. Depois abra esta versao 2.4.0 novamente. " +
+                   "e escolha Encerrar Classica. Depois abra esta versao 2.4.1 novamente. " +
                    "Fechar somente a aba do navegador nao encerra a aplicacao. " +
                    "Se houver downloads em andamento, conclua-os antes de encerrar. " +
                    "Nao e necessario reinstalar componentes.")
@@ -119,7 +119,7 @@ try {
     $ffmpeg = Get-ChildItem -LiteralPath $ffmpegDir -Recurse -Filter 'ffmpeg.exe' -ErrorAction SilentlyContinue | Select-Object -First 1
     $ffprobe = Get-ChildItem -LiteralPath $ffmpegDir -Recurse -Filter 'ffprobe.exe' -ErrorAction SilentlyContinue | Select-Object -First 1
     if (-not $ffmpeg -or -not $ffprobe) {
-        Install-ReleaseZip 'yt-dlp/FFmpeg-Builds' $ffmpegDir 'ffmpeg.exe'
+        Install-ReleaseZip 'GyanD/codexffmpeg' $ffmpegDir 'ffmpeg.exe'
         $ffmpeg = Get-ChildItem -LiteralPath $ffmpegDir -Recurse -Filter 'ffmpeg.exe' | Select-Object -First 1
     }
     $env:PATH = $binDir + ';' + $ffmpeg.DirectoryName + ';' + $env:PATH

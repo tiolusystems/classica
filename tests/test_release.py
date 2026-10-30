@@ -18,7 +18,7 @@ class ReleaseTests(unittest.TestCase):
     def test_versioned_artifact_and_ui_agree(self):
         import app
         from html.parser import HTMLParser
-        assert app.VERSION == '2.4.0'
+        assert app.VERSION == '2.4.1'
         assert f'Classica-{app.VERSION}-Windows-x64.zip' in (ROOT / 'scripts/package_release.py').read_text(encoding='utf-8')
         assert f'v{app.VERSION}' in (ROOT / 'web/index.html').read_text(encoding='utf-8')
 

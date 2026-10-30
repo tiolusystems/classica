@@ -39,7 +39,12 @@ try {
   await page.locator('.kind-choice').getByText('Vídeo com áudio',{exact:true}).click();
   assert.equal(await page.locator('#video-options').isVisible(),true);
   assert.equal(await page.locator('#audio-options').isVisible(),false);
-  await page.locator('#resolution').selectOption('720');
+  assert.deepEqual(
+    await page.locator('#resolution option').evaluateAll(options=>options.filter(o=>['360','240','144'].includes(o.value)).map(o=>o.value)),
+    ['360','240','144'],
+    'All three low-resolution options are displayed'
+  );
+  await page.locator('#resolution').selectOption('240');
   await page.locator('#urls').fill('https://www.youtube.com/watch?v=BaW_jenozKc');
   await page.getByRole('button',{name:'Ver detalhes do link',exact:true}).click();
   await page.locator('#link-preview').waitFor();
@@ -49,7 +54,7 @@ try {
   await page.locator('#yt-authorized').check();
   await page.getByRole('button',{name:'Baixar vídeo',exact:true}).click();
   await page.getByText('Vídeo · MP4',{exact:true}).waitFor();
-  await page.getByText('Até 720p',{exact:true}).waitFor();
+  await page.locator('#jobs').getByText('Até 240p',{exact:true}).waitFor();
   assert.equal(await page.evaluate(async()=>{const r=await fetch('/api/state',{headers:{'X-Classica-Token':document.querySelector('meta[name="classica-token"]').content}});return Object.hasOwn((await r.json()).jobs[0],'use_edge_session');}),false);
   await page.getByRole('button',{name:'Cancelar',exact:true}).click();
   await page.getByText('Cancelado',{exact:true}).waitFor();
@@ -108,7 +113,7 @@ try {
   await page.getByRole('button',{name:'Copiar relatório de diagnóstico',exact:true}).click();
   await page.locator('#support-report').waitFor();
   const report=await page.locator('#support-report').inputValue();
-  assert.match(report,/Clássica 2.4.0/);
+  assert.match(report,/Clássica 2.4.1/);
   assert.ok(!report.includes('BaW_jenozKc')&&!report.includes(directory));
   await page.screenshot({path:'output/ui/classica-help-200.png',fullPage:true});
   await page.keyboard.press('Escape');

@@ -3,7 +3,7 @@
 | Componente | Finalidade | Origem |
 | --- | --- | --- |
 | yt-dlp e yt-dlp-ejs | Extração e downloads | https://github.com/yt-dlp/yt-dlp |
-| FFmpeg e FFprobe | Conversão, remux e inspeção | https://github.com/yt-dlp/FFmpeg-Builds |
+| FFmpeg e FFprobe | Conversão, remux e inspeção | https://github.com/GyanD/codexffmpeg |
 | Deno | Runtime JavaScript do extrator | https://github.com/denoland/deno |
 | uv | Preparação de Python e pacotes | https://github.com/astral-sh/uv |
 | CPython | Execução da aplicação | https://www.python.org/ |
