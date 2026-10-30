@@ -16,11 +16,11 @@
       "url": "https://github.com/denoland/deno/releases/download/v2.9.7/deno-x86_64-pc-windows-msvc.zip"
     },
     {
-      "repository": "yt-dlp/FFmpeg-Builds",
-      "tag": "autobuild-2026-10-16-18-04",
-      "asset": "ffmpeg-N-127588-g0b19c65afe-win64-gpl.zip",
-      "sha256": "51aced1016570cbda6712bcf36aa05809dd195229416fc61e3865a359d3f43ca",
-      "url": "https://github.com/yt-dlp/FFmpeg-Builds/releases/download/autobuild-2026-10-16-18-04/ffmpeg-N-127588-g0b19c65afe-win64-gpl.zip"
+      "repository": "GyanD/codexffmpeg",
+      "tag": "9.0.2",
+      "asset": "ffmpeg-9.0.2-essentials_build.zip",
+      "sha256": "60f467265b1e312373dbcd92200c2618a74850f98d3d078e94296bb3fa2047ba",
+      "url": "https://github.com/GyanD/codexffmpeg/releases/download/9.0.2/ffmpeg-9.0.2-essentials_build.zip"
     }
   ]
 }
