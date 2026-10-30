@@ -119,7 +119,7 @@ try {
     $ffmpeg = Get-ChildItem -LiteralPath $ffmpegDir -Recurse -Filter 'ffmpeg.exe' -ErrorAction SilentlyContinue | Select-Object -First 1
     $ffprobe = Get-ChildItem -LiteralPath $ffmpegDir -Recurse -Filter 'ffprobe.exe' -ErrorAction SilentlyContinue | Select-Object -First 1
     if (-not $ffmpeg -or -not $ffprobe) {
-        Install-ReleaseZip 'yt-dlp/FFmpeg-Builds' $ffmpegDir 'ffmpeg.exe'
+        Install-ReleaseZip 'GyanD/codexffmpeg' $ffmpegDir 'ffmpeg.exe'
         $ffmpeg = Get-ChildItem -LiteralPath $ffmpegDir -Recurse -Filter 'ffmpeg.exe' | Select-Object -First 1
     }
     $env:PATH = $binDir + ';' + $ffmpeg.DirectoryName + ';' + $env:PATH
