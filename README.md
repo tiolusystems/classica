@@ -4,25 +4,25 @@
 
 **Sua música e seus vídeos, no seu computador.**
 
-by **☧ SYSTEMS** · versão **2.4.0**
+by **☧ SYSTEMS** · versão **2.4.1**
 
 Cole o link de uma gravação autorizada do YouTube, escolha áudio ou vídeo
 e acompanhe o download em uma interface em português.
 
 ## Baixar
 
-[![Baixar Clássica para Windows](assets/download-windows.svg)](https://github.com/tiolusystems/classica/releases/download/v2.4.0/Classica-2.4.0-Windows-x64.zip)
+[![Baixar Clássica para Windows](assets/download-windows.svg)](https://github.com/tiolusystems/classica/releases/download/v2.4.1/Classica-2.4.1-Windows-x64.zip)
 
 **Windows 10 e 11 · 64 bits · Intel/AMD**
 
-O botão baixa o pacote pronto, **Classica-2.4.0-Windows-x64.zip**, com o
+O botão baixa o pacote pronto, **Classica-2.4.1-Windows-x64.zip**, com o
 executável **Clássica.exe**. Não é necessário conhecer programação.
 
 ## Começar em três passos
 
 1. **Baixe** pelo botão acima. Se já houver uma versão aberta, encerre-a pelo botão **Sair**.
 2. **Extraia** o ZIP: clique com o botão direito no arquivo e escolha **Extrair Tudo**. Mantenha a pasta completa.
-3. **Abra Clássica.exe**, dentro de **Classica-2.4.0**. Na primeira abertura, aguarde a preparação dos componentes.
+3. **Abra Clássica.exe**, dentro de **Classica-2.4.1**. Na primeira abertura, aguarde a preparação dos componentes.
 
 A primeira preparação usa internet e requer cerca de **2 GB livres**, além
 do espaço para suas músicas e vídeos. Depois, a interface abre no navegador.
@@ -50,7 +50,7 @@ A partir da versão 2.4.0, a própria Clássica exibe as abas **YouTube** e **X*
 
 ## No dia a dia
 
-- **Áudio ou vídeo:** MP3 e outros sete formatos de áudio; MP4, MKV ou WebM com imagem e som. A qualidade depende da gravação de origem.
+- **Áudio ou vídeo:** MP3 e outros sete formatos de áudio; MP4, MKV ou WebM com imagem e som. Para vídeos, selecione resolução máxima de 144p, 240p, 360p, 480p, 720p e superiores. Resoluções menores geralmente diminuem o arquivo, mas o tamanho final depende da duração, bitrate e formatos disponíveis na fonte.
 - **Seus arquivos:** use **Abrir pasta** para encontrá-los. Em **Preferências**, escolha o destino e ajuste a leitura de 100% a 200%.
 - **Prévia do link:** consulte título, duração e qualidades antes de baixar um vídeo.
 - **Fechar e reabrir:** fechar a aba mantém a aplicação no ícone ☧ perto do relógio. Nesse ícone, use **Abrir Clássica** ou **Encerrar Clássica**. O botão **Sair** também encerra.
