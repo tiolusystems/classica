@@ -98,7 +98,7 @@ jobs:
       - name: Fresh ZIP extraction, dependency setup, localhost and media suite
         shell: powershell
         run: |
-          .\scripts\windows_clean_install.ps1 -Archive (Join-Path $PWD 'dist\Classica-2.4.0-Windows-x64.zip')
+          .\scripts\windows_clean_install.ps1 -Archive (Join-Path $PWD 'dist\Classica-2.4.1-Windows-x64.zip')
       - name: Store verified distribution
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
